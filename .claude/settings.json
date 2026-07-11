@@ -7,5 +7,7 @@
       }
     }
   },
-  "enabledPlugins": ["pastille-ia@alliance-ia"]
+  "enabledPlugins": {
+    "pastille-ia@alliance-ia": true
+  }
 }
