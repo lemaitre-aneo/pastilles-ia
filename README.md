@@ -16,6 +16,7 @@ Invocation partout: **`/pastille-ia:generate`**. Source unique de vérité: `plu
 plugins/pastille-ia/
   .claude-plugin/plugin.json                       # manifeste du plugin
   skills/generate/SKILL.md                         # le skill (source unique)
+dev.sh                                             # lance Claude Code sur les fichiers locaux (dev)
 ```
 
 ## Utilisation
@@ -42,6 +43,31 @@ Puis `/pastille-ia:generate`.
 ### 3. Cowork / claude.ai
 
 Customize > Plugins > **Add from a repository**, puis indiquez l'URL du dépôt GitHub (`https://github.com/lemaitre-aneo/pastilles-ia`). Le skill apparaît ensuite via `/` ou le bouton `+`.
+
+## Développement du skill
+
+Le chargement normal (`.claude/settings.json`) sert la version **publiée** depuis GitHub, y compris en local: le plugin tourne depuis le cache (`~/.claude/plugins/cache/...`), pas depuis votre copie de travail. Éditer `plugins/pastille-ia/skills/generate/SKILL.md` ne change donc rien tant que vous n'avez pas poussé puis lancé `/plugin marketplace update alliance-ia`.
+
+Pour itérer sur le skill avec vos fichiers locaux pris en compte immédiatement:
+
+```
+./dev.sh
+```
+
+Le script lance `claude --plugin-dir ./plugins/pastille-ia`, prioritaire sur la version publiée pour la session. Après une édition de `SKILL.md`, `/reload-plugins` recharge sans redémarrer.
+
+Le split en résumé:
+
+| Commande | Ce qui se charge | Pour qui |
+| --- | --- | --- |
+| `claude` (normal) | version **publiée** via la marketplace GitHub | autres postes, cloud, Cowork |
+| `./dev.sh` | vos **fichiers locaux** | vous, pour développer avant de pousser |
+
+Optionnel (ceinture et bretelles): pour couper tout chargement de la version GitHub pendant le dev, créez `.claude/settings.local.json` (personnel, git-ignoré):
+
+```
+{ "enabledPlugins": { "pastille-ia@alliance-ia": false } }
+```
 
 ## Notes
 
