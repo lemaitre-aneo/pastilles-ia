@@ -22,13 +22,17 @@ plugins/pastille-ia/
 
 ### 1. Directement dans ce dépôt (aucune installation)
 
-Ouvrez le dépôt dans Claude Code (local ou web) et lancez:
+Ouvrez Claude Code **à la racine du dépôt** et lancez:
 
 ```
-/pastille-ia
+/pastille-ia:pastille-ia
 ```
 
-Le skill est auto-chargé depuis `.claude/skills/`. En session Claude Code sur le web, le `.claude/` du dépôt cloné est lu automatiquement, donc rien à installer non plus.
+`.claude/skills/pastille-ia` est un symlink vers la racine du plugin (`plugins/pastille-ia/`, qui contient `.claude-plugin/plugin.json`). Claude Code le charge donc en place comme plugin `pastille-ia@skills-dir`, ce qui donne une invocation **namespacée identique à l'installation via marketplace**. Aucune installation, hors-ligne, source unique.
+
+Contraintes: lancez Claude Code depuis la racine du dépôt (les plugins `@skills-dir` de portée projet ne remontent pas depuis un sous-dossier), et acceptez la fenêtre de confiance du dossier (workspace trust). Après un changement, `/reload-plugins` recharge sans redémarrer.
+
+Note session web (Claude Code on the web): le `.claude/` du dépôt cloné est lu, mais le chargement d'un plugin `@skills-dir` en session cloud n'est pas garanti par la doc (seuls les skills simples et les plugins déclarés dans `.claude/settings.json` le sont). Si l'auto-chargement web direct devient nécessaire, basculer sur `.claude/settings.json` (`extraKnownMarketplaces` + `enabledPlugins`), documenté pour le cloud.
 
 ### 2. Comme plugin dans Claude Code (autres machines / autres dépôts)
 
