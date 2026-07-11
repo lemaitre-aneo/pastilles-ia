@@ -1,0 +1,15 @@
+{
+  "name": "alliance-ia",
+  "owner": {
+    "name": "Florian Lemaitre",
+    "email": "flemaitre@aneo.fr"
+  },
+  "description": "Marketplace interne ANEO: outils d'acculturation IA (pastilles LLM).",
+  "plugins": [
+    {
+      "name": "pastille-ia",
+      "source": "./plugins/pastille-ia",
+      "description": "Générateur multi-agents de pastilles pédagogiques sur les LLM (texte FR + prompt image Gemini)."
+    }
+  ]
+}

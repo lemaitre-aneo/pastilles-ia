@@ -1,5 +1,4 @@
 ---
-name: pastilles-llm-multi-agent
 description: Variante Claude Code du générateur de pastilles LLM, qui lance réellement plusieurs sous-agents en parallèle. Génère une pastille de communication interne sur les LLM (un texte court en français plus un prompt unique de génération d'images à coller dans le chat Gemini), via cinq sous-agents indépendants, une fusion, puis une revue critique par trois sous-agents et une correction. Utilise ce skill dès qu'on te demande de rédiger, produire ou générer une pastille, une fiche ou un contenu court d'acculturation sur les LLM, l'IA générative, le prompting, les agents, le RAG, la confidentialité IA ou tout sujet de la liste des 45 pastilles ci-dessous, que le mot "pastille" soit employé ou non. Utilise-le aussi dès qu'on te fournit un titre issu de cette liste.
 ---
 
