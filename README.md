@@ -3,38 +3,33 @@
 Générateur multi-agents de **pastilles** pédagogiques internes sur les LLM: un texte court en français plus un prompt unique de génération d'images à coller dans Gemini. Le skill lance de vrais sous-agents en parallèle (rédaction sous cinq angles, fusion, puis revue critique par trois relecteurs et correction).
 
 Ce dépôt est à la fois:
-- un **skill utilisable directement** quand on ouvre le dépôt dans Claude Code (aucune installation),
-- une **marketplace de plugin privée** installable dans Claude Code (CLI/web) et dans Cowork.
+- une **marketplace de plugin privée** installable dans Claude Code (CLI/web) et dans Cowork,
+- un dépôt qui **s'auto-configure** quand on l'ouvre dans Claude Code (le plugin s'installe via `.claude/settings.json`).
 
-Une seule source de vérité: `plugins/pastille-ia/skills/pastille-ia/SKILL.md`. Le fichier `.claude/skills/pastille-ia` est un lien symbolique qui pointe vers ce skill pour l'auto-chargement local.
+Invocation partout: **`/pastille-ia:generate`**. Source unique de vérité: `plugins/pastille-ia/skills/generate/SKILL.md`.
 
 ## Structure
 
 ```
-.claude-plugin/marketplace.json                  # catalogue de la marketplace "alliance-ia"
+.claude/settings.json                             # déclare la marketplace + active le plugin (local + cloud)
+.claude-plugin/marketplace.json                   # catalogue de la marketplace "alliance-ia"
 plugins/pastille-ia/
-  .claude-plugin/plugin.json                      # manifeste du plugin
-  skills/pastille-ia/SKILL.md                     # le skill (source unique)
-.claude/skills/pastille-ia -> ../../plugins/...   # symlink pour l'usage direct
+  .claude-plugin/plugin.json                       # manifeste du plugin
+  skills/generate/SKILL.md                         # le skill (source unique)
 ```
 
 ## Utilisation
 
-### 1. Directement dans ce dépôt (aucune installation)
+### 1. Ce dépôt, dans Claude Code (local ou web)
 
-Ouvrez Claude Code **à la racine du dépôt** et lancez:
+`.claude/settings.json` déclare la marketplace `alliance-ia` (source GitHub) et active `pastille-ia@alliance-ia`. C'est le mécanisme documenté qui fonctionne **aussi en session cloud**.
 
-```
-/pastille-ia:generate
-```
+- **Claude Code sur le web (session cloud sur ce dépôt):** le plugin est installé automatiquement au démarrage de la session depuis la marketplace déclarée. Rien à faire, puis `/pastille-ia:generate`.
+- **Claude Code local:** à la première ouverture, après avoir accordé la confiance du dossier (workspace trust), Claude Code propose d'installer la marketplace et le plugin; acceptez (ou lancez `/plugin install pastille-ia@alliance-ia`). Ensuite `/pastille-ia:generate`. Le plugin est mis en cache, donc disponible hors-ligne aux ouvertures suivantes.
 
-`.claude/skills/pastille-ia` est un symlink vers la racine du plugin (`plugins/pastille-ia/`, qui contient `.claude-plugin/plugin.json`). Claude Code le charge donc en place comme plugin `pastille-ia@skills-dir`, ce qui donne une invocation **namespacée identique à l'installation via marketplace**. Aucune installation, hors-ligne, source unique.
+La première installation (locale et cloud) nécessite un accès réseau au dépôt GitHub (marketplace privée).
 
-Contraintes: lancez Claude Code depuis la racine du dépôt (les plugins `@skills-dir` de portée projet ne remontent pas depuis un sous-dossier), et acceptez la fenêtre de confiance du dossier (workspace trust). Après un changement, `/reload-plugins` recharge sans redémarrer.
-
-Note session web (Claude Code on the web): le `.claude/` du dépôt cloné est lu, mais le chargement d'un plugin `@skills-dir` en session cloud n'est pas garanti par la doc (seuls les skills simples et les plugins déclarés dans `.claude/settings.json` le sont). Si l'auto-chargement web direct devient nécessaire, basculer sur `.claude/settings.json` (`extraKnownMarketplaces` + `enabledPlugins`), documenté pour le cloud.
-
-### 2. Comme plugin dans Claude Code (autres machines / autres dépôts)
+### 2. Autres machines / autres dépôts (Claude Code CLI)
 
 ```
 /plugin marketplace add lemaitre-aneo/pastilles-ia
@@ -42,20 +37,14 @@ Note session web (Claude Code on the web): le `.claude/` du dépôt cloné est l
 /reload-plugins
 ```
 
-Puis invoquez le skill (namespacé par le plugin):
+Puis `/pastille-ia:generate`.
 
-```
-/pastille-ia:generate
-```
+### 3. Cowork / claude.ai
 
-Pour tester localement avant publication, on peut aussi ajouter la marketplace depuis le chemin local: `/plugin marketplace add .`
-
-### 3. Dans Cowork / claude.ai
-
-Customize > Plugins > **Add from a repository**, puis indiquez l'URL du dépôt GitHub (`https://github.com/lemaitre-aneo/pastilles-ia`). Le skill `pastille-ia` apparaît ensuite via `/` ou le bouton `+`.
+Customize > Plugins > **Add from a repository**, puis indiquez l'URL du dépôt GitHub (`https://github.com/lemaitre-aneo/pastilles-ia`). Le skill apparaît ensuite via `/` ou le bouton `+`.
 
 ## Notes
 
 - **Sous-agents parallèles:** le processus multi-agents tourne dans Claude Code et dans Cowork. Dans le chat simple de claude.ai (hors Cowork), les sous-agents ne s'exécutent pas; le skill bascule alors sur son repli séquentiel documenté.
-- **Symlink:** fonctionne sous Linux/WSL et dans l'infra cloud d'Anthropic. Un collaborateur qui clone sous Windows sans support des symlinks git (`core.symlinks`) verra un lien cassé; remplacer alors `.claude/skills/pastille-ia` par une copie réelle du dossier.
-- **Accès:** dépôt privé, seules les personnes ayant accès peuvent ajouter la marketplace et installer le plugin.
+- **Accès:** dépôt privé; seules les personnes ayant accès peuvent installer le plugin. En session cloud, l'installation réutilise l'accès GitHub de la session.
+- **Nom de marketplace vs dépôt:** la marketplace s'appelle `alliance-ia` (dans `marketplace.json` et `settings.json`), le dépôt GitHub `pastilles-ia`. Les installations lisent donc `pastille-ia@alliance-ia`.

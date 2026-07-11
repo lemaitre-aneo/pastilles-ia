@@ -1,0 +1,11 @@
+{
+  "extraKnownMarketplaces": {
+    "alliance-ia": {
+      "source": {
+        "source": "github",
+        "repo": "lemaitre-aneo/pastilles-ia"
+      }
+    }
+  },
+  "enabledPlugins": ["pastille-ia@alliance-ia"]
+}
