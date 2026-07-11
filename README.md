@@ -25,7 +25,7 @@ plugins/pastille-ia/
 Ouvrez Claude Code **à la racine du dépôt** et lancez:
 
 ```
-/pastille-ia:pastille-ia
+/pastille-ia:generate
 ```
 
 `.claude/skills/pastille-ia` est un symlink vers la racine du plugin (`plugins/pastille-ia/`, qui contient `.claude-plugin/plugin.json`). Claude Code le charge donc en place comme plugin `pastille-ia@skills-dir`, ce qui donne une invocation **namespacée identique à l'installation via marketplace**. Aucune installation, hors-ligne, source unique.
@@ -45,7 +45,7 @@ Note session web (Claude Code on the web): le `.claude/` du dépôt cloné est l
 Puis invoquez le skill (namespacé par le plugin):
 
 ```
-/pastille-ia:pastille-ia
+/pastille-ia:generate
 ```
 
 Pour tester localement avant publication, on peut aussi ajouter la marketplace depuis le chemin local: `/plugin marketplace add .`
