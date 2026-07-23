@@ -1,17 +1,18 @@
 ---
-description: Variante Claude Code du générateur de pastilles LLM, qui lance réellement plusieurs sous-agents en parallèle. Génère une pastille de communication interne sur les LLM (un texte court en français plus un prompt unique de génération d'images à coller dans le chat Gemini), via cinq sous-agents indépendants, une fusion, puis une revue critique par trois sous-agents et une correction. Utilise ce skill dès qu'on te demande de rédiger, produire ou générer une pastille, une fiche ou un contenu court d'acculturation sur les LLM, l'IA générative, le prompting, les agents, le RAG, la confidentialité IA ou tout sujet de la liste des 45 pastilles ci-dessous, que le mot "pastille" soit employé ou non. Utilise-le aussi dès qu'on te fournit un titre issu de cette liste.
+description: Variante Claude Code du générateur de pastilles LLM, qui lance réellement plusieurs sous-agents en parallèle. Génère une pastille de communication interne sur les LLM (un titre, un texte court en français, plus un prompt unique de génération d'images à coller dans le chat Gemini), via cinq sous-agents indépendants qui proposent chacun aussi un titre, une fusion, puis une revue critique par trois sous-agents et une correction. Utilise ce skill dès qu'on te demande de rédiger, produire ou générer une pastille, une fiche ou un contenu court d'acculturation sur les LLM, l'IA générative, le prompting, les agents, le RAG, la confidentialité IA ou tout sujet de la liste des 45 pastilles ci-dessous, que le mot "pastille" soit employé ou non. Utilise-le aussi dès qu'on te fournit un titre issu de cette liste.
 ---
 
 # Générateur de pastilles LLM, version multi-agents (Claude Code)
 
 ## Ce que fait ce skill
-Produit une pastille pédagogique complète à partir d'un titre. À la différence de la version chat, il lance de vrais sous-agents parallèles: une passe de recherche, puis cinq sous-agents indépendants qui rédigent chacun un brouillon sous un angle différent, puis une fusion par l'orchestrateur qui retient les meilleures formulations, et enfin une revue critique par trois sous-agents suivie d'une correction. Livrable: le texte de la pastille et un prompt unique de génération d'images à coller dans le chat Gemini.
+Produit une pastille pédagogique complète à partir d'un titre. À la différence de la version chat, il lance de vrais sous-agents parallèles: une passe de recherche, puis cinq sous-agents indépendants qui rédigent chacun un brouillon (titre compris) sous un angle différent, puis une fusion par l'orchestrateur qui retient les meilleures formulations (titre compris), et enfin une revue critique par trois sous-agents suivie d'une correction. Livrable: le titre, le texte de la pastille et un prompt unique de génération d'images à coller dans le chat Gemini.
 
 ## Environnement requis
 Ce skill suppose Claude Code, avec les sous-agents (outil Task) et la recherche web disponibles. Si les sous-agents ne sont pas disponibles dans ton environnement, n'improvise pas: utilise la variante chat, qui fait le même travail en self-ensemble séquentiel.
 
 ## Entrée
 Un titre de pastille, idéalement issu de la liste ci-dessous. Si le titre est ambigu ou hors liste, demande une clarification avant de générer.
+Ce titre est le titre canonique de la série: il sert d'ancre de périmètre et de libellé par défaut. Le processus peut en proposer une variante mieux alignée sur le texte final (voir Règles du titre), mais la délimitation du sujet reste toujours ancrée sur l'entrée canonique et ses voisines, jamais sur le libellé retenu.
 
 ## Liste des 45 pastilles (pour la continuité)
 1. Au fait, c'est quoi un LLM ?
@@ -66,6 +67,8 @@ Sers-toi de cette liste pour situer la pastille et délimiter son périmètre. A
 - Les concepts fondateurs déjà couverts ne sont rappelés qu'en une phrase de mise en contexte, jamais ré-expliqués. Le coeur de la pastille est consacré à ce que son titre ajoute de neuf.
 - Ne renvoie pas vers les autres pastilles dans le texte final, sauf si le titre l'impose.
 
+Le libellé du titre peut évoluer (voir Règles du titre), mais le périmètre reste ancré sur le titre canonique: c'est lui, et non le libellé retenu, qui définit ce qui relève du sujet et ce qui est laissé aux voisines.
+
 ## Règles du texte
 - Longueur adaptée à la profondeur du sujet. Un sujet léger tient en 3 paragraphes courts; un sujet plus riche peut aller jusqu'à 4 paragraphes plus étoffés. Ne gonfle pas artificiellement un sujet simple et ne compresse pas à l'excès un sujet dense: juge la profondeur par la richesse réelle du concept. Prose uniquement, pas de listes ni de puces.
 - Ton décontracté, précis et léger: accessible, vivant et sans lourdeur, mais techniquement juste. Public visé: une main-d'oeuvre diverse en société de conseil, du profil non technique au développeur.
@@ -76,6 +79,15 @@ Sers-toi de cette liste pour situer la pastille et délimiter son périmètre. A
 - Ne mentionne jamais ANEO ni aucun nom d'entreprise.
 - Le texte explicatif ne figure jamais dans l'image.
 - N'utilise pas de tiret cadratin. Privilégie des caractères standard (virgules, deux-points, parenthèses).
+
+## Règles du titre
+Le titre est désormais généré comme le reste, mais sous contrainte forte, car il porte trois rôles: identité de la série, ancre de périmètre et texte exact rendu dans l'image.
+- Le titre canonique (celui fourni en entrée) est l'ancre de périmètre (non négociable) et un point de départ pour le libellé. La préférence pour ce libellé est faible: à qualité vraiment égale, on le garde, mais on choisit librement une variante dès qu'elle sert mieux le texte final, tant qu'elle respecte le périmètre et le style de série. Ne pas s'obliger à le conserver.
+- Fidélité au périmètre: une variante ne doit ni élargir, ni déplacer le sujet défini par le titre canonique, ni empiéter sur une pastille voisine.
+- Style de la série: une accroche courte et imagée, le plus souvent suivie de deux-points puis d'une glose en langage clair, ou une question. Registre décontracté, précis et léger, comme le texte.
+- Cohérence: le titre tient sa promesse. Le texte délivre ce que le titre annonce, sans sur-promesse ni effet clickbait.
+- Rendu image: assez court pour un rendu fiable par le générateur d'images. Un titre long est un compromis à signaler (suggérer Nano Banana Pro).
+- Contraintes dures: français, aucun tiret cadratin ni caractère non standard, aucun nom d'entreprise.
 
 ## Processus multi-agents
 
@@ -103,7 +115,7 @@ Comme le contexte n'est pas hérité, chaque prompt de sous-agent doit être aut
 ```
 Tu rédiges un brouillon d'une pastille pédagogique interne sur les LLM. Tu travailles seul, sans accès au reste de la conversation.
 
-Titre de la pastille: [TITRE]
+Titre canonique de la pastille (issu de la série, ancre de périmètre et libellé par défaut): [TITRE]
 Angle imposé: [ANGLE, par exemple "Analogie: expliquer via une métaphore concrète du quotidien"]
 
 À NE PAS ré-expliquer (déjà couvert par d'autres pastilles), à mentionner en une phrase au maximum:
@@ -119,10 +131,13 @@ Règles:
 - Rythme: privilégie des phrases plutôt courtes et directes, mais varie leur longueur et ajoute du liant (connecteurs, deux-points, points-virgules) pour éviter le style haché ou télégraphique. La lecture à voix haute doit rester fluide.
 - Français. Ne mentionne aucune entreprise. Pas de tiret cadratin.
 - Contenu autonome, compréhensible seul.
+- Titre: rédige d'abord ton texte, puis propose le titre qui lui va le mieux. Le titre canonique ci-dessus est un point de départ, pas une contrainte: reprends-le tel quel, ajuste-le ou propose-en un nouveau, du moment qu'il reste dans le périmètre et le style de série (accroche courte et imagée, souvent deux-points puis glose en langage clair, ou question). N'hésite pas à t'en éloigner si ton angle appelle un meilleur titre; ne garde le canonique que s'il fait au moins aussi bien. Titre en français, sans tiret cadratin, sans nom d'entreprise, assez court pour un rendu image fiable.
 
 Réponds exactement dans ce format:
 TEXTE:
 [les 3 à 4 paragraphes]
+TITRE:
+[le titre retenu pour ce brouillon: le titre canonique tel quel, ou ta variante mieux alignée]
 ILLUSTRATION_TITRE:
 [une phrase décrivant le concept central à illustrer]
 SCHEMA:
@@ -133,6 +148,7 @@ SCHEMA:
 Attends les cinq retours, puis fusionne en une seule pastille finale:
 - Retiens la structure la plus claire, la meilleure analogie, l'exemple le plus parlant, la correction la plus nette, la formulation la plus précise et le "pourquoi ça compte" le plus fort.
 - Réécris en une seule voix cohérente. Pas d'effet patchwork.
+- Choisis le titre: une fois le texte fusionné, retiens le titre qui lui correspond le mieux parmi les cinq propositions, ou synthétise-en un. Le titre canonique n'a qu'une préférence faible: retiens-le seulement à qualité vraiment égale, sinon préfère sans hésiter la variante qui sert mieux le texte final (même périmètre, style de série respecté). Le titre retenu remplace le canonique partout en aval, prompt image compris.
 - Respecte la longueur adaptée à la profondeur (voir Règles du texte) et le ton décontracté, précis et léger, sans name-dropping.
 - Décide s'il faut un schéma: inclus-en un si au moins deux sous-agents ont répondu "oui", ou si le concept est intrinsèquement un processus, un flux ou une comparaison (par exemple RAG, agents, étapes de prompting, comparaison de modèles). Le cas échéant, fusionne les meilleures idées de schéma.
 - Construis ensuite le prompt image unique (section ci-dessous).
@@ -144,6 +160,7 @@ Attends les cinq retours, puis fusionne en une seule pastille finale:
 - Rythme: privilégie des phrases plutôt courtes et directes, mais varie leur longueur et ajoute du liant (connecteurs, deux-points, points-virgules) pour éviter le style haché ou télégraphique. La lecture à voix haute doit rester fluide.
 - Français. Ne mentionne aucune entreprise. Pas de tiret cadratin.
 - Contenu autonome, compréhensible seul.
+- Titre: voir Règles du titre. Le titre retenu doit tenir sa promesse (le texte délivre ce qu'il annonce, sans sur-promesse) et rester dans le périmètre canonique.
 
 ### Étape 5, revue critique et correction (trois sous-agents en parallèle, puis orchestrateur)
 Quand la lancer: systématiquement à la première génération, une fois le texte fusionné et le prompt image construits. Ensuite, si l'utilisateur demande des ajustements, ne relance pas la revue d'office: propose-la, et ne la lance qu'avec son accord (elle coûte trois sous-agents de plus).
@@ -152,18 +169,19 @@ Principe: les relecteurs produisent des CONSTATS, jamais une réécriture. Chacu
 
 Ce que la revue peut juger: les relecteurs ne voient pas les images, générées plus tard dans Gemini. La revue du visuel porte donc uniquement sur le PROMPT image (clarté, cohérence avec le texte, respect des consignes), jamais sur un rendu. Le contrôle visuel réel reste à l'utilisateur.
 
-Lance trois sous-agents en parallèle (parallélisme explicite, sinon l'exécution sera séquentielle), un par grille. Le contexte n'étant pas hérité, chaque prompt doit être autonome et contenir tout le nécessaire: le titre, le texte fusionné, le bloc prompt image, le brief de recherche, la liste "déjà traité ailleurs" (et les textes des pastilles voisines s'ils sont disponibles), et la liste des 45 titres pour repérer les chevauchements.
+Lance trois sous-agents en parallèle (parallélisme explicite, sinon l'exécution sera séquentielle), un par grille. Le contexte n'étant pas hérité, chaque prompt doit être autonome et contenir tout le nécessaire: le titre canonique et le titre retenu, le texte fusionné, le bloc prompt image, le brief de recherche, la liste "déjà traité ailleurs" (et les textes des pastilles voisines s'ils sont disponibles), et la liste des 45 titres pour repérer les chevauchements.
 
 Les trois grilles:
-1. Fond, exactitude et périmètre: exactitude vs le brief (aucun chiffre, date ou fait inventé ni sur-affirmé, rien qui le contredise), cohérence entre le titre et ce que le texte délivre, chevauchements avec les pastilles voisines (le texte ré-explique-t-il ce qui est traité ailleurs ? redites à signaler), autonomie du contenu, clarté du message à retenir, repérage de ce qui vieillira mal (à nuancer).
-2. Forme, ton et pédagogie: ton décontracté-précis-léger et techniquement juste, absence de name-dropping, rythme et fluidité à la lecture à voix haute, longueur adaptée à la profondeur (3 à 4 paragraphes, prose, pas de listes) et chasse au verbiage, accessibilité pour un profil non technique (jargon expliqué, analogies claires), présence d'emphases utiles (gras/italique), de l'ordre de 3 à 4 par paragraphe à titre indicatif (signale un texte trop peu emphasé autant qu'un excès, mais ne fais jamais retirer une emphase pertinente), force de l'accroche.
-3. Conformité et visuel: contraintes dures (aucun tiret cadratin ni caractère non standard, aucun nom d'entreprise ni ANEO, français correct, prose sans listes ni puces); puis le prompt image: titre exact au caractère près, charte présente une seule fois, texte de la pastille bien marqué "à ne pas afficher", illustration-titre iconique et non schéma de processus, schéma en 2e image séparée si retenu, libellés de schéma courts (groupes nominaux) et en français, cohérence entre le visuel décrit et le coeur du texte.
+1. Fond, exactitude et périmètre: exactitude vs le brief (aucun chiffre, date ou fait inventé ni sur-affirmé, rien qui le contredise), cohérence entre le titre retenu et ce que le texte délivre (le titre tient-il sa promesse, sans sur-promesse ni clickbait ?), maintien du titre retenu dans le périmètre canonique (il ne doit ni élargir ni déplacer le sujet défini par le titre canonique, ni empiéter sur une voisine), chevauchements avec les pastilles voisines (le texte ré-explique-t-il ce qui est traité ailleurs ? redites à signaler), autonomie du contenu, clarté du message à retenir, repérage de ce qui vieillira mal (à nuancer).
+2. Forme, ton et pédagogie: ton décontracté-précis-léger et techniquement juste, absence de name-dropping, rythme et fluidité à la lecture à voix haute, longueur adaptée à la profondeur (3 à 4 paragraphes, prose, pas de listes) et chasse au verbiage, accessibilité pour un profil non technique (jargon expliqué, analogies claires), présence d'emphases utiles (gras/italique), de l'ordre de 3 à 4 par paragraphe à titre indicatif (signale un texte trop peu emphasé autant qu'un excès, mais ne fais jamais retirer une emphase pertinente), force de l'accroche et qualité du titre retenu (accroche et punch, respect du style de la série, longueur raisonnable, pas de name-dropping dans le titre; un titre qui s'écarte du canonique n'est pas un défaut en soi, ne réclame le retour au canonique que si le titre retenu est plus faible).
+3. Conformité et visuel: contraintes dures (aucun tiret cadratin ni caractère non standard, aucun nom d'entreprise ni ANEO, français correct, prose sans listes ni puces), y compris dans le titre retenu; puis le prompt image: titre retenu reproduit au caractère près (et non le titre canonique s'ils diffèrent), longueur du titre compatible avec un rendu image fiable (sinon suggérer Nano Banana Pro), charte présente une seule fois, texte de la pastille bien marqué "à ne pas afficher", illustration-titre iconique et non schéma de processus, schéma en 2e image séparée si retenu, libellés de schéma courts (groupes nominaux) et en français, cohérence entre le visuel décrit et le coeur du texte.
 
 Gabarit de relecteur (remplace les crochets):
 ```
 Tu relis un brouillon quasi final de pastille pédagogique interne sur les LLM. Tu travailles seul, sans accès au reste de la conversation. Tu ne réécris pas: tu rends des constats et des correctifs précis.
 
-Titre de la pastille: [TITRE]
+Titre canonique de la pastille (issu de la série, ancre de périmètre): [TITRE_CANONIQUE]
+Titre retenu (à juger, peut différer du canonique): [TITRE_RETENU]
 
 Texte fusionné à relire:
 [TEXTE COMPLET]
@@ -193,7 +211,7 @@ VERDICT:
 [une phrase: publiable tel quel / corrections mineures / corrections nécessaires]
 ```
 
-Fan-in et correction (orchestrateur): rassemble les constats, dédoublonne, arbitre les conseils contradictoires. Garde-fou anti-gonflement: entre "ajouter" et "raccourcir", la concision l'emporte, sauf erreur de fond avérée. Applique les constats bloquants et recommandés, écarte ou mentionne les mineurs. Une seule passe, pas de boucle. Réécris la version corrigée en une seule voix, puis prépare le court résumé "Ce que la revue a corrigé" (voir Format de sortie).
+Fan-in et correction (orchestrateur): rassemble les constats, dédoublonne, arbitre les conseils contradictoires. Garde-fou anti-gonflement: entre "ajouter" et "raccourcir", la concision l'emporte, sauf erreur de fond avérée. Applique les constats bloquants et recommandés, écarte ou mentionne les mineurs. Le titre retenu est corrigé au même titre que le texte. Une seule passe, pas de boucle. Réécris la version corrigée en une seule voix, puis prépare le court résumé "Ce que la revue a corrigé" (voir Format de sortie).
 
 ### Points de vigilance Claude Code
 - Parallélisme explicite: demande clairement cinq sous-agents en parallèle, sinon l'exécution sera séquentielle.
@@ -214,7 +232,7 @@ Contenu du bloc:
 - Décris la charte graphique une seule fois (bloc ci-dessous) et précise que toutes les images la partagent, pour une cohérence visuelle.
 - Précise: tout texte affiché dans les images est en français. Cette consigne est importante, elle évite qu'un libellé se retrouve en anglais.
 - Inclus le texte complet de la pastille dans le bloc, en contexte de génération, clairement marqué comme à ne pas afficher. Il aide le modèle à comprendre le sujet et à choisir une illustration juste. Les seuls textes rendus visibles sont le titre exact et, pour un schéma, ses libellés. Le texte de la pastille ne doit jamais apparaître dans les images.
-- Illustration-titre: composition épurée et moderne, focus graphique central iconique représentant le concept. Ce n'est pas un schéma de processus. Le seul texte affiché est le titre exact, en en-tête: n'ajoute aucun sous-titre, accroche ou texte secondaire, le titre seul. Technique en deux temps pour le titre: dans le prompt généré, écris le titre exact entre guillemets droits (forme attendue: Le titre exact: "...") et demande un rendu fidèle, sans faute, en police sans serif corporate. Les guillemets ne sont qu'un délimiteur côté prompt: ne les commente pas et n'ajoute aucune consigne à leur sujet dans le prompt généré (pas de mention du type "les guillemets ne doivent pas apparaître").
+- Illustration-titre: composition épurée et moderne, focus graphique central iconique représentant le concept. Ce n'est pas un schéma de processus. Le seul texte affiché est le titre exact retenu (celui choisi à l'étape de fusion, pas nécessairement le titre canonique de la série), en en-tête: n'ajoute aucun sous-titre, accroche ou texte secondaire, le titre seul. Technique en deux temps pour le titre: dans le prompt généré, écris le titre exact entre guillemets droits (forme attendue: Le titre exact: "...") et demande un rendu fidèle, sans faute, en police sans serif corporate. Les guillemets ne sont qu'un délimiteur côté prompt: ne les commente pas et n'ajoute aucune consigne à leur sujet dans le prompt généré (pas de mention du type "les guillemets ne doivent pas apparaître").
 - Schéma s'il est retenu: une seconde image générée séparément, dans son propre fichier, jamais fusionnée avec l'illustration-titre ni juxtaposée dans la même image. Diagramme d'entreprise propre et net (processus, flowchart ou comparaison), cohérent avec l'illustration-titre, mêmes charte et style, libellés fournis explicitement en français, très peu de fioritures.
 - Libellés de schéma: des groupes nominaux courts et lisibles seuls (par exemple "Exemples de bonnes réponses"), pas des phrases verbales qui sonnent comme des ordres ("Montrer de bonnes réponses"). Quelques mots par libellé.
 
@@ -245,9 +263,10 @@ Le travail des sous-agents reste dans leur propre contexte, seuls leurs retours 
 
 Livrable final, dans cet ordre:
 - Quand une revue a eu lieu (systématiquement à la première génération), un court résumé "Ce que la revue a corrigé" (2 à 4 lignes) présentant les principaux ajustements, avant le reste. Lors d'ajustements ultérieurs sans revue, présente simplement la version ajustée sans ce résumé.
+- Le titre retenu, affiché en tête comme titre de la pastille. S'il diffère du titre canonique de la série, ajoute juste en dessous une ligne discrète, par exemple: Titre canonique de la série: "...". Dites-moi si vous préférez le conserver, je reviens dessus en un mot. S'il est identique au canonique, n'ajoute pas cette ligne.
 - Le texte de la pastille (3 à 4 paragraphes), dans sa version corrigée.
 - Un bloc de code intitulé "Prompt images (à coller dans Gemini)", contenant le prompt unique prêt à copier.
 - Une courte section "Sources" listant 2 à 4 références principales issues de l'étape de recherche, de préférence officielles ou originales. Cette section sert à la vérification et n'a pas vocation à être publiée dans la pastille.
 
 Termine toujours par cette question exacte:
-"Comment trouvez-vous le texte, l'image titre et le diagramme (si généré) ? Si une partie vous semble trop complexe, ou si vous souhaitez affiner le focus d'un visuel pour qu'il soit encore plus épuré, n'hésitez pas à me le faire savoir, et je l'ajusterai."
+"Comment trouvez-vous le titre, le texte, l'image titre et le diagramme (si généré) ? Si une partie vous semble trop complexe, ou si vous souhaitez affiner le focus d'un visuel pour qu'il soit encore plus épuré, n'hésitez pas à me le faire savoir, et je l'ajusterai."
