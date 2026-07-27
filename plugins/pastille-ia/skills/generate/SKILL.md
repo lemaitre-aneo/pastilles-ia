@@ -70,11 +70,16 @@ Règles:
 - Rythme: privilégie des phrases plutôt courtes et directes, mais varie leur longueur et ajoute du liant (connecteurs, deux-points, points-virgules) pour éviter le style haché ou télégraphique. La lecture à voix haute doit rester fluide.
 - Français. Ne mentionne aucune entreprise. Pas de tiret cadratin.
 - Contenu autonome, compréhensible seul.
+- Encadré « L'essentiel »: une fois ton texte écrit, propose deux à trois puces, ou une seule phrase si ton angle n'a qu'une idée. Chaque puce tient en douze mots ou soixante-dix signes au maximum: au delà elle passe sur deux lignes à la diffusion et l'encadré cesse d'être un balayage. Elle dénoue ce que le titre annonce au lieu de le reformuler, et l'encadré ne doit pas pouvoir remplacer le texte.
 - Titre: rédige d'abord ton texte, puis propose le titre qui lui va le mieux. Le titre canonique ci-dessus est un point de départ, pas une contrainte: reprends-le tel quel, ajuste-le ou propose-en un nouveau, du moment qu'il reste dans le périmètre et le style de série (accroche courte et imagée, souvent deux-points puis glose en langage clair, ou question). N'hésite pas à t'en éloigner si ton angle appelle un meilleur titre; ne garde le canonique que s'il fait au moins aussi bien. Titre en français, sans tiret cadratin, sans nom d'entreprise, assez court pour un rendu image fiable.
 
 Réponds exactement dans ce format:
 TEXTE:
 [les 3 à 4 paragraphes, 45 à 60 mots chacun]
+ESSENTIEL:
+- [puce 1, douze mots ou soixante-dix signes au maximum]
+- [puce 2]
+- [puce 3, facultative]
 TITRE:
 [le titre retenu pour ce brouillon: le titre canonique tel quel, ou ta variante mieux alignée]
 ILLUSTRATION_TITRE:
@@ -87,11 +92,11 @@ SCHEMA:
 Attends les cinq retours, puis fusionne en une seule pastille finale:
 - Retiens la structure la plus claire, la meilleure analogie, l'exemple le plus parlant, la correction la plus nette, la formulation la plus précise et le "pourquoi ça compte" le plus fort.
 - Réécris en une seule voix cohérente. Pas d'effet patchwork.
-- Choisis le titre: une fois le texte fusionné, retiens le titre qui lui correspond le mieux parmi les cinq propositions, ou synthétise-en un. Le titre canonique n'a qu'une préférence faible: retiens-le seulement à qualité vraiment égale, sinon préfère sans hésiter la variante qui sert mieux le texte final (même périmètre, style de série respecté). Le titre retenu remplace le canonique partout en aval, prompt image compris.
+- Choisis le titre: une fois le texte fusionné, retiens le titre qui lui correspond le mieux parmi les cinq propositions, ou synthétise-en un. Même méthode pour les puces de l'encadré, qui arrivent elles aussi en cinq versions. Le titre canonique n'a qu'une préférence faible: retiens-le seulement à qualité vraiment égale, sinon préfère sans hésiter la variante qui sert mieux le texte final (même périmètre, style de série respecté). Le titre retenu remplace le canonique partout en aval, prompt image compris.
 - Respecte la longueur adaptée à la profondeur et le ton décontracté, précis et léger, sans name-dropping.
 - Le schéma est systématique: fusionne les meilleures idées de schéma reçues. Il illustre le mécanisme exposé dans les deux premiers paragraphes, jamais la conclusion, puisqu'il s'insère avant le dernier paragraphe.
 - Vérifie l'ordre des paragraphes: le dernier doit porter l'enjeu. Les cinq angles peuvent produire une fusion où l'enjeu se retrouve au milieu, c'est à toi de le remettre en clôture.
-- Rédige l'encadré de synthèse "L'essentiel" une fois le texte fusionné, jamais avant: deux à trois puces d'une ligne chacune, ou une phrase unique si le sujet n'a qu'un seul angle. Il dénoue ce que le titre annonce au lieu de le reformuler, et il ne doit pas pouvoir se substituer à l'article.
+- Fusionne l'encadré de synthèse "L'essentiel" une fois le texte fusionné, jamais avant: retiens les meilleures puces parmi les cinq propositions reçues, ou synthétise-en de nouvelles si aucune ne dénoue vraiment le titre. Deux à trois puces, douze mots ou soixante-dix signes chacune au maximum, ou une phrase unique si le sujet n'a qu'un seul angle. Compte les mots: une puce qui déborde porte en général deux idées, coupe-la ou choisis. L'encadré dénoue ce que le titre annonce au lieu de le reformuler, et il ne doit pas pouvoir se substituer à l'article.
 - Décide s'il y a lieu d'ajouter un bloc annexe, un seul au maximum: un encadré actionnable (prompt à copier, méthode courte) ou un encadré de mise en garde.
 - Construis ensuite le prompt image unique (voir la spec partagée, section « Prompt de génération d'images » et « Charte graphique »).
 

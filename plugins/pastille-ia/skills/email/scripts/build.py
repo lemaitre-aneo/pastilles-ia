@@ -60,6 +60,12 @@ def charger(chemin):
         raise SystemExit("champs manquants dans la fiche: " + ", ".join(manquantes))
     if len(fiche["essentiel"]) > 3:
         raise SystemExit("l'encadré L'essentiel est plafonné à trois puces")
+    for i, puce in enumerate(fiche["essentiel"], 1):
+        mots, signes = len(puce.split()), len(puce)
+        if mots > 12 or signes > 70:
+            print(f"attention: puce {i} de L'essentiel, {mots} mots et {signes} signes "
+                  "(borne 12 mots, 70 signes): elle passera sur deux lignes en volet "
+                  "étroit, et porte peut-être deux idées")
     if not 3 <= len(fiche["paragraphes"]) <= 4:
         raise SystemExit("la pastille compte 3 ou 4 paragraphes")
     # Rubrique et temps de lecture se déduisent, plutôt que d'être réclamés:
