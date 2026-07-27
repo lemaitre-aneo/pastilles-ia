@@ -1,5 +1,5 @@
 {
-  "_lisez_moi": "Fiche réelle de la pastille 13, à copier comme point de départ. Les deux images ne sont pas versionnées: faites pointer image_titre et image_schema sur vos fichiers. Les emphases sont en markdown, la typographie française est appliquée par le script: pas d'espaces insécables ni d'apostrophes typographiques à saisir ici.",
+  "_lisez_moi": "Fiche réelle de la pastille 13, à copier comme point de départ. Les deux images ne sont pas versionnées: faites pointer image_titre et image_schema sur vos fichiers. numero est le numéro de diffusion donné par l'utilisateur (ce sujet occupe la position 5 de la liste des 45, d'où la rubrique Comprendre): les deux sont indépendants. Les emphases sont en markdown, la typographie française est appliquée par le script: pas d'espaces insécables ni d'apostrophes typographiques à saisir ici.",
   "numero": 13,
   "total": 45,
   "rubrique": "Comprendre",

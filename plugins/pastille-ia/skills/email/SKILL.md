@@ -15,7 +15,8 @@ Les normes de la série vivent dans un fichier partagé, source unique commune a
 `${CLAUDE_SKILL_DIR}/references/regles-pastille.md`
 
 ## Entrées attendues
-1. Le contenu de la pastille: titre retenu, numéro, rubrique, temps de lecture, les puces de « L'essentiel », les 3 ou 4 paragraphes, la légende du schéma, le texte alternatif du schéma, et le bloc annexe s'il y en a un. S'il vient d'être produit dans la conversation, reprends-le tel quel sans le réécrire. Sinon demande-le, ou demande à l'utilisateur de le recoller.
+1. Le contenu de la pastille: titre retenu, numéro de diffusion, rubrique, temps de lecture, les puces de « L'essentiel », les 3 ou 4 paragraphes, la légende du schéma, le texte alternatif du schéma, et le bloc annexe s'il y en a un. S'il vient d'être produit dans la conversation, reprends-le tel quel sans le réécrire. Sinon demande-le, ou demande à l'utilisateur de le recoller.
+   Le numéro vient de l'utilisateur et prévaut toujours, même s'il contredit la liste des 45: cette liste est un inventaire de sujets, pas un ordre de diffusion. Si aucun numéro n'a été donné, propose la position du sujet dans la liste et demande confirmation avant de construire; ne la retiens pas en silence. La rubrique, elle, se déduit de la position du sujet dans la liste, jamais du numéro de diffusion (voir « Numéro et rubrique » dans la spec partagée).
 2. Les deux images, illustration-titre puis schéma, collées dans la conversation ou déposées sur le disque.
 
 Si une seule image est disponible, arrête-toi et demande la seconde: le schéma est systématique dans la série, un courriel sans schéma n'est pas conforme.
@@ -55,7 +56,7 @@ Une fiche décrit la pastille, le script fait le reste. Les emphases s'écrivent
 }
 ```
 
-Points de vigilance: `schema_apres` est le rang du paragraphe après lequel le schéma s'insère, donc l'avant-dernier, puisque le dernier paragraphe porte l'enjeu et se lit après le visuel. `annexe` est facultative et plafonnée à un bloc, `style` valant `essayer` ou `piege`. Le texte alternatif de l'illustration-titre n'est pas dans la fiche: c'est le titre exact, la norme l'impose. `mention_ia` et `signature` ont des valeurs par défaut, ne les redéclare que pour les changer.
+Points de vigilance: `numero` est le numéro de diffusion donné par l'utilisateur, et `rubrique` se déduit de la position du sujet dans la liste des 45, les deux étant indépendants. `schema_apres` est le rang du paragraphe après lequel le schéma s'insère, donc l'avant-dernier, puisque le dernier paragraphe porte l'enjeu et se lit après le visuel. `annexe` est facultative et plafonnée à un bloc, `style` valant `essayer` ou `piege`. Le texte alternatif de l'illustration-titre n'est pas dans la fiche: c'est le titre exact, la norme l'impose. `mention_ia` et `signature` ont des valeurs par défaut, ne les redéclare que pour les changer.
 
 ### 3. Construire et contrôler
 ```

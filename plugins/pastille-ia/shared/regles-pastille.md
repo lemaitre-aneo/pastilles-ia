@@ -51,6 +51,8 @@ Il contient: la liste des 45 pastilles et les consignes de périmètre, les Règ
 44. Prompt Injection : quand on pirate une IA avec de simples phrases
 45. La Chaîne de Pensée : pourquoi l'IA a besoin de "réfléchir à voix haute"
 
+Cette liste est un inventaire de sujets, pas un ordre de diffusion. Ses positions servent au périmètre et à la continuité; elles ne sont pas le numéro affiché dans le bandeau du courriel, qui suit l'ordre de publication décidé par l'utilisateur (voir « Numéro et rubrique »).
+
 Sers-toi de cette liste pour situer la pastille et délimiter son périmètre. Avant de rédiger:
 - Repère les 1 à 3 pastilles voisines qui recouvrent le sujet, et dresse une courte liste "déjà traité ailleurs, à ne pas ré-expliquer".
 - Si une pastille voisine a déjà été produite, demande son texte à l'utilisateur (ou appuie-toi dessus s'il est fourni) pour caler précisément la limite.
@@ -155,13 +157,17 @@ Contraintes imposées par le moteur de rendu de Word. Ce sont des corrections de
 - Corps HTML en entités ASCII, pour ne dépendre d'aucune détection d'encodage côté client.
 - Images en ligne référencées par `cid:`, marquées `ATT_MHTML_REF`, masquées de la liste des pièces jointes.
 
-Rubriques affichées dans le bandeau, une par pastille:
-- Comprendre: pastilles 1 à 9
-- Limites: pastilles 10 à 14
-- Prompting: pastilles 16 à 22
-- Au travail: pastilles 23 à 29
-- Agents et outils: pastilles 30 à 38
-- Risques et cadre: pastilles 15, puis 39 à 45
+### Numéro et rubrique
+Le numéro affiché dans le bandeau est le numéro de diffusion, et **c'est l'utilisateur qui le donne**. La position du sujet dans la liste des 45 n'en est pas la source de vérité: l'ordre de publication n'a aucune raison de suivre l'ordre de l'inventaire. Si l'utilisateur fournit un numéro, il prévaut, sans discussion et même s'il contredit la liste. S'il n'en fournit pas, propose la position du sujet dans la liste et demande confirmation avant de fabriquer le courriel; ne la retiens jamais en silence.
+
+La rubrique, elle, suit le sujet et non le numéro de diffusion: elle se lit sur la position du sujet dans la liste des 45. Une pastille diffusée en treizième position mais inventoriée en cinquième porte donc la rubrique du groupe « Comprendre », pas celle du groupe « Limites ».
+
+- Comprendre: positions 1 à 9 de la liste
+- Limites: positions 10 à 14
+- Prompting: positions 16 à 22
+- Au travail: positions 23 à 29
+- Agents et outils: positions 30 à 38
+- Risques et cadre: position 15, puis 39 à 45
 
 ## Boite à outils de revue (grilles + gabarit de relecteur)
 Ces grilles et ce gabarit servent la revue critique, en génération comme en raffinement. Principe: les relecteurs produisent des CONSTATS, jamais une réécriture. Chacun renvoie une liste de problèmes localisés, assortis d'une gravité et d'un correctif précis. C'est l'orchestrateur qui applique et réécrit, pour garder une voix unique et éviter l'effet patchwork.

@@ -122,7 +122,7 @@ Livrable final, dans cet ordre:
 - Le titre retenu, affiché en tête comme titre de la pastille. S'il diffère du titre canonique de la série, ajoute juste en dessous une ligne discrète, par exemple: Titre canonique de la série: "...". Dites-moi si vous préférez le conserver, je reviens dessus en un mot. S'il est identique au canonique, n'ajoute pas cette ligne.
 - L'encadré "L'essentiel", puis le texte de la pastille (3 à 4 paragraphes de 45 à 60 mots) dans sa version corrigée, puis le bloc annexe s'il y en a un.
 - La légende du schéma, une phrase, et les deux textes alternatifs à renseigner à la diffusion: le titre exact pour l'illustration-titre, une phrase décrivant le schéma pour le second visuel.
-- La rubrique de la pastille et le temps de lecture estimé, à reporter dans le bandeau du gabarit de diffusion (voir la spec partagée, section « Gabarit de diffusion »).
+- La rubrique de la pastille et le temps de lecture estimé, à reporter dans le bandeau du gabarit de diffusion (voir la spec partagée, section « Gabarit de diffusion »). La rubrique se déduit de la position du sujet dans la liste des 45. Le numéro affiché, lui, est le numéro de diffusion et appartient à l'utilisateur: s'il ne l'a pas donné, propose la position dans la liste et demande confirmation, sans la retenir en silence.
 - Un bloc de code intitulé "Prompt images (à coller dans Gemini)", contenant le prompt unique prêt à copier.
 - Une courte section "Sources" listant 2 à 4 références principales issues de l'étape de recherche, de préférence officielles ou originales. Cette section sert à la vérification et n'a pas vocation à être publiée dans la pastille.
 
