@@ -25,25 +25,69 @@ MAX_W = 1000        # plafond de la colonne de texte, en pixels
 W_TITRE = 600       # largeur fixe de l'illustration-titre
 W_SCHEMA = 560      # largeur fixe du schéma
 
+# --- palette -----------------------------------------------------------------
+# Les trois couleurs officielles sont la source; tout le reste en est dérivé par
+# mélange, pour qu'aucune teinte ne vive en double dans le fichier.
+MARQUE_ORANGE = "#FE5100"
+MARQUE_BLEU = "#000F9F"
+MARQUE_ORANGE_CLAIR = "#FFB600"
+
 NOIR = "#2B2B2B"
-MARINE = "#0C2454"
-ORANGE = "#E46C0C"
-ORANGE_VIF = "#FC8424"
-BLEU_PALE = "#8FA5C4"
 BLANC = "#FFFFFF"
 GRIS = "#6B7280"
-BLEU = "#174E86"
+
+
+def melange(couleur_a, couleur_b, part_a):
+    """Mélange linéaire de deux couleurs, part_a entre 0 et 1."""
+    a = [int(couleur_a[i:i + 2], 16) for i in (1, 3, 5)]
+    b = [int(couleur_b[i:i + 2], 16) for i in (1, 3, 5)]
+    return "#" + "".join(f"{round(x * part_a + y * (1 - part_a)):02X}"
+                         for x, y in zip(a, b))
+
+
+def eclaircir(couleur, part_blanc):
+    return melange(BLANC, couleur, part_blanc)
+
+
+def assombrir(couleur, part_noir):
+    return melange("#000000", couleur, part_noir)
+
+
+# Dérivés. L'orange de marque tombe à 3,2:1 sur blanc, insuffisant pour un texte
+# de 12 pixels: les petits libellés prennent une version assombrie, qui remonte
+# au delà de 5:1. Les fonds sont le même orange ou le même bleu, très éclaircis.
+ORANGE_TEXTE = assombrir(MARQUE_ORANGE, 0.25)
+BLEU_PALE = eclaircir(MARQUE_BLEU, 0.60)
+
+# Encadré de synthèse: texte en gras sur teinte claire. Le gras est le seul poids
+# fiable en courriel, Word ne rend pas les poids intermédiaires. La bordure pleine
+# sur les quatre côtés le sépare des blocs annexes, qui n'ont qu'une barre latérale.
+FOND_ESSENTIEL = eclaircir(MARQUE_BLEU, 0.96)
+BORDURE_ESSENTIEL = f"1px solid {MARQUE_BLEU}"
 
 ANNEXES = {
-    "essayer": {"fond": "#FFF4EA", "barre": "#E46C0C", "etiquette": "#A34D08",
-                "texte": "#5C3208"},
-    "piege": {"fond": "#F2F5F9", "barre": "#174E86", "etiquette": "#174E86",
-              "texte": "#31445C"},
+    "essayer": {"fond": eclaircir(MARQUE_ORANGE_CLAIR, 0.90),
+                "barre": MARQUE_ORANGE,
+                "etiquette": ORANGE_TEXTE,
+                "texte": assombrir(MARQUE_ORANGE, 0.55)},
+    "piege": {"fond": eclaircir(MARQUE_BLEU, 0.95),
+              "barre": MARQUE_BLEU,
+              "etiquette": MARQUE_BLEU,
+              "texte": melange(MARQUE_BLEU, NOIR, 0.35)},
 }
 
-TABLE = ('<table role="presentation" cellpadding="0" cellspacing="0" border="0" '
-         'width="100%" style="width:100%; border-collapse:collapse; '
-         'mso-table-lspace:0pt; mso-table-rspace:0pt;{extra}"><tr>\n')
+
+def table(extra="", fond=None):
+    """Table de mise en page. Le fond est posé en attribut et en style: Word lit
+    l'attribut, les clients modernes le style. Attention: Word ne peint jamais un
+    fond de table, seulement un fond de cellule. Un bloc coloré doit donc aussi
+    porter son fond sur son <td>, via cellule(); le fond de table ne sert qu'aux
+    autres clients."""
+    attribut = f' bgcolor="{fond}"' if fond else ""
+    css = f" background-color:{fond};" if fond else ""
+    return ('<table role="presentation" cellpadding="0" cellspacing="0" border="0" '
+            f'width="100%"{attribut} style="width:100%; border-collapse:collapse; '
+            f'mso-table-lspace:0pt; mso-table-rspace:0pt;{css}{extra}"><tr>\n')
 
 
 # La rubrique suit la position du sujet dans la liste des 45, jamais le numéro
@@ -141,8 +185,16 @@ def para(contenu, couleur=NOIR, taille=16, interligne=26, extra="", align="justi
     return f'<p style="margin:{marge}; padding:0; {st}">{corps}</p>'
 
 
-def ligne(cellule, padding):
-    return f'<tr>\n<td style="padding:{padding};">\n{cellule}\n</td>\n</tr>\n'
+def cellule(padding, fond=None, extra=""):
+    """Cellule de contenu. C'est ici que le fond d'un bloc coloré doit vivre pour
+    que Word le peigne."""
+    attribut = f' bgcolor="{fond}"' if fond else ""
+    css = f"background-color:{fond}; " if fond else ""
+    return f'<td{attribut} style="{css}padding:{padding};{extra}">\n'
+
+
+def ligne(contenu, padding):
+    return f'<tr>\n<td style="padding:{padding};">\n{contenu}\n</td>\n</tr>\n'
 
 
 def image(cid, alt, largeur):
@@ -162,20 +214,20 @@ def sujet(c):
 
 
 def html_pastille(c):
-    out = [TABLE.format(extra=" background-color:#FFFFFF;")]
+    out = [table(fond="#FFFFFF")]
     out.append('<td align="center" valign="top" style="padding:0;">\n')
     # Word ignore max-width: le plafond lui est donné en commentaire conditionnel,
     # que les autres clients traitent comme un commentaire ordinaire.
     out.append(f'<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" '
                f'border="0" width="{MAX_W}" align="center" style="width:{MAX_W}px;"><tr>'
                f'<td style="padding:0;"><![endif]-->\n')
-    out.append(TABLE.format(extra=f" max-width:{MAX_W}px;"))
+    out.append(table(extra=f" max-width:{MAX_W}px;"))
 
     bandeau = (
-        TABLE.format(extra="")
+        table()
         + '<td align="left" valign="middle" style="padding:0;">\n'
         + f'<p style="margin:0; padding:0; {style(BLANC, 13, 24)}">'
-        + span(str(c["numero"]), ORANGE_VIF, 22, 24, "font-weight:700; ", gras=True)
+        + span(str(c["numero"]), MARQUE_ORANGE, 22, 24, "font-weight:700; ", gras=True)
         + span(f'&nbsp;/&nbsp;{c["total"]}', BLEU_PALE, 12, 24)
         + span(f'&nbsp;&nbsp;&nbsp;PASTILLE IA&nbsp;&nbsp;&middot;&nbsp;&nbsp;'
                f'{c["rubrique"].upper()}', BLANC, 13, 24)
@@ -185,23 +237,24 @@ def html_pastille(c):
                "white-space:nowrap; ", align=None)
         + "\n</td>\n</tr>\n</table>"
     )
-    out.append(f'<tr>\n<td bgcolor="{MARINE}" style="background-color:{MARINE}; '
+    out.append(f'<tr>\n<td bgcolor="{MARQUE_BLEU}" style="background-color:{MARQUE_BLEU}; '
                f'padding:14px 20px;">\n{bandeau}\n</td>\n</tr>\n')
 
     out.append('<tr>\n<td align="center" style="padding:0; font-size:0; line-height:0;">\n'
                + image("IMAGE_TITRE", c["titre"], W_TITRE) + "\n</td>\n</tr>\n")
 
     puces = "".join(
-        f'<li style="{style(MARINE, 16, 25)} margin:0; '
+        f'<li style="{style(MARQUE_BLEU, 16, 25, "font-weight:700; ")} margin:0; '
         f'padding:0 0 {6 if i < len(c["essentiel"]) - 1 else 0}px 0;">'
-        + span(p, MARINE, 16, 25) + "</li>\n"
+        + span(p, MARQUE_BLEU, 16, 25, "font-weight:700; ", gras=True) + "</li>\n"
         for i, p in enumerate(c["essentiel"]))
     essentiel = (
-        TABLE.format(extra=f" border:1px solid {MARINE};")
-        + '<td style="padding:16px 18px;">\n'
-        + para("L'ESSENTIEL", ORANGE, 12, 16,
+        table(extra=f" border:{BORDURE_ESSENTIEL};" if BORDURE_ESSENTIEL else "",
+              fond=FOND_ESSENTIEL)
+        + cellule("16px 18px", fond=FOND_ESSENTIEL)
+        + para("L'ESSENTIEL", ORANGE_TEXTE, 12, 16,
                "font-weight:700; letter-spacing:0.6px; ", align=None, gras=True)
-        + f'\n<ul style="margin:10px 0 0 0; padding:0 0 0 20px; {style(MARINE, 16, 25)}">\n'
+        + f'\n<ul style="margin:10px 0 0 0; padding:0 0 0 20px; {style(MARQUE_BLEU, 16, 25, "font-weight:700; ")}">\n'
         + puces + "</ul>\n</td>\n</tr>\n</table>"
     )
     out.append(ligne(essentiel, "24px 20px 0 20px"))
@@ -221,11 +274,10 @@ def html_pastille(c):
         a = c["annexe"]
         teintes = ANNEXES[a.get("style", "essayer")]
         bloc = (
-            TABLE.format(extra=f' background-color:{teintes["fond"]};')
-            .replace('width="100%" style=', f'width="100%" bgcolor="{teintes["fond"]}" style=')
+            table(fond=teintes["fond"])
             + f'<td width="4" bgcolor="{teintes["barre"]}" style="background-color:'
               f'{teintes["barre"]}; width:4px; font-size:0; line-height:0;">&nbsp;</td>\n'
-            + '<td style="padding:16px 18px;">\n'
+            + cellule("16px 18px", fond=teintes["fond"])
             + para(a["etiquette"].upper(), teintes["etiquette"], 12, 16,
                    "font-weight:700; letter-spacing:0.4px; ", align=None, gras=True)
             + "\n" + para(a["texte"], teintes["texte"], 15, 24, align=None,
@@ -234,7 +286,7 @@ def html_pastille(c):
         )
         out.append(ligne(bloc, "24px 20px 0 20px"))
 
-    trait = (TABLE.format(extra="")
+    trait = (table()
              + '<td height="1" bgcolor="#DFE3E8" style="background-color:#DFE3E8; '
                'height:1px; font-size:0; line-height:0;">&nbsp;</td>\n</tr>\n</table>')
     out.append('<tr>\n<td style="padding:26px 20px 0 20px; font-size:0; line-height:0;">\n'
@@ -242,7 +294,7 @@ def html_pastille(c):
 
     out.append(ligne(para(c["mention_ia"], GRIS, 13, 20, "font-style:italic; ",
                           align=None, italique=True), "16px 20px 0 20px"))
-    out.append(ligne(para(c["signature"], BLEU, 14, 20, "font-weight:700; ",
+    out.append(ligne(para(c["signature"], MARQUE_BLEU, 14, 20, "font-weight:700; ",
                           align=None, gras=True), "12px 20px 28px 20px"))
 
     out.append("</table>\n<!--[if mso]></td></tr></table><![endif]-->\n")

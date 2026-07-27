@@ -81,6 +81,15 @@ def main():
     if cellules:
         problemes.append(f"{len(cellules)} cellules portent une couleur de texte, "
                          "que Word n'hérite pas")
+    # Word ne peint pas un fond de table: chaque table colorée doit avoir une
+    # cellule colorée juste derrière, sinon le bloc ressort blanc dans Outlook.
+    orphelines = [m.group(1) for m in re.finditer(
+        r'<table[^>]*bgcolor="(#[0-9A-Fa-f]{6})"[^>]*>\s*<tr>\s*(<td[^>]*>)', html)
+        if "bgcolor" not in m.group(2) and m.group(1).upper() != "#FFFFFF"]
+    print("  fond de table sans fond de cellule:", len(orphelines))
+    if orphelines:
+        problemes.append(f"{len(orphelines)} blocs colorés ne posent leur fond que "
+                         "sur la table: Word les affichera en blanc")
     print("  balises <font color>       :", html.count("<font color="))
 
     print("\ntypographie")
