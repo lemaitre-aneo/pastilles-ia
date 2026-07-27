@@ -63,8 +63,9 @@ Brief de recherche (appuie-toi dessus, ne relance pas de recherche):
 [BRIEF: faits clés, chiffres, sources]
 
 Règles:
-- Longueur selon la profondeur du sujet: 3 paragraphes courts si le sujet est léger, jusqu'à 4 paragraphes étoffés s'il est dense. Prose uniquement, pas de listes.
-- Mets en gras et/ou en italique les termes importants, de l'ordre de 3 à 4 emphases par paragraphe (repère indicatif, ne force pas ce compte).
+- Longueur selon la profondeur du sujet: 3 paragraphes si le sujet est léger, jusqu'à 4 s'il est dense. Chaque paragraphe fait 45 à 60 mots et 2 à 3 phrases, contrainte ferme. Prose continue, pas de listes ni de puces.
+- Ordre des paragraphes: le dernier porte l'enjeu, ce que le sujet change concrètement pour le lecteur.
+- Mets en gras et/ou en italique les termes qui portent vraiment le sens, une à deux emphases par paragraphe au maximum. Au-delà, le lecteur n'a plus de chemin de lecture privilégié.
 - Ton décontracté, précis et léger, accessible mais techniquement juste. Évite le name-dropping: pas d'accumulation de noms de modèles, outils, entreprises ou chercheurs, privilégie l'explication du mécanisme.
 - Rythme: privilégie des phrases plutôt courtes et directes, mais varie leur longueur et ajoute du liant (connecteurs, deux-points, points-virgules) pour éviter le style haché ou télégraphique. La lecture à voix haute doit rester fluide.
 - Français. Ne mentionne aucune entreprise. Pas de tiret cadratin.
@@ -73,13 +74,13 @@ Règles:
 
 Réponds exactement dans ce format:
 TEXTE:
-[les 3 à 4 paragraphes]
+[les 3 à 4 paragraphes, 45 à 60 mots chacun]
 TITRE:
 [le titre retenu pour ce brouillon: le titre canonique tel quel, ou ta variante mieux alignée]
 ILLUSTRATION_TITRE:
 [une phrase décrivant le concept central à illustrer]
 SCHEMA:
-[oui ou non. Si oui, décris en 2 à 3 lignes le diagramme et ses libellés en français]
+[décris en 2 à 3 lignes le diagramme et ses libellés en français. Le schéma est systématique. Il illustre le mécanisme exposé dans les deux premiers paragraphes, jamais la conclusion. Cinq blocs au maximum]
 ```
 
 ### Étape 4, fan-in et fusion (orchestrateur)
@@ -88,7 +89,10 @@ Attends les cinq retours, puis fusionne en une seule pastille finale:
 - Réécris en une seule voix cohérente. Pas d'effet patchwork.
 - Choisis le titre: une fois le texte fusionné, retiens le titre qui lui correspond le mieux parmi les cinq propositions, ou synthétise-en un. Le titre canonique n'a qu'une préférence faible: retiens-le seulement à qualité vraiment égale, sinon préfère sans hésiter la variante qui sert mieux le texte final (même périmètre, style de série respecté). Le titre retenu remplace le canonique partout en aval, prompt image compris.
 - Respecte la longueur adaptée à la profondeur et le ton décontracté, précis et léger, sans name-dropping.
-- Décide s'il faut un schéma: inclus-en un si au moins deux sous-agents ont répondu "oui", ou si le concept est intrinsèquement un processus, un flux ou une comparaison (par exemple RAG, agents, étapes de prompting, comparaison de modèles). Le cas échéant, fusionne les meilleures idées de schéma.
+- Le schéma est systématique: fusionne les meilleures idées de schéma reçues. Il illustre le mécanisme exposé dans les deux premiers paragraphes, jamais la conclusion, puisqu'il s'insère avant le dernier paragraphe.
+- Vérifie l'ordre des paragraphes: le dernier doit porter l'enjeu. Les cinq angles peuvent produire une fusion où l'enjeu se retrouve au milieu, c'est à toi de le remettre en clôture.
+- Rédige l'encadré de synthèse "L'essentiel" une fois le texte fusionné, jamais avant: deux à trois puces d'une ligne chacune, ou une phrase unique si le sujet n'a qu'un seul angle. Il dénoue ce que le titre annonce au lieu de le reformuler, et il ne doit pas pouvoir se substituer à l'article.
+- Décide s'il y a lieu d'ajouter un bloc annexe, un seul au maximum: un encadré actionnable (prompt à copier, méthode courte) ou un encadré de mise en garde.
 - Construis ensuite le prompt image unique (voir la spec partagée, section « Prompt de génération d'images » et « Charte graphique »).
 
 Règles d'écriture pour la pastille finale: voir la spec partagée, section « Règles d'écriture pour la pastille finale ».
@@ -116,7 +120,9 @@ Le travail des sous-agents reste dans leur propre contexte, seuls leurs retours 
 Livrable final, dans cet ordre:
 - Quand une revue a eu lieu (systématiquement à la première génération), un court résumé "Ce que la revue a corrigé" (2 à 4 lignes) présentant les principaux ajustements, avant le reste. Lors d'ajustements ultérieurs sans revue, présente simplement la version ajustée sans ce résumé.
 - Le titre retenu, affiché en tête comme titre de la pastille. S'il diffère du titre canonique de la série, ajoute juste en dessous une ligne discrète, par exemple: Titre canonique de la série: "...". Dites-moi si vous préférez le conserver, je reviens dessus en un mot. S'il est identique au canonique, n'ajoute pas cette ligne.
-- Le texte de la pastille (3 à 4 paragraphes), dans sa version corrigée.
+- L'encadré "L'essentiel", puis le texte de la pastille (3 à 4 paragraphes de 45 à 60 mots) dans sa version corrigée, puis le bloc annexe s'il y en a un.
+- La légende du schéma, une phrase, et les deux textes alternatifs à renseigner à la diffusion: le titre exact pour l'illustration-titre, une phrase décrivant le schéma pour le second visuel.
+- La rubrique de la pastille et le temps de lecture estimé, à reporter dans le bandeau du gabarit de diffusion (voir la spec partagée, section « Gabarit de diffusion »).
 - Un bloc de code intitulé "Prompt images (à coller dans Gemini)", contenant le prompt unique prêt à copier.
 - Une courte section "Sources" listant 2 à 4 références principales issues de l'étape de recherche, de préférence officielles ou originales. Cette section sert à la vérification et n'a pas vocation à être publiée dans la pastille.
 

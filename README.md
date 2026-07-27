@@ -5,7 +5,7 @@ Outils multi-agents pour les **pastilles** pédagogiques internes sur les LLM: u
 - **`generate`**: crée une pastille à partir d'un titre. Lance de vrais sous-agents en parallèle (rédaction sous cinq angles, fusion, puis revue critique par trois relecteurs et correction).
 - **`refine`**: raffine une pastille déjà rédigée dont la conversation d'origine est perdue. On recolle le texte (et selon le cas le titre, le prompt image, les sources) plus la retouche voulue; le skill réhydrate le contexte et applique un diff minimal, sans relancer la génération complète.
 
-Les deux skills partagent **une seule source de vérité pour les normes de la série** (`plugins/pastille-ia/shared/regles-pastille.md`): liste des 45 pastilles et périmètre, Règles du texte et du titre, spec du prompt image, charte graphique, boite à outils de revue. Chaque skill n'y ajoute que son propre processus.
+Les deux skills partagent **une seule source de vérité pour les normes de la série** (`plugins/pastille-ia/shared/regles-pastille.md`): liste des 45 pastilles et périmètre, Règles du texte et du titre, spec du prompt image, charte graphique, gabarit de diffusion, boite à outils de revue. Le gabarit HTML de diffusion vit à côté, dans `plugins/pastille-ia/shared/template-pastille.html`. Chaque skill n'y ajoute que son propre processus.
 
 | Entrée | Invocation | Installation |
 | --- | --- | --- |
@@ -23,6 +23,7 @@ Les dossiers `.claude/skills/generate` et `.claude/skills/refine` sont des liens
 plugins/pastille-ia/
   .claude-plugin/plugin.json                                           # manifeste du plugin
   shared/regles-pastille.md                                            # LA source unique des normes (les 2 skills la lisent)
+  shared/template-pastille.html                                        # gabarit HTML de diffusion (a coller dans le client mail)
   skills/generate/
     SKILL.md                                                           # processus de création
     references -> ../../shared                                         # symlink -> ${CLAUDE_SKILL_DIR}/references/regles-pastille.md

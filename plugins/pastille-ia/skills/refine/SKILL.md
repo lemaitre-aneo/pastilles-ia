@@ -57,7 +57,7 @@ Seule exception: si l'utilisateur demande explicitement de ne pas rechercher, re
 ## Étape 3, appliquer le diff minimal
 - Applique uniquement ce qui est demandé et ce qui en découle nécessairement. Préserve tout le reste: n'en profite pas pour réécrire des passages non concernés.
 - Réécris en une seule voix cohérente, sans effet patchwork à la jointure de la retouche.
-- Respecte toutes les normes de la spec partagée (Règles du texte, Règles du titre, Règles d'écriture pour la pastille finale), y compris les contraintes dures: français, pas de tiret cadratin ni caractère non standard, aucun nom d'entreprise ni ANEO, prose sans listes.
+- Respecte toutes les normes de la spec partagée (Règles du texte, Règles du titre, Règles d'écriture pour la pastille finale), y compris les contraintes dures: français, pas de tiret cadratin ni caractère non standard, aucun nom d'entreprise ni ANEO, corps explicatif en prose sans listes ni puces. Les blocs structurés definis par la spec (encadre de synthese, bloc annexe) restent autorises et ne comptent pas comme des listes.
 - Titre: si la retouche implique le titre, applique les Règles du titre; garde le périmètre ancré sur le canonique. Sinon, laisse le titre retenu tel quel.
 
 ## Étape 4, re-synchronisation du prompt image (diff minimal)
@@ -67,7 +67,7 @@ Principe directeur: ne régénère jamais le prompt image gratuitement. Si la re
 - Prompt image fourni: pars de CE prompt et applique le plus petit changement nécessaire.
   - Titre retenu modifié: remplace le titre exact (la ligne du type `Le titre exact: "..."`) au caractère près, et rien d'autre.
   - Concept central déplacé par la retouche (l'illustration-titre ou le schéma ne colle plus au texte): ajuste la description de l'illustration (et/ou du schéma) en conservant la charte, le style et la structure du prompt fourni. Diff minimal, pas de réécriture complète.
-  - Besoin de schéma modifié par la retouche (le texte devient, ou cesse d'être, un vrai processus, flux ou comparaison): ajoute ou retire la seconde image en conséquence, selon les gabarits de la spec partagée.
+  - Le schéma est systématique: ne le retire jamais. Si la retouche déplace le mécanisme illustré, ajuste sa description selon les gabarits de la spec partagée. S'il manque au prompt fourni, ajoute-le.
   - Ni le titre rendu ni le concept illustré ne changent: laisse le prompt image entièrement inchangé. Le contexte caché "à ne pas afficher" n'affecte pas le rendu; ne le rafraîchis que si l'utilisateur le demande.
 
 ## Étape 5, revue critique (proposée, non imposée)
@@ -81,7 +81,7 @@ En l'absence de sous-agents, propose une relecture globale unique par l'orchestr
 N'affiche que le livrable, dans cet ordre:
 - Si une revue a eu lieu: un court résumé "Ce que la revue a corrigé" (2 à 4 lignes), avant le reste. Sinon, pas de résumé.
 - Le titre retenu, en tête. S'il diffère du titre canonique de la série, ajoute juste en dessous une ligne discrète, par exemple: Titre canonique de la série: "...". Dites-moi si vous préférez le conserver, je reviens dessus en un mot.
-- Le texte raffiné.
+- L'encadré "L'essentiel", puis le texte raffiné, puis le bloc annexe s'il y en a un. Si la pastille fournie n'en comportait pas, rédige-les: ils sont désormais requis par la spec.
 - Le prompt image seulement s'il a changé: un bloc de code intitulé "Prompt images (à coller dans Gemini)", prêt à copier. S'il n'a pas changé, écris une seule ligne: "Prompt images: inchangé (la retouche n'affecte pas le rendu)." S'il n'y a pas de prompt image et que rien n'en impose un, n'en parle pas.
 - Une section "Sources" listant les références du brief effectivement mobilisé, qu'il vienne des Sources fournies par l'utilisateur ou d'une recherche relancée (2 à 4, de préférence officielles). À omettre seulement si, exceptionnellement, aucune source n'a été mobilisée.
 
