@@ -1,6 +1,6 @@
 # Spec partagée des pastilles LLM
 
-Ce fichier est la source unique des normes de la série. Les skills `generate` (création) et `refine` (raffinement) le lisent tous deux via `${CLAUDE_SKILL_DIR}/references/regles-pastille.md`. Ne duplique pas ces règles dans un SKILL.md: modifie-les ici.
+Ce fichier est la source unique des normes de la série. Les skills `generate` (création), `refine` (raffinement) et `email` (mise en courriel) le lisent tous les trois via `${CLAUDE_SKILL_DIR}/references/regles-pastille.md`. Ne duplique pas ces règles dans un SKILL.md: modifie-les ici.
 
 Il contient: la liste des 45 pastilles et les consignes de périmètre, les Règles du texte, les Règles du titre, les Règles d'écriture pour la pastille finale, la spec du prompt de génération d'images (avec gabarits), la charte graphique, et la boite à outils de revue (grilles + gabarit de relecteur).
 
@@ -72,6 +72,7 @@ Le libellé du titre peut évoluer (voir Règles du titre), mais le périmètre 
 - Ne mentionne jamais ANEO ni aucun nom d'entreprise.
 - Le texte explicatif ne figure jamais dans l'image.
 - N'utilise pas de tiret cadratin. Privilégie des caractères standard (virgules, deux-points, parenthèses).
+- Typographie française: espace insécable avant `:` `;` `!` `?`, et apostrophe typographique (’) plutôt que droite. Le skill `email` l'applique automatiquement au courriel, corps HTML et version texte; pour un rendu en conversation, applique-la à la main.
 
 ## Règles du titre
 Le titre est généré comme le reste, mais sous contrainte forte, car il porte trois rôles: identité de la série, ancre de périmètre et texte exact rendu dans l'image.
@@ -125,24 +126,34 @@ Génère dans un premier temps seulement la première image (l'illustration-titr
 Style propre, moderne et professionnel, fond blanc. Palette: orange vif et bleu corporate foncé en dominantes, blanc et gris pour les respirations, accents multiculturels discrets (rouge, vert, jaune, bleu) reprenant subtilement un motif de couleurs de logo. Superpositions graphiques épurées: motifs géométriques abstraits, quartiers de cercle, lignes claires. Composition aérée, jamais surchargée. Typographie sans serif, propre et corporate.
 
 ## Gabarit de diffusion (mise en forme du courriel)
-La pastille est diffusée dans un gabarit HTML unique, réutilisable d'une semaine à l'autre. Le fichier de référence est `plugins/pastille-ia/shared/template-pastille.html`. Ce gabarit fait partie des normes de la série au même titre que le texte et les images: la mise en forme n'est pas laissée aux réglages par défaut du client de messagerie.
+La pastille est diffusée par courriel, dans une mise en forme qui fait partie des normes de la série au même titre que le texte et les images. Le skill `email` fabrique ce courriel: un `.msg` Outlook contenant le corps HTML et les deux visuels affichés dans le corps. Le fichier de référence `plugins/pastille-ia/shared/template-pastille.html` est produit par le même code, avec un contenu de remplacement: c'est la version à coller à la main si le `.msg` ne peut pas servir, et elle ne peut pas prendre de retard sur le générateur.
 
 Ordre des blocs, de haut en bas:
 1. Bandeau de série: numéro de la pastille sur 45, rubrique, temps de lecture. En texte, jamais en image.
-2. Illustration-titre, pleine largeur, 600 pixels, texte alternatif reprenant le titre exact.
-3. Encadré "L'essentiel", systématique.
-4. Paragraphes 1 et 2.
-5. Schéma, 560 pixels, suivi d'une légende d'une phrase.
+2. Illustration-titre, texte alternatif reprenant le titre exact.
+3. Encadré "L'essentiel", systématique, trois puces au maximum.
+4. Les paragraphes, sauf le dernier.
+5. Schéma, suivi d'une légende d'une phrase.
 6. Dernier paragraphe, consacré à l'enjeu.
 7. Bloc annexe facultatif, un seul: "À essayer" ou "Le piège".
 8. Mention de relecture IA, puis signature.
 
-Contraintes techniques:
-- Mise en page par tables et styles en ligne uniquement, largeur maximale 600 pixels, colonne unique. Une feuille de style ne survit pas au collage dans un client de messagerie, et le moteur de rendu d'Outlook pour Windows ne gère ni les grilles ni les boîtes flexibles.
-- Images fluides: attribut width, plus une largeur en pourcentage et une hauteur automatique. Une largeur en dur déborde sur téléphone.
-- Chaque image porte un texte alternatif renseigné.
+Sujet du courriel: `[Prefixe] #NN : Titre retenu`, par exemple `[Pastille IA de l'été] #13 : L'IA repart de zéro à chaque session : on lui rappelle tout`. Le préfixe suit la saison de diffusion. Un titre qui contient déjà un deux-points en produit deux dans le sujet, c'est accepté. Le sujet reste en espaces ordinaires, sans insécables: la recherche des messageries les gère mal.
+
+Contraintes de mise en page:
+- Tables et styles en ligne uniquement, colonne unique. Une feuille de style ne survit pas au collage dans un client de messagerie, et le moteur de rendu d'Outlook pour Windows ne gère ni les grilles ni les boîtes flexibles.
+- Largeur fluide, jamais imposée: la colonne suit la fenêtre. Elle est seulement plafonnée, à 1000 pixels, pour que la mesure du texte reste lisible sur un écran large. Word ignorant `max-width`, le plafond lui est donné en plus par un commentaire conditionnel `[if mso]`.
+- Images à taille fixe, 600 pixels pour l'illustration-titre et 560 pour le schéma, hauteur automatique: elles ne sont jamais étirées au delà de leur taille nominale et se réduisent seulement si la fenêtre passe en dessous. Chaque image porte un texte alternatif renseigné.
 - Texte justifié, conformément au choix éditorial de la série. Le HTML de courriel ne gérant pas la césure, la justification étire les espaces entre les mots; c'est la contrainte de taille des paragraphes qui compense, puisque la dernière ligne d'un paragraphe n'est jamais étirée.
 - Corps de texte à 16 pixels, interligne 26 pixels.
+
+Contraintes imposées par le moteur de rendu de Word. Ce sont des corrections de défauts constatés, pas des préférences: chacune a produit un rendu faux dans Outlook avant d'être ajoutée.
+- Aucune couleur de texte portée par un `<td>`: Word ne l'hérite pas vers le texte, il applique celle du thème de rédaction. La couleur est déclarée sur l'élément qui porte réellement le texte.
+- `color` déclaré avant `font-family` dans chaque style. Un nom de police entre apostrophes casse l'analyse CSS de Word, qui abandonne la fin de la déclaration; ce qui compte doit être passé avant ce point de rupture.
+- Aucun nom de police entre apostrophes, pour la même raison.
+- Mise en forme doublée en balises présentationnelles (`<font color face>`, `<b>`, `<i>`), que Word applique sans passer par le CSS.
+- Corps HTML en entités ASCII, pour ne dépendre d'aucune détection d'encodage côté client.
+- Images en ligne référencées par `cid:`, marquées `ATT_MHTML_REF`, masquées de la liste des pièces jointes.
 
 Rubriques affichées dans le bandeau, une par pastille:
 - Comprendre: pastilles 1 à 9

@@ -5,10 +5,10 @@ description: Variante Claude Code du générateur de pastilles LLM, qui lance r�
 # Générateur de pastilles LLM, version multi-agents (Claude Code)
 
 ## Ce que fait ce skill
-Produit une pastille pédagogique complète à partir d'un titre. À la différence de la version chat, il lance de vrais sous-agents parallèles: une passe de recherche, puis cinq sous-agents indépendants qui rédigent chacun un brouillon (titre compris) sous un angle différent, puis une fusion par l'orchestrateur qui retient les meilleures formulations (titre compris), et enfin une revue critique par trois sous-agents suivie d'une correction. Livrable: le titre, le texte de la pastille et un prompt unique de génération d'images à coller dans le chat Gemini.
+Produit une pastille pédagogique complète à partir d'un titre. À la différence de la version chat, il lance de vrais sous-agents parallèles: une passe de recherche, puis cinq sous-agents indépendants qui rédigent chacun un brouillon (titre compris) sous un angle différent, puis une fusion par l'orchestrateur qui retient les meilleures formulations (titre compris), et enfin une revue critique par trois sous-agents suivie d'une correction. Livrable: le titre, le texte de la pastille et un prompt unique de génération d'images à coller dans le chat Gemini. Ensuite, une fois les deux visuels générés et collés dans la conversation, le skill `email` fabrique le courriel de diffusion; ce skill ne s'en occupe pas.
 
 ## Spec partagée (à lire en premier)
-Les normes de la série vivent dans un fichier partagé, source unique commune à ce skill et au skill `refine`: liste des 45 pastilles et périmètre, Règles du texte, Règles du titre, Règles d'écriture pour la pastille finale, spec du prompt image et gabarits, charte graphique, boite à outils de revue. Lis-le avant de commencer:
+Les normes de la série vivent dans un fichier partagé, source unique commune à ce skill et aux skills `refine` et `email`: liste des 45 pastilles et périmètre, Règles du texte, Règles du titre, Règles d'écriture pour la pastille finale, spec du prompt image et gabarits, charte graphique, boite à outils de revue. Lis-le avant de commencer:
 
 `${CLAUDE_SKILL_DIR}/references/regles-pastille.md` (c'est le fichier `references/regles-pastille.md` situé dans le dossier de ce skill).
 

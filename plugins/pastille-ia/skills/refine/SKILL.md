@@ -7,10 +7,12 @@ description: Raffine (itérativement) une pastille LLM déjà rédigée quand la
 ## Ce que fait ce skill
 Fait évoluer une pastille déjà produite, à partir des artefacts que l'utilisateur recolle (au minimum le texte), sans repasser par la génération complète. Il réhydrate le contexte à partir des normes de la série, classe la retouche demandée, applique un diff minimal en une seule voix, re-synchronise le prompt image au strict nécessaire, et propose (sans l'imposer) la revue critique à trois relecteurs.
 
+Après une retouche, si la pastille a déjà été mise en courriel, le skill `email` régénère le `.msg` sans rien relancer d'autre.
+
 Frontière avec `generate`: `generate` crée une pastille à partir d'un titre (recherche, cinq brouillons, fusion, revue). `refine` part d'une pastille existante fournie et ne fait que la retoucher. Si l'utilisateur n'a pas de texte existant et veut une nouvelle pastille, bascule sur `generate`.
 
 ## Spec partagée (à lire en premier)
-Les normes de la série vivent dans un fichier partagé, source unique commune à ce skill et au skill `generate`: liste des 45 pastilles et périmètre, Règles du texte, Règles du titre, Règles d'écriture pour la pastille finale, spec du prompt image et gabarits, charte graphique, boite à outils de revue. Lis-le avant de commencer:
+Les normes de la série vivent dans un fichier partagé, source unique commune à ce skill et aux skills `generate` et `email`: liste des 45 pastilles et périmètre, Règles du texte, Règles du titre, Règles d'écriture pour la pastille finale, spec du prompt image et gabarits, charte graphique, boite à outils de revue. Lis-le avant de commencer:
 
 `${CLAUDE_SKILL_DIR}/references/regles-pastille.md` (c'est le fichier `references/regles-pastille.md` situé dans le dossier de ce skill).
 

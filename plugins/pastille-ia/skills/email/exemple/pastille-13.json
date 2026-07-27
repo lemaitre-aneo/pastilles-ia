@@ -1,0 +1,30 @@
+{
+  "_lisez_moi": "Fiche réelle de la pastille 13, à copier comme point de départ. Les deux images ne sont pas versionnées: faites pointer image_titre et image_schema sur vos fichiers. Les emphases sont en markdown, la typographie française est appliquée par le script: pas d'espaces insécables ni d'apostrophes typographiques à saisir ici.",
+  "numero": 13,
+  "total": 45,
+  "rubrique": "Comprendre",
+  "temps_lecture": "2 min",
+  "titre": "L'IA repart de zéro à chaque session : on lui rappelle tout",
+  "prefixe_sujet": "[Pastille IA de l'été]",
+  "essentiel": [
+    "Un modèle n'a pas de mémoire interne : rien ne subsiste d'un échange au suivant.",
+    "La continuité vient du rejeu de l'historique et de notes réinjectées par l'application.",
+    "Une note externe ne vaut que si on la relit et qu'on la nettoie."
+  ],
+  "paragraphes": [
+    "Imaginez un consultant brillant, mais amnésique: à chaque réunion il arrive les mains vides, et commence par relire le carnet posé sur la table. Un modèle de langage fonctionne exactement ainsi. Il est **sans état**: il lit tout ce qu'on lui donne, produit sa réponse, puis ne conserve rien.",
+    "S'il semble suivre la conversation, c'est que l'application lui **rejoue tout l'historique** à chaque tour: vous tapez une phrase, et c'est l'échange complet qui repart, parfois résumé. Un cache accélère le calcul, il ne retient rien. Le modèle, lui, ne change pas d'un iota: s'adapter à un exemple posé dans le prompt, ce n'est pas apprendre.",
+    "Et la fameuse **mémoire** des assistants? C'est une couche externe, pas une faculté du modèle: quelques faits courts et des résumés de vos échanges, stockés à part. L'application les *réinjecte* en tête de conversation, comme une note glissée dans le carnet avant la réunion; ces notes se consultent, se corrigent, se désactivent.",
+    "Nouvelle conversation, page blanche ou presque: ce qui n'est pas réinjecté n'existe pas. Tout ce qui doit survivre à la session, décisions, contraintes et contexte du dossier, s'**écrit quelque part**. Et relisez ce que la mémoire a retenu, car un fait périmé se traîne d'une session à l'autre: *le carnet, c'est vous qui le tenez*."
+  ],
+  "schema_apres": 3,
+  "legende_schema": "À chaque tour, l'application rassemble votre message, l'historique et les notes de mémoire, puis remet le tout au modèle, qui n'en garde rien après avoir répondu.",
+  "alt_schema": "Schéma montrant votre message, l'historique rejoué et les notes de mémoire externes rassemblés puis transmis à un modèle sans état, qui répond sans rien conserver",
+  "annexe": {
+    "etiquette": "À essayer",
+    "style": "essayer",
+    "texte": "Avant de refermer une session utile, demandez un récapitulatif court des décisions et des contraintes, puis collez-le en tête de la prochaine conversation ou dans les consignes du projet. C'est la mémoire dont vous maîtrisez chaque mot."
+  },
+  "image_titre": "illustration-titre.png",
+  "image_schema": "schema.png"
+}
