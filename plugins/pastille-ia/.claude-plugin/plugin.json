@@ -1,7 +1,7 @@
 {
   "name": "pastille-ia",
-  "description": "Générateur multi-agents de pastilles pédagogiques internes sur les LLM: texte court en français + prompt image unique à coller dans Gemini.",
-  "version": "1.0.0",
+  "description": "Pastilles pédagogiques internes sur les LLM: rédaction multi-agents, raffinement, revue critique à trois relecteurs, et fabrication du courriel de diffusion (.msg Outlook).",
+  "version": "1.2.0",
   "author": {
     "name": "Florian Lemaitre",
     "email": "flemaitre@aneo.fr"

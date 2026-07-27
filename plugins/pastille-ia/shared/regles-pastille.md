@@ -1,6 +1,6 @@
 # Spec partagée des pastilles LLM
 
-Ce fichier est la source unique des normes de la série. Les skills `generate` (création) et `refine` (raffinement) le lisent tous deux via `${CLAUDE_SKILL_DIR}/references/regles-pastille.md`. Ne duplique pas ces règles dans un SKILL.md: modifie-les ici.
+Ce fichier est la source unique des normes de la série. Les skills `generate` (création), `refine` (raffinement), `review` (revue critique) et `email` (mise en courriel) le lisent tous les quatre via `${CLAUDE_SKILL_DIR}/references/regles-pastille.md`. Ne duplique pas ces règles dans un SKILL.md: modifie-les ici.
 
 Il contient: la liste des 45 pastilles et les consignes de périmètre, les Règles du texte, les Règles du titre, les Règles d'écriture pour la pastille finale, la spec du prompt de génération d'images (avec gabarits), la charte graphique, et la boite à outils de revue (grilles + gabarit de relecteur).
 
@@ -51,6 +51,8 @@ Il contient: la liste des 45 pastilles et les consignes de périmètre, les Règ
 44. Prompt Injection : quand on pirate une IA avec de simples phrases
 45. La Chaîne de Pensée : pourquoi l'IA a besoin de "réfléchir à voix haute"
 
+Cette liste est un inventaire de sujets, pas un ordre de diffusion. Ses positions servent au périmètre et à la continuité; elles ne sont pas le numéro affiché dans le bandeau du courriel, qui suit l'ordre de publication décidé par l'utilisateur (voir « Numéro et rubrique »).
+
 Sers-toi de cette liste pour situer la pastille et délimiter son périmètre. Avant de rédiger:
 - Repère les 1 à 3 pastilles voisines qui recouvrent le sujet, et dresse une courte liste "déjà traité ailleurs, à ne pas ré-expliquer".
 - Si une pastille voisine a déjà été produite, demande son texte à l'utilisateur (ou appuie-toi dessus s'il est fourni) pour caler précisément la limite.
@@ -72,6 +74,7 @@ Le libellé du titre peut évoluer (voir Règles du titre), mais le périmètre 
 - Ne mentionne jamais ANEO ni aucun nom d'entreprise.
 - Le texte explicatif ne figure jamais dans l'image.
 - N'utilise pas de tiret cadratin. Privilégie des caractères standard (virgules, deux-points, parenthèses).
+- Typographie française: espace insécable avant `:` `;` `!` `?`, et apostrophe typographique (’) plutôt que droite. Le skill `email` l'applique automatiquement au courriel, corps HTML et version texte; pour un rendu en conversation, applique-la à la main.
 
 ## Règles du titre
 Le titre est généré comme le reste, mais sous contrainte forte, car il porte trois rôles: identité de la série, ancre de périmètre et texte exact rendu dans l'image.
@@ -110,6 +113,8 @@ Contenu du bloc:
 - Chaque image est accompagnée, dans le livrable, du texte alternatif à renseigner à la diffusion: le titre exact pour l'illustration-titre, une phrase décrivant ce que montre le schéma pour le second visuel.
 - Libellés de schéma: des groupes nominaux courts et lisibles seuls (par exemple "Exemples de bonnes réponses"), pas des phrases verbales qui sonnent comme des ordres ("Montrer de bonnes réponses"). Quelques mots par libellé.
 
+Cohérence entre le texte et les visuels: le titre rendu dans l'illustration est toujours le titre retenu, et le schéma illustre toujours le mécanisme du texte courant. Les visuels sont des artefacts déjà rendus, ils ne suivent pas les retouches: dès que le titre change, ou que le mécanisme exposé dans les premiers paragraphes bouge, les images existantes sont périmées et doivent être régénérées avant la diffusion. Un skill qui ne peut pas lire les images ne peut pas le constater seul: il demande confirmation.
+
 Attention aux titres longs: Nano Banana rend fiablement les libellés courts mais peut faire une faute sur un titre long; la technique en deux temps limite le risque. Si le rendu d'un titre long reste incertain, indique à l'utilisateur qu'il peut demander à Gemini d'utiliser Nano Banana Pro, plus fiable pour le texte long.
 
 Gabarit unique, illustration-titre plus schéma (deux images):
@@ -125,35 +130,51 @@ Génère dans un premier temps seulement la première image (l'illustration-titr
 Style propre, moderne et professionnel, fond blanc. Palette: orange vif et bleu corporate foncé en dominantes, blanc et gris pour les respirations, accents multiculturels discrets (rouge, vert, jaune, bleu) reprenant subtilement un motif de couleurs de logo. Superpositions graphiques épurées: motifs géométriques abstraits, quartiers de cercle, lignes claires. Composition aérée, jamais surchargée. Typographie sans serif, propre et corporate.
 
 ## Gabarit de diffusion (mise en forme du courriel)
-La pastille est diffusée dans un gabarit HTML unique, réutilisable d'une semaine à l'autre. Le fichier de référence est `plugins/pastille-ia/shared/template-pastille.html`. Ce gabarit fait partie des normes de la série au même titre que le texte et les images: la mise en forme n'est pas laissée aux réglages par défaut du client de messagerie.
+La pastille est diffusée par courriel, dans une mise en forme qui fait partie des normes de la série au même titre que le texte et les images. Le skill `email` fabrique ce courriel: un `.msg` Outlook contenant le corps HTML et les deux visuels affichés dans le corps. Le fichier de référence `plugins/pastille-ia/shared/template-pastille.html` est produit par le même code, avec un contenu de remplacement: c'est la version à coller à la main si le `.msg` ne peut pas servir, et elle ne peut pas prendre de retard sur le générateur.
 
 Ordre des blocs, de haut en bas:
 1. Bandeau de série: numéro de la pastille sur 45, rubrique, temps de lecture. En texte, jamais en image.
-2. Illustration-titre, pleine largeur, 600 pixels, texte alternatif reprenant le titre exact.
-3. Encadré "L'essentiel", systématique.
-4. Paragraphes 1 et 2.
-5. Schéma, 560 pixels, suivi d'une légende d'une phrase.
+2. Illustration-titre, texte alternatif reprenant le titre exact.
+3. Encadré "L'essentiel", systématique, trois puces au maximum.
+4. Les paragraphes, sauf le dernier.
+5. Schéma, suivi d'une légende d'une phrase.
 6. Dernier paragraphe, consacré à l'enjeu.
 7. Bloc annexe facultatif, un seul: "À essayer" ou "Le piège".
 8. Mention de relecture IA, puis signature.
 
-Contraintes techniques:
-- Mise en page par tables et styles en ligne uniquement, largeur maximale 600 pixels, colonne unique. Une feuille de style ne survit pas au collage dans un client de messagerie, et le moteur de rendu d'Outlook pour Windows ne gère ni les grilles ni les boîtes flexibles.
-- Images fluides: attribut width, plus une largeur en pourcentage et une hauteur automatique. Une largeur en dur déborde sur téléphone.
-- Chaque image porte un texte alternatif renseigné.
+Sujet du courriel: `[Prefixe] #NN : Titre retenu`, par exemple `[Pastille IA de l'été] #4 : Les tokens : la monnaie d'échange (et la manière de penser) des LLM`. Le préfixe suit la saison de diffusion. Un titre qui contient déjà un deux-points en produit deux dans le sujet, c'est accepté. Le sujet reste en espaces ordinaires, sans insécables: la recherche des messageries les gère mal.
+
+Contraintes de mise en page:
+- Tables et styles en ligne uniquement, colonne unique. Une feuille de style ne survit pas au collage dans un client de messagerie, et le moteur de rendu d'Outlook pour Windows ne gère ni les grilles ni les boîtes flexibles.
+- Largeur fluide, jamais imposée: la colonne suit la fenêtre. Elle est seulement plafonnée, à 1000 pixels, pour que la mesure du texte reste lisible sur un écran large. Word ignorant `max-width`, le plafond lui est donné en plus par un commentaire conditionnel `[if mso]`.
+- Images à taille fixe, 600 pixels pour l'illustration-titre et 560 pour le schéma, hauteur automatique: elles ne sont jamais étirées au delà de leur taille nominale et se réduisent seulement si la fenêtre passe en dessous. Chaque image porte un texte alternatif renseigné.
 - Texte justifié, conformément au choix éditorial de la série. Le HTML de courriel ne gérant pas la césure, la justification étire les espaces entre les mots; c'est la contrainte de taille des paragraphes qui compense, puisque la dernière ligne d'un paragraphe n'est jamais étirée.
 - Corps de texte à 16 pixels, interligne 26 pixels.
 
-Rubriques affichées dans le bandeau, une par pastille:
-- Comprendre: pastilles 1 à 9
-- Limites: pastilles 10 à 14
-- Prompting: pastilles 16 à 22
-- Au travail: pastilles 23 à 29
-- Agents et outils: pastilles 30 à 38
-- Risques et cadre: pastilles 15, puis 39 à 45
+Contraintes imposées par le moteur de rendu de Word. Ce sont des corrections de défauts constatés, pas des préférences: chacune a produit un rendu faux dans Outlook avant d'être ajoutée.
+- Aucune couleur de texte portée par un `<td>`: Word ne l'hérite pas vers le texte, il applique celle du thème de rédaction. La couleur est déclarée sur l'élément qui porte réellement le texte.
+- `color` déclaré avant `font-family` dans chaque style. Un nom de police entre apostrophes casse l'analyse CSS de Word, qui abandonne la fin de la déclaration; ce qui compte doit être passé avant ce point de rupture.
+- Aucun nom de police entre apostrophes, pour la même raison.
+- Mise en forme doublée en balises présentationnelles (`<font color face>`, `<b>`, `<i>`), que Word applique sans passer par le CSS.
+- Corps HTML en entités ASCII, pour ne dépendre d'aucune détection d'encodage côté client.
+- Images en ligne référencées par `cid:`, marquées `ATT_MHTML_REF`, masquées de la liste des pièces jointes.
+
+### Numéro et rubrique
+Le numéro affiché dans le bandeau est le numéro de diffusion, et **c'est l'utilisateur qui le donne**. La position du sujet dans la liste des 45 n'en est pas la source de vérité: l'ordre de publication n'a aucune raison de suivre l'ordre de l'inventaire. Si l'utilisateur fournit un numéro, il prévaut, sans discussion et même s'il contredit la liste. S'il n'en fournit pas, propose la position du sujet dans la liste et demande confirmation avant de fabriquer le courriel; ne la retiens jamais en silence.
+
+La rubrique, elle, suit le sujet et non le numéro de diffusion: elle se lit sur la position du sujet dans la liste des 45. Une pastille diffusée en treizième position mais inventoriée en cinquième porte donc la rubrique du groupe « Comprendre », pas celle du groupe « Limites ».
+
+- Comprendre: positions 1 à 9 de la liste
+- Limites: positions 10 à 14
+- Prompting: positions 16 à 22
+- Au travail: positions 23 à 29
+- Agents et outils: positions 30 à 38
+- Risques et cadre: position 15, puis 39 à 45
 
 ## Boite à outils de revue (grilles + gabarit de relecteur)
-Ces grilles et ce gabarit servent la revue critique, en génération comme en raffinement. Principe: les relecteurs produisent des CONSTATS, jamais une réécriture. Chacun renvoie une liste de problèmes localisés, assortis d'une gravité et d'un correctif précis. C'est l'orchestrateur qui applique et réécrit, pour garder une voix unique et éviter l'effet patchwork.
+Ces grilles et ce gabarit sont les normes de la revue critique. Le processus, lui, est porté par le skill `review`: c'est lui qui lance les relecteurs et consolide leurs constats, qu'il soit invoqué directement par un humain ou par `generate` et `refine` au moment de leur revue. Ces deux skills ne conduisent pas la revue eux-mêmes, ils la déclenchent puis appliquent ce qu'elle rend.
+
+Principe: les relecteurs produisent des CONSTATS, jamais une réécriture. Chacun renvoie une liste de problèmes localisés, assortis d'une gravité et d'un correctif précis. C'est le skill appelant qui applique et réécrit, pour garder une voix unique et éviter l'effet patchwork.
 
 Ce que la revue peut juger: les relecteurs ne voient pas les images, générées plus tard dans Gemini. La revue du visuel porte donc uniquement sur le PROMPT image (clarté, cohérence avec le texte, respect des consignes), jamais sur un rendu. Le contrôle visuel réel reste à l'utilisateur.
 
@@ -161,6 +182,17 @@ Les trois grilles (une par relecteur):
 1. Fond, exactitude et périmètre: exactitude vs le brief (aucun chiffre, date ou fait inventé ni sur-affirmé, rien qui le contredise), cohérence entre le titre retenu et ce que le texte délivre (le titre tient-il sa promesse, sans sur-promesse ni clickbait ?), maintien du titre retenu dans le périmètre canonique (il ne doit ni élargir ni déplacer le sujet défini par le titre canonique, ni empiéter sur une voisine), chevauchements avec les pastilles voisines (le texte ré-explique-t-il ce qui est traité ailleurs ? redites à signaler), autonomie du contenu, clarté du message à retenir, repérage de ce qui vieillira mal (à nuancer).
 2. Forme, ton et pédagogie: ton décontracté-précis-léger et techniquement juste, absence de name-dropping, rythme et fluidité à la lecture à voix haute, longueur adaptée à la profondeur (3 à 4 paragraphes de 45 à 60 mots chacun, corps en prose sans listes, dernier paragraphe consacré à l'enjeu; signale tout paragraphe qui dépasse 60 mots et propose où le couper) et chasse au verbiage, accessibilité pour un profil non technique (jargon expliqué, analogies claires), sobriété des emphases (gras/italique), une à deux par paragraphe au maximum: signale tout excès, ne réclame jamais d'emphase supplémentaire, le message clé étant porté par l'encadré de synthèse; qualité de cet encadré (deux à trois puces d'une ligne au maximum, il dénoue le titre au lieu de le reformuler, et il ne peut pas se substituer à l'article), force de l'accroche et qualité du titre retenu (accroche et punch, respect du style de la série, longueur raisonnable, pas de name-dropping dans le titre; un titre qui s'écarte du canonique n'est pas un défaut en soi, ne réclame le retour au canonique que si le titre retenu est plus faible).
 3. Conformité et visuel: contraintes dures (aucun tiret cadratin ni caractère non standard, aucun nom d'entreprise ni ANEO, français correct, corps explicatif en prose sans listes ni puces), y compris dans le titre retenu; blocs structurés conformes (encadré de synthèse présent et plafonné à trois puces d'une ligne, un seul bloc annexe au maximum); puis le prompt image: titre retenu reproduit au caractère près (et non le titre canonique s'ils diffèrent), longueur du titre compatible avec un rendu image fiable (sinon suggérer Nano Banana Pro), charte présente une seule fois, texte de la pastille bien marqué "à ne pas afficher", illustration-titre iconique et non schéma de processus, schéma présent (il est systématique) et généré en 2e image séparée, schéma qui illustre le mécanisme du corps et non la conclusion, format 4:3 et cinq blocs au maximum, libellés de schéma courts (groupes nominaux) et en français, textes alternatifs fournis pour les deux images, cohérence entre le visuel décrit et le coeur du texte.
+
+### Arbitrage des constats
+Une fois les trois relecteurs revenus, leurs constats sont consolidés avant d'être appliqués. Ces règles valent partout, quel que soit le skill qui a déclenché la revue:
+- Dédoublonner: un même défaut vu par deux grilles ne compte qu'une fois, en retenant le correctif le plus précis.
+- Arbitrer les contradictions plutôt que de les empiler. Quand deux relecteurs s'opposent, tranche et dis-le, au lieu d'appliquer les deux.
+- Garde-fou anti-gonflement: entre "ajouter" et "raccourcir", la concision l'emporte, sauf erreur de fond avérée.
+- Appliquer les constats bloquants et recommandés, écarter ou mentionner les mineurs.
+- Un constat qui contredit une norme de cette spec est écarté, en le disant: la spec fait foi, pas le relecteur.
+- Le titre retenu est corrigé au même titre que le texte.
+- Une seule passe, jamais de boucle. On ne relance pas une revue sur le texte corrigé.
+- La réécriture se fait en une seule voix, par le skill appelant, jamais par recollage des formulations des relecteurs.
 
 Gabarit de relecteur (remplace les crochets):
 ```

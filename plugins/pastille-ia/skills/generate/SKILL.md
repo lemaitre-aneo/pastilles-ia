@@ -1,14 +1,14 @@
 ---
-description: Variante Claude Code du générateur de pastilles LLM, qui lance réellement plusieurs sous-agents en parallèle. Génère une pastille de communication interne sur les LLM (un titre, un texte court en français, plus un prompt unique de génération d'images à coller dans le chat Gemini), via cinq sous-agents indépendants qui proposent chacun aussi un titre, une fusion, puis une revue critique par trois sous-agents et une correction. Utilise ce skill dès qu'on te demande de rédiger, produire ou générer une pastille, une fiche ou un contenu court d'acculturation sur les LLM, l'IA générative, le prompting, les agents, le RAG, la confidentialité IA ou tout sujet de la liste des 45 pastilles ci-dessous, que le mot "pastille" soit employé ou non. Utilise-le aussi dès qu'on te fournit un titre issu de cette liste. Pour retoucher une pastille déjà rédigée (texte fourni), utilise plutôt le skill refine.
+description: Variante Claude Code du générateur de pastilles LLM, qui lance réellement plusieurs sous-agents en parallèle. Génère une pastille de communication interne sur les LLM (un titre, un texte court en français, plus un prompt unique de génération d'images à coller dans le chat Gemini), via cinq sous-agents indépendants qui proposent chacun aussi un titre, une fusion, puis une revue critique déléguée au skill `review` et une correction. Utilise ce skill dès qu'on te demande de rédiger, produire ou générer une pastille, une fiche ou un contenu court d'acculturation sur les LLM, l'IA générative, le prompting, les agents, le RAG, la confidentialité IA ou tout sujet de la liste des 45 pastilles ci-dessous, que le mot "pastille" soit employé ou non. Utilise-le aussi dès qu'on te fournit un titre issu de cette liste. Pour retoucher une pastille déjà rédigée (texte fourni), utilise plutôt le skill refine.
 ---
 
 # Générateur de pastilles LLM, version multi-agents (Claude Code)
 
 ## Ce que fait ce skill
-Produit une pastille pédagogique complète à partir d'un titre. À la différence de la version chat, il lance de vrais sous-agents parallèles: une passe de recherche, puis cinq sous-agents indépendants qui rédigent chacun un brouillon (titre compris) sous un angle différent, puis une fusion par l'orchestrateur qui retient les meilleures formulations (titre compris), et enfin une revue critique par trois sous-agents suivie d'une correction. Livrable: le titre, le texte de la pastille et un prompt unique de génération d'images à coller dans le chat Gemini.
+Produit une pastille pédagogique complète à partir d'un titre. À la différence de la version chat, il lance de vrais sous-agents parallèles: une passe de recherche, puis cinq sous-agents indépendants qui rédigent chacun un brouillon (titre compris) sous un angle différent, puis une fusion par l'orchestrateur qui retient les meilleures formulations (titre compris), et enfin une revue critique déléguée au skill `review` suivie d'une correction. Livrable: le titre, le texte de la pastille et un prompt unique de génération d'images à coller dans le chat Gemini. Ensuite, une fois les deux visuels générés et collés dans la conversation, le skill `email` fabrique le courriel de diffusion; ce skill ne s'en occupe pas.
 
 ## Spec partagée (à lire en premier)
-Les normes de la série vivent dans un fichier partagé, source unique commune à ce skill et au skill `refine`: liste des 45 pastilles et périmètre, Règles du texte, Règles du titre, Règles d'écriture pour la pastille finale, spec du prompt image et gabarits, charte graphique, boite à outils de revue. Lis-le avant de commencer:
+Les normes de la série vivent dans un fichier partagé, source unique commune à ce skill et aux skills `refine`, `review` et `email`: liste des 45 pastilles et périmètre, Règles du texte, Règles du titre, Règles d'écriture pour la pastille finale, spec du prompt image et gabarits, charte graphique, boite à outils de revue. Lis-le avant de commencer:
 
 `${CLAUDE_SKILL_DIR}/references/regles-pastille.md` (c'est le fichier `references/regles-pastille.md` situé dans le dossier de ce skill).
 
@@ -97,21 +97,19 @@ Attends les cinq retours, puis fusionne en une seule pastille finale:
 
 Règles d'écriture pour la pastille finale: voir la spec partagée, section « Règles d'écriture pour la pastille finale ».
 
-### Étape 5, revue critique et correction (trois sous-agents en parallèle, puis orchestrateur)
-Quand la lancer: systématiquement à la première génération, une fois le texte fusionné et le prompt image construits. Ensuite, si l'utilisateur demande des ajustements, ne relance pas la revue d'office: propose-la, et ne la lance qu'avec son accord (elle coûte trois sous-agents de plus).
+### Étape 5, revue critique (déléguée au skill `review`) et correction
+Tu ne conduis pas la revue toi-même: invoque le skill `review` via l'outil Skill, et passe-lui le dossier complet, à savoir le titre canonique et le titre retenu, le texte fusionné, le bloc prompt image, le brief de recherche de l'étape 1, la liste "déjà traité ailleurs" et les textes voisins s'ils sont disponibles. Précise que tu l'appelles depuis `generate`: dans ce mode, il rend la liste consolidée des constats et n'affiche pas de rapport.
 
-Le principe (les relecteurs rendent des constats, jamais une réécriture), ce que la revue peut juger (pas de rendu d'image, seulement le prompt image), les trois grilles et le gabarit de relecteur sont dans la spec partagée, section « Boite à outils de revue ». Applique-les tels quels.
+Quand la déclencher: systématiquement à la première génération, une fois le texte fusionné et le prompt image construits. Ensuite, si l'utilisateur demande des ajustements, ne la relance pas d'office: propose-la, et ne la déclenche qu'avec son accord (elle coûte trois sous-agents de plus).
 
-Lance trois sous-agents en parallèle (parallélisme explicite, sinon l'exécution sera séquentielle), un par grille. Le contexte n'étant pas hérité, chaque prompt doit être autonome et contenir tout le nécessaire: le titre canonique et le titre retenu, le texte fusionné, le bloc prompt image, le brief de recherche, la liste "déjà traité ailleurs" (et les textes des pastilles voisines s'ils sont disponibles), et la liste des 45 titres pour repérer les chevauchements.
-
-Fan-in et correction (orchestrateur): rassemble les constats, dédoublonne, arbitre les conseils contradictoires. Garde-fou anti-gonflement: entre "ajouter" et "raccourcir", la concision l'emporte, sauf erreur de fond avérée. Applique les constats bloquants et recommandés, écarte ou mentionne les mineurs. Le titre retenu est corrigé au même titre que le texte. Une seule passe, pas de boucle. Réécris la version corrigée en une seule voix, puis prépare le court résumé "Ce que la revue a corrigé" (voir Format de sortie).
+Correction (toi, orchestrateur): la revue rend des constats déjà dédoublonnés et arbitrés, à toi de les appliquer. Réécris la version corrigée en une seule voix, jamais par recollage des formulations des relecteurs, puis prépare le court résumé "Ce que la revue a corrigé" (voir Format de sortie). Les règles d'arbitrage sont dans la spec partagée, section « Arbitrage des constats »: si un constat contredit une norme de la spec, écarte-le en le disant.
 
 ### Points de vigilance Claude Code
 - Parallélisme explicite: demande clairement cinq sous-agents en parallèle, sinon l'exécution sera séquentielle.
 - Contexte non hérité: mets tout dans le prompt du sous-agent, en particulier le brief de recherche.
 - Pas d'imbrication: un sous-agent ne peut pas en lancer un autre, garde recherche et fusion chez l'orchestrateur.
 - Coût et limites: cinq sous-agents en parallèle multiplient l'usage de jetons et peuvent déclencher des limites de débit. En cas de limite, replie-toi sur une exécution séquentielle.
-- Revue: la phase de revue ajoute trois sous-agents. Elle tourne d'office à la première génération; sur les demandes d'ajustement ultérieures, propose-la et ne la lance qu'avec l'accord de l'utilisateur. En cas de limite de débit, exécute les relecteurs en séquentiel ou replie-toi sur un relecteur global unique.
+- Revue: elle est portée par le skill `review`, qui ajoute trois sous-agents. Elle est déclenchée d'office à la première génération; sur les demandes d'ajustement ultérieures, propose-la et ne la déclenche qu'avec l'accord de l'utilisateur. Les replis (séquentiel, relecteur global unique) sont gérés par `review`, pas ici.
 - Réemploi optionnel: tu peux définir les cinq angles comme sous-agents personnalisés dans .claude/agents/ pour les réutiliser, mais ce n'est pas obligatoire, les sous-agents polyvalents suffisent.
 
 ## Format de sortie
@@ -122,7 +120,7 @@ Livrable final, dans cet ordre:
 - Le titre retenu, affiché en tête comme titre de la pastille. S'il diffère du titre canonique de la série, ajoute juste en dessous une ligne discrète, par exemple: Titre canonique de la série: "...". Dites-moi si vous préférez le conserver, je reviens dessus en un mot. S'il est identique au canonique, n'ajoute pas cette ligne.
 - L'encadré "L'essentiel", puis le texte de la pastille (3 à 4 paragraphes de 45 à 60 mots) dans sa version corrigée, puis le bloc annexe s'il y en a un.
 - La légende du schéma, une phrase, et les deux textes alternatifs à renseigner à la diffusion: le titre exact pour l'illustration-titre, une phrase décrivant le schéma pour le second visuel.
-- La rubrique de la pastille et le temps de lecture estimé, à reporter dans le bandeau du gabarit de diffusion (voir la spec partagée, section « Gabarit de diffusion »).
+- La rubrique de la pastille et le temps de lecture estimé, à reporter dans le bandeau du gabarit de diffusion (voir la spec partagée, section « Gabarit de diffusion »). La rubrique se déduit de la position du sujet dans la liste des 45. Le numéro affiché, lui, est le numéro de diffusion et appartient à l'utilisateur: s'il ne l'a pas donné, propose la position dans la liste et demande confirmation, sans la retenir en silence.
 - Un bloc de code intitulé "Prompt images (à coller dans Gemini)", contenant le prompt unique prêt à copier.
 - Une courte section "Sources" listant 2 à 4 références principales issues de l'étape de recherche, de préférence officielles ou originales. Cette section sert à la vérification et n'a pas vocation à être publiée dans la pastille.
 
