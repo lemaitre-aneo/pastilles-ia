@@ -40,7 +40,7 @@ plugins/pastille-ia/
   skills/email/
     SKILL.md                                                           # processus de mise en courriel
     references -> ../../shared                                         # symlink -> ${CLAUDE_SKILL_DIR}/references/regles-pastille.md
-    exemple/pastille-13.json                                           # fiche réelle, point de départ a copier
+    exemple/fiche-modele.json                                          # modele de fiche a copier (aucun contenu reel)
     scripts/build.py                                                   # fiche JSON -> .msg (+ apercu HTML, + gabarit partage)
     scripts/render.py                                                  # corps HTML et texte, typographie FR, contournements Word
     scripts/msg.py                                                     # proprietes MAPI et pieces jointes en ligne

@@ -1,0 +1,29 @@
+{
+  "_lisez_moi": "Modèle de fiche à copier, sans contenu réel: les pastilles ne sont pas versionnées dans ce dépôt. numero est le numéro de diffusion donné par l'utilisateur, position_liste la place du sujet dans la liste des 45 dont la rubrique est déduite; les deux sont indépendants. Le temps de lecture est calculé et la rubrique déduite: n'écrivez temps_lecture ou rubrique en dur que pour forcer une valeur. Les emphases sont en markdown, la typographie française est appliquée par le script: pas d'espaces insécables ni d'apostrophes typographiques à saisir ici. Faites pointer image_titre et image_schema sur vos deux fichiers.",
+  "numero": "NN",
+  "total": 45,
+  "position_liste": 1,
+  "titre": "Titre exact retenu, celui rendu dans l'illustration",
+  "prefixe_sujet": "[Pastille IA de l'été]",
+  "essentiel": [
+    "Puce 1. Une ligne, pas deux.",
+    "Puce 2.",
+    "Puce 3. Trois puces au maximum."
+  ],
+  "paragraphes": [
+    "Paragraphe 1. 45 à 60 mots, 2 à 3 phrases, avec du **gras** et de l'*italique* au format markdown, une à deux emphases au maximum.",
+    "Paragraphe 2. 45 à 60 mots.",
+    "Paragraphe 3. 45 à 60 mots. Trois paragraphes si le sujet est léger, quatre s'il est dense.",
+    "Paragraphe 4, consacré à l'enjeu, lu après le schéma."
+  ],
+  "schema_apres": 3,
+  "legende_schema": "Légende du schéma, une phrase qui dit ce qu'il faut y voir.",
+  "alt_schema": "Description de ce que montre le schéma, une phrase.",
+  "annexe": {
+    "etiquette": "À essayer",
+    "style": "essayer",
+    "texte": "Bloc actionnable facultatif, un seul au maximum: À essayer, ou Le piège en passant style à piege."
+  },
+  "image_titre": "illustration-titre.png",
+  "image_schema": "schema.png"
+}
