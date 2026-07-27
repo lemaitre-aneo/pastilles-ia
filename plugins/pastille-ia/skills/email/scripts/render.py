@@ -46,6 +46,32 @@ TABLE = ('<table role="presentation" cellpadding="0" cellspacing="0" border="0" 
          'mso-table-lspace:0pt; mso-table-rspace:0pt;{extra}"><tr>\n')
 
 
+# La rubrique suit la position du sujet dans la liste des 45, jamais le numéro
+# de diffusion: les deux sont indépendants.
+RUBRIQUES = ((range(1, 10), "Comprendre"), (range(10, 15), "Limites"),
+             (range(15, 16), "Risques et cadre"), (range(16, 23), "Prompting"),
+             (range(23, 30), "Au travail"), (range(30, 39), "Agents et outils"),
+             (range(39, 46), "Risques et cadre"))
+
+MOTS_PAR_MINUTE = 180
+
+
+def rubrique_pour(position):
+    for intervalle, nom in RUBRIQUES:
+        if int(position) in intervalle:
+            return nom
+    raise ValueError(f"position hors de la liste des 45: {position}")
+
+
+def temps_lecture(c):
+    """Estimation à partir de tout le texte lu, encadrés compris."""
+    morceaux = list(c["essentiel"]) + list(c["paragraphes"]) + [c["legende_schema"]]
+    if c.get("annexe"):
+        morceaux.append(c["annexe"]["texte"])
+    mots = sum(len(m.split()) for m in morceaux)
+    return f"{max(1, -(-mots // MOTS_PAR_MINUTE))} min"
+
+
 # --- typographie française ---------------------------------------------------
 
 def fr(texte):

@@ -15,9 +15,13 @@ Les normes de la série vivent dans un fichier partagé, source unique commune a
 `${CLAUDE_SKILL_DIR}/references/regles-pastille.md`
 
 ## Entrées attendues
-1. Le contenu de la pastille: titre retenu, numéro de diffusion, rubrique, temps de lecture, les puces de « L'essentiel », les 3 ou 4 paragraphes, la légende du schéma, le texte alternatif du schéma, et le bloc annexe s'il y en a un. S'il vient d'être produit dans la conversation, reprends-le tel quel sans le réécrire. Sinon demande-le, ou demande à l'utilisateur de le recoller.
-   Le numéro vient de l'utilisateur et prévaut toujours, même s'il contredit la liste des 45: cette liste est un inventaire de sujets, pas un ordre de diffusion. Si aucun numéro n'a été donné, propose la position du sujet dans la liste et demande confirmation avant de construire; ne la retiens pas en silence. La rubrique, elle, se déduit de la position du sujet dans la liste, jamais du numéro de diffusion (voir « Numéro et rubrique » dans la spec partagée).
-2. Les deux images, illustration-titre puis schéma, collées dans la conversation ou déposées sur le disque.
+Ce skill est autonome: il ne suppose pas qu'un autre skill vient de tourner. Le texte peut sortir d'une génération faite juste avant, d'un raffinement, ou d'un simple copier-coller de l'utilisateur quand la conversation d'origine est perdue. Ce qui compte est ce qui est présent maintenant.
+
+1. Le contenu de la pastille: titre retenu, les puces de « L'essentiel », les 3 ou 4 paragraphes, la légende du schéma, le texte alternatif du schéma, et le bloc annexe s'il y en a un. S'il vient d'être produit dans la conversation, reprends-le tel quel sans le réécrire. Sinon demande-le, ou demande à l'utilisateur de le recoller. Si la légende du schéma ou son texte alternatif manquent, demande-les: ne les invente pas, la légende dit ce qu'il faut voir dans un visuel que tu ne peux pas regarder.
+2. Le numéro de diffusion. Il vient de l'utilisateur et prévaut toujours, même s'il contredit la liste des 45: cette liste est un inventaire de sujets, pas un ordre de diffusion. Si aucun numéro n'a été donné, propose la position du sujet dans la liste et demande confirmation avant de construire; ne la retiens pas en silence.
+3. Les deux images, illustration-titre puis schéma, collées dans la conversation ou déposées sur le disque.
+
+Deux champs ne sont pas à réclamer, le script les déduit: la rubrique, à partir de la position du sujet dans la liste des 45 (champ `position_liste`), et le temps de lecture, à partir du nombre de mots. Les valeurs déduites sont affichées à la construction, vérifie-les.
 
 Si une seule image est disponible, arrête-toi et demande la seconde: le schéma est systématique dans la série, un courriel sans schéma n'est pas conforme.
 
@@ -34,15 +38,19 @@ Le script écrit les dernières images de la conversation, dans l'ordre de colla
 
 Le webp et la transparence sont convertis plus loin par le script de construction: ne fais pas la conversion à la main.
 
-### 2. Écrire la fiche JSON
+### 2. Vérifier que les visuels correspondent au texte
+Les images sont des artefacts déjà rendus, elles ne suivent pas les retouches du texte. L'illustration-titre affiche un titre, et tu ne peux pas le lire: rien ne garantit que ce soit le titre retenu.
+
+Si les deux visuels viennent d'être générés dans cette conversation à partir du texte courant, il n'y a rien à faire. Sinon, et c'est le cas courant quand le texte a été recollé ou raffiné, demande confirmation à l'utilisateur sur deux points avant de construire: que l'illustration porte bien le titre retenu au caractère près, et que les libellés du schéma correspondent encore au mécanisme exposé dans les premiers paragraphes. Si l'un des deux ne colle plus, le visuel est périmé: il faut le régénérer dans Gemini avant de fabriquer le courriel, sans quoi le bandeau, le corps et l'image ne raconteront pas la même histoire.
+
+### 3. Écrire la fiche JSON
 Une fiche décrit la pastille, le script fait le reste. Les emphases s'écrivent en markdown (`**gras**`, `*italique*`), la typographie française est appliquée automatiquement: n'ajoute pas d'espaces insécables ni d'apostrophes typographiques à la main, et ne mets pas de HTML dans la fiche.
 
 ```json
 {
   "numero": 13,
   "total": 45,
-  "rubrique": "Comprendre",
-  "temps_lecture": "2 min",
+  "position_liste": 5,
   "titre": "Titre exact retenu, celui rendu dans l'illustration",
   "prefixe_sujet": "[Pastille IA de l'été]",
   "essentiel": ["Puce 1.", "Puce 2.", "Puce 3."],
@@ -56,9 +64,9 @@ Une fiche décrit la pastille, le script fait le reste. Les emphases s'écrivent
 }
 ```
 
-Points de vigilance: `numero` est le numéro de diffusion donné par l'utilisateur, et `rubrique` se déduit de la position du sujet dans la liste des 45, les deux étant indépendants. `schema_apres` est le rang du paragraphe après lequel le schéma s'insère, donc l'avant-dernier, puisque le dernier paragraphe porte l'enjeu et se lit après le visuel. `annexe` est facultative et plafonnée à un bloc, `style` valant `essayer` ou `piege`. Le texte alternatif de l'illustration-titre n'est pas dans la fiche: c'est le titre exact, la norme l'impose. `mention_ia` et `signature` ont des valeurs par défaut, ne les redéclare que pour les changer.
+Points de vigilance: `numero` est le numéro de diffusion donné par l'utilisateur et `position_liste` la place du sujet dans la liste des 45, d'où la rubrique est déduite; les deux sont indépendants, ici 13 et 5. `rubrique` et `temps_lecture` peuvent être écrits en dur pour forcer une valeur, sinon ils sont calculés. `schema_apres` est le rang du paragraphe après lequel le schéma s'insère, donc l'avant-dernier, puisque le dernier paragraphe porte l'enjeu et se lit après le visuel. `annexe` est facultative et plafonnée à un bloc, `style` valant `essayer` ou `piege`. Le texte alternatif de l'illustration-titre n'est pas dans la fiche: c'est le titre exact, la norme l'impose. `mention_ia` et `signature` ont des valeurs par défaut, ne les redéclare que pour les changer.
 
-### 3. Construire et contrôler
+### 4. Construire et contrôler
 ```
 python3 ${CLAUDE_SKILL_DIR}/scripts/build.py fiche.json --msg pastille-NN.msg --apercu apercu.html
 python3 ${CLAUDE_SKILL_DIR}/scripts/verify.py pastille-NN.msg <image titre> <image schema>
@@ -76,7 +84,7 @@ Contrôle ensuite le rendu visuel de l'aperçu, à deux largeurs, en dessous et 
 
 Regarde les captures avant de livrer. Le chemin de Chromium peut différer, adapte-le; s'il n'y a pas de navigateur, dis-le à l'utilisateur plutôt que d'annoncer un contrôle que tu n'as pas fait.
 
-### 4. Livrer
+### 5. Livrer
 Livre le `.msg` en fichier joint. Dis en une ligne ce que contient le courriel (brouillon non envoyé, sans destinataire, sujet exact) et rappelle la seule limite réelle: il n'y a pas d'Outlook dans l'environnement, donc la validation finale du rendu appartient à l'utilisateur. Ne prétends jamais avoir vérifié dans Outlook.
 
 ## Ce que le courriel garantit, et pourquoi

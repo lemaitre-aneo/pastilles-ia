@@ -17,9 +17,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import msg as msgfile          # noqa: E402
 import render                  # noqa: E402
 
-OBLIGATOIRES = ("numero", "total", "rubrique", "temps_lecture", "titre",
-                "prefixe_sujet", "essentiel", "paragraphes", "legende_schema",
-                "alt_schema", "image_titre", "image_schema")
+OBLIGATOIRES = ("numero", "total", "titre", "prefixe_sujet", "essentiel",
+                "paragraphes", "legende_schema", "alt_schema", "image_titre",
+                "image_schema")
 
 DEFAUTS = {
     "mention_ia": "Cette pastille peut contenir des traces d'IA. En cas de doute, "
@@ -62,6 +62,18 @@ def charger(chemin):
         raise SystemExit("l'encadré L'essentiel est plafonné à trois puces")
     if not 3 <= len(fiche["paragraphes"]) <= 4:
         raise SystemExit("la pastille compte 3 ou 4 paragraphes")
+    # Rubrique et temps de lecture se déduisent, plutôt que d'être réclamés:
+    # le numéro de diffusion, lui, ne se déduit de rien.
+    if "rubrique" not in fiche:
+        position = fiche.get("position_liste")
+        if not position:
+            raise SystemExit("indiquez rubrique, ou position_liste (place du sujet "
+                             "dans la liste des 45) pour la déduire")
+        fiche["rubrique"] = render.rubrique_pour(position)
+        print(f"rubrique déduite de la position {position}: {fiche['rubrique']}")
+    if "temps_lecture" not in fiche:
+        fiche["temps_lecture"] = render.temps_lecture(fiche)
+        print("temps de lecture calculé:", fiche["temps_lecture"])
     return fiche
 
 

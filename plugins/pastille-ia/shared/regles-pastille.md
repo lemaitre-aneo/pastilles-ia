@@ -113,6 +113,8 @@ Contenu du bloc:
 - Chaque image est accompagnée, dans le livrable, du texte alternatif à renseigner à la diffusion: le titre exact pour l'illustration-titre, une phrase décrivant ce que montre le schéma pour le second visuel.
 - Libellés de schéma: des groupes nominaux courts et lisibles seuls (par exemple "Exemples de bonnes réponses"), pas des phrases verbales qui sonnent comme des ordres ("Montrer de bonnes réponses"). Quelques mots par libellé.
 
+Cohérence entre le texte et les visuels: le titre rendu dans l'illustration est toujours le titre retenu, et le schéma illustre toujours le mécanisme du texte courant. Les visuels sont des artefacts déjà rendus, ils ne suivent pas les retouches: dès que le titre change, ou que le mécanisme exposé dans les premiers paragraphes bouge, les images existantes sont périmées et doivent être régénérées avant la diffusion. Un skill qui ne peut pas lire les images ne peut pas le constater seul: il demande confirmation.
+
 Attention aux titres longs: Nano Banana rend fiablement les libellés courts mais peut faire une faute sur un titre long; la technique en deux temps limite le risque. Si le rendu d'un titre long reste incertain, indique à l'utilisateur qu'il peut demander à Gemini d'utiliser Nano Banana Pro, plus fiable pour le texte long.
 
 Gabarit unique, illustration-titre plus schéma (deux images):

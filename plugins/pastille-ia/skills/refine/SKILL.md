@@ -84,7 +84,7 @@ N'affiche que le livrable, dans cet ordre:
 - Si une revue a eu lieu: un court résumé "Ce que la revue a corrigé" (2 à 4 lignes), avant le reste. Sinon, pas de résumé.
 - Le titre retenu, en tête. S'il diffère du titre canonique de la série, ajoute juste en dessous une ligne discrète, par exemple: Titre canonique de la série: "...". Dites-moi si vous préférez le conserver, je reviens dessus en un mot.
 - L'encadré "L'essentiel", puis le texte raffiné, puis le bloc annexe s'il y en a un. Si la pastille fournie n'en comportait pas, rédige-les: ils sont désormais requis par la spec.
-- Le prompt image seulement s'il a changé: un bloc de code intitulé "Prompt images (à coller dans Gemini)", prêt à copier. S'il n'a pas changé, écris une seule ligne: "Prompt images: inchangé (la retouche n'affecte pas le rendu)." S'il n'y a pas de prompt image et que rien n'en impose un, n'en parle pas.
+- Le prompt image seulement s'il a changé: un bloc de code intitulé "Prompt images (à coller dans Gemini)", prêt à copier, suivi d'une ligne qui dit ce que cela implique: les visuels déjà diffusés sont périmés et doivent être régénérés avant toute nouvelle diffusion, l'illustration portant un titre qui n'est plus le titre retenu. S'il n'a pas changé, écris une seule ligne: "Prompt images: inchangé (la retouche n'affecte pas le rendu), les visuels existants restent valables." S'il n'y a pas de prompt image et que rien n'en impose un, n'en parle pas.
 - Une section "Sources" listant les références du brief effectivement mobilisé, qu'il vienne des Sources fournies par l'utilisateur ou d'une recherche relancée (2 à 4, de préférence officielles). À omettre seulement si, exceptionnellement, aucune source n'a été mobilisée.
 
 Termine toujours par cette question exacte:
