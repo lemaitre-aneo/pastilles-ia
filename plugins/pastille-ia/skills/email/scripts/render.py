@@ -25,27 +25,55 @@ MAX_W = 1000        # plafond de la colonne de texte, en pixels
 W_TITRE = 600       # largeur fixe de l'illustration-titre
 W_SCHEMA = 560      # largeur fixe du schéma
 
+# --- palette -----------------------------------------------------------------
+# Les trois couleurs officielles sont la source; tout le reste en est dérivé par
+# mélange, pour qu'aucune teinte ne vive en double dans le fichier.
+MARQUE_ORANGE = "#FE5100"
+MARQUE_BLEU = "#000F9F"
+MARQUE_ORANGE_CLAIR = "#FFB600"
+
 NOIR = "#2B2B2B"
-MARINE = "#0C2454"
-ORANGE = "#E46C0C"
-ORANGE_VIF = "#FC8424"
-BLEU_PALE = "#8FA5C4"
 BLANC = "#FFFFFF"
 GRIS = "#6B7280"
-BLEU = "#174E86"
+
+
+def melange(couleur_a, couleur_b, part_a):
+    """Mélange linéaire de deux couleurs, part_a entre 0 et 1."""
+    a = [int(couleur_a[i:i + 2], 16) for i in (1, 3, 5)]
+    b = [int(couleur_b[i:i + 2], 16) for i in (1, 3, 5)]
+    return "#" + "".join(f"{round(x * part_a + y * (1 - part_a)):02X}"
+                         for x, y in zip(a, b))
+
+
+def eclaircir(couleur, part_blanc):
+    return melange(BLANC, couleur, part_blanc)
+
+
+def assombrir(couleur, part_noir):
+    return melange("#000000", couleur, part_noir)
+
+
+# Dérivés. L'orange de marque tombe à 3,2:1 sur blanc, insuffisant pour un texte
+# de 12 pixels: les petits libellés prennent une version assombrie, qui remonte
+# au delà de 5:1. Les fonds sont le même orange ou le même bleu, très éclaircis.
+ORANGE_TEXTE = assombrir(MARQUE_ORANGE, 0.25)
+BLEU_PALE = eclaircir(MARQUE_BLEU, 0.60)
 
 # Encadré de synthèse: texte en gras sur teinte claire. Le gras est le seul poids
-# fiable en courriel, Word ne rend pas les poids intermédiaires. La teinte reste
-# distincte du gris bleuté de l'annexe "Le piège", et la bordure pleine sur les
-# quatre côtés achève de séparer les deux blocs.
-FOND_ESSENTIEL = "#F4F7FB"
-BORDURE_ESSENTIEL = f"1px solid {MARINE}"
+# fiable en courriel, Word ne rend pas les poids intermédiaires. La bordure pleine
+# sur les quatre côtés le sépare des blocs annexes, qui n'ont qu'une barre latérale.
+FOND_ESSENTIEL = eclaircir(MARQUE_BLEU, 0.96)
+BORDURE_ESSENTIEL = f"1px solid {MARQUE_BLEU}"
 
 ANNEXES = {
-    "essayer": {"fond": "#FFF4EA", "barre": "#E46C0C", "etiquette": "#A34D08",
-                "texte": "#5C3208"},
-    "piege": {"fond": "#F2F5F9", "barre": "#174E86", "etiquette": "#174E86",
-              "texte": "#31445C"},
+    "essayer": {"fond": eclaircir(MARQUE_ORANGE_CLAIR, 0.90),
+                "barre": MARQUE_ORANGE,
+                "etiquette": ORANGE_TEXTE,
+                "texte": assombrir(MARQUE_ORANGE, 0.55)},
+    "piege": {"fond": eclaircir(MARQUE_BLEU, 0.95),
+              "barre": MARQUE_BLEU,
+              "etiquette": MARQUE_BLEU,
+              "texte": melange(MARQUE_BLEU, NOIR, 0.35)},
 }
 
 
@@ -188,7 +216,7 @@ def html_pastille(c):
         table()
         + '<td align="left" valign="middle" style="padding:0;">\n'
         + f'<p style="margin:0; padding:0; {style(BLANC, 13, 24)}">'
-        + span(str(c["numero"]), ORANGE_VIF, 22, 24, "font-weight:700; ", gras=True)
+        + span(str(c["numero"]), MARQUE_ORANGE, 22, 24, "font-weight:700; ", gras=True)
         + span(f'&nbsp;/&nbsp;{c["total"]}', BLEU_PALE, 12, 24)
         + span(f'&nbsp;&nbsp;&nbsp;PASTILLE IA&nbsp;&nbsp;&middot;&nbsp;&nbsp;'
                f'{c["rubrique"].upper()}', BLANC, 13, 24)
@@ -198,24 +226,24 @@ def html_pastille(c):
                "white-space:nowrap; ", align=None)
         + "\n</td>\n</tr>\n</table>"
     )
-    out.append(f'<tr>\n<td bgcolor="{MARINE}" style="background-color:{MARINE}; '
+    out.append(f'<tr>\n<td bgcolor="{MARQUE_BLEU}" style="background-color:{MARQUE_BLEU}; '
                f'padding:14px 20px;">\n{bandeau}\n</td>\n</tr>\n')
 
     out.append('<tr>\n<td align="center" style="padding:0; font-size:0; line-height:0;">\n'
                + image("IMAGE_TITRE", c["titre"], W_TITRE) + "\n</td>\n</tr>\n")
 
     puces = "".join(
-        f'<li style="{style(MARINE, 16, 25, "font-weight:700; ")} margin:0; '
+        f'<li style="{style(MARQUE_BLEU, 16, 25, "font-weight:700; ")} margin:0; '
         f'padding:0 0 {6 if i < len(c["essentiel"]) - 1 else 0}px 0;">'
-        + span(p, MARINE, 16, 25, "font-weight:700; ", gras=True) + "</li>\n"
+        + span(p, MARQUE_BLEU, 16, 25, "font-weight:700; ", gras=True) + "</li>\n"
         for i, p in enumerate(c["essentiel"]))
     essentiel = (
         table(extra=f" border:{BORDURE_ESSENTIEL};" if BORDURE_ESSENTIEL else "",
               fond=FOND_ESSENTIEL)
         + '<td style="padding:16px 18px;">\n'
-        + para("L'ESSENTIEL", ORANGE, 12, 16,
+        + para("L'ESSENTIEL", ORANGE_TEXTE, 12, 16,
                "font-weight:700; letter-spacing:0.6px; ", align=None, gras=True)
-        + f'\n<ul style="margin:10px 0 0 0; padding:0 0 0 20px; {style(MARINE, 16, 25, "font-weight:700; ")}">\n'
+        + f'\n<ul style="margin:10px 0 0 0; padding:0 0 0 20px; {style(MARQUE_BLEU, 16, 25, "font-weight:700; ")}">\n'
         + puces + "</ul>\n</td>\n</tr>\n</table>"
     )
     out.append(ligne(essentiel, "24px 20px 0 20px"))
@@ -255,7 +283,7 @@ def html_pastille(c):
 
     out.append(ligne(para(c["mention_ia"], GRIS, 13, 20, "font-style:italic; ",
                           align=None, italique=True), "16px 20px 0 20px"))
-    out.append(ligne(para(c["signature"], BLEU, 14, 20, "font-weight:700; ",
+    out.append(ligne(para(c["signature"], MARQUE_BLEU, 14, 20, "font-weight:700; ",
                           align=None, gras=True), "12px 20px 28px 20px"))
 
     out.append("</table>\n<!--[if mso]></td></tr></table><![endif]-->\n")
