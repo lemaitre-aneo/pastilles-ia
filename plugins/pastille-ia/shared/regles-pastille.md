@@ -172,7 +172,9 @@ La rubrique, elle, suit le sujet et non le numéro de diffusion: elle se lit sur
 - Risques et cadre: position 15, puis 39 à 45
 
 ## Boite à outils de revue (grilles + gabarit de relecteur)
-Ces grilles et ce gabarit servent la revue critique, en génération comme en raffinement. Principe: les relecteurs produisent des CONSTATS, jamais une réécriture. Chacun renvoie une liste de problèmes localisés, assortis d'une gravité et d'un correctif précis. C'est l'orchestrateur qui applique et réécrit, pour garder une voix unique et éviter l'effet patchwork.
+Ces grilles et ce gabarit sont les normes de la revue critique. Le processus, lui, est porté par le skill `review`: c'est lui qui lance les relecteurs et consolide leurs constats, qu'il soit invoqué directement par un humain ou par `generate` et `refine` au moment de leur revue. Ces deux skills ne conduisent pas la revue eux-mêmes, ils la déclenchent puis appliquent ce qu'elle rend.
+
+Principe: les relecteurs produisent des CONSTATS, jamais une réécriture. Chacun renvoie une liste de problèmes localisés, assortis d'une gravité et d'un correctif précis. C'est le skill appelant qui applique et réécrit, pour garder une voix unique et éviter l'effet patchwork.
 
 Ce que la revue peut juger: les relecteurs ne voient pas les images, générées plus tard dans Gemini. La revue du visuel porte donc uniquement sur le PROMPT image (clarté, cohérence avec le texte, respect des consignes), jamais sur un rendu. Le contrôle visuel réel reste à l'utilisateur.
 
@@ -180,6 +182,17 @@ Les trois grilles (une par relecteur):
 1. Fond, exactitude et périmètre: exactitude vs le brief (aucun chiffre, date ou fait inventé ni sur-affirmé, rien qui le contredise), cohérence entre le titre retenu et ce que le texte délivre (le titre tient-il sa promesse, sans sur-promesse ni clickbait ?), maintien du titre retenu dans le périmètre canonique (il ne doit ni élargir ni déplacer le sujet défini par le titre canonique, ni empiéter sur une voisine), chevauchements avec les pastilles voisines (le texte ré-explique-t-il ce qui est traité ailleurs ? redites à signaler), autonomie du contenu, clarté du message à retenir, repérage de ce qui vieillira mal (à nuancer).
 2. Forme, ton et pédagogie: ton décontracté-précis-léger et techniquement juste, absence de name-dropping, rythme et fluidité à la lecture à voix haute, longueur adaptée à la profondeur (3 à 4 paragraphes de 45 à 60 mots chacun, corps en prose sans listes, dernier paragraphe consacré à l'enjeu; signale tout paragraphe qui dépasse 60 mots et propose où le couper) et chasse au verbiage, accessibilité pour un profil non technique (jargon expliqué, analogies claires), sobriété des emphases (gras/italique), une à deux par paragraphe au maximum: signale tout excès, ne réclame jamais d'emphase supplémentaire, le message clé étant porté par l'encadré de synthèse; qualité de cet encadré (deux à trois puces d'une ligne au maximum, il dénoue le titre au lieu de le reformuler, et il ne peut pas se substituer à l'article), force de l'accroche et qualité du titre retenu (accroche et punch, respect du style de la série, longueur raisonnable, pas de name-dropping dans le titre; un titre qui s'écarte du canonique n'est pas un défaut en soi, ne réclame le retour au canonique que si le titre retenu est plus faible).
 3. Conformité et visuel: contraintes dures (aucun tiret cadratin ni caractère non standard, aucun nom d'entreprise ni ANEO, français correct, corps explicatif en prose sans listes ni puces), y compris dans le titre retenu; blocs structurés conformes (encadré de synthèse présent et plafonné à trois puces d'une ligne, un seul bloc annexe au maximum); puis le prompt image: titre retenu reproduit au caractère près (et non le titre canonique s'ils diffèrent), longueur du titre compatible avec un rendu image fiable (sinon suggérer Nano Banana Pro), charte présente une seule fois, texte de la pastille bien marqué "à ne pas afficher", illustration-titre iconique et non schéma de processus, schéma présent (il est systématique) et généré en 2e image séparée, schéma qui illustre le mécanisme du corps et non la conclusion, format 4:3 et cinq blocs au maximum, libellés de schéma courts (groupes nominaux) et en français, textes alternatifs fournis pour les deux images, cohérence entre le visuel décrit et le coeur du texte.
+
+### Arbitrage des constats
+Une fois les trois relecteurs revenus, leurs constats sont consolidés avant d'être appliqués. Ces règles valent partout, quel que soit le skill qui a déclenché la revue:
+- Dédoublonner: un même défaut vu par deux grilles ne compte qu'une fois, en retenant le correctif le plus précis.
+- Arbitrer les contradictions plutôt que de les empiler. Quand deux relecteurs s'opposent, tranche et dis-le, au lieu d'appliquer les deux.
+- Garde-fou anti-gonflement: entre "ajouter" et "raccourcir", la concision l'emporte, sauf erreur de fond avérée.
+- Appliquer les constats bloquants et recommandés, écarter ou mentionner les mineurs.
+- Un constat qui contredit une norme de cette spec est écarté, en le disant: la spec fait foi, pas le relecteur.
+- Le titre retenu est corrigé au même titre que le texte.
+- Une seule passe, jamais de boucle. On ne relance pas une revue sur le texte corrigé.
+- La réécriture se fait en une seule voix, par le skill appelant, jamais par recollage des formulations des relecteurs.
 
 Gabarit de relecteur (remplace les crochets):
 ```

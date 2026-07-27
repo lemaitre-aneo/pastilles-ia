@@ -5,21 +5,21 @@ description: Raffine (itérativement) une pastille LLM déjà rédigée quand la
 # Raffineur de pastilles LLM (Claude Code)
 
 ## Ce que fait ce skill
-Fait évoluer une pastille déjà produite, à partir des artefacts que l'utilisateur recolle (au minimum le texte), sans repasser par la génération complète. Il réhydrate le contexte à partir des normes de la série, classe la retouche demandée, applique un diff minimal en une seule voix, re-synchronise le prompt image au strict nécessaire, et propose (sans l'imposer) la revue critique à trois relecteurs.
+Fait évoluer une pastille déjà produite, à partir des artefacts que l'utilisateur recolle (au minimum le texte), sans repasser par la génération complète. Il réhydrate le contexte à partir des normes de la série, classe la retouche demandée, applique un diff minimal en une seule voix, re-synchronise le prompt image au strict nécessaire, et propose (sans l'imposer) de déclencher le skill `review`, qui conduit la revue critique à trois relecteurs.
 
 Après une retouche, si la pastille a déjà été mise en courriel, le skill `email` régénère le `.msg` sans rien relancer d'autre.
 
 Frontière avec `generate`: `generate` crée une pastille à partir d'un titre (recherche, cinq brouillons, fusion, revue). `refine` part d'une pastille existante fournie et ne fait que la retoucher. Si l'utilisateur n'a pas de texte existant et veut une nouvelle pastille, bascule sur `generate`.
 
 ## Spec partagée (à lire en premier)
-Les normes de la série vivent dans un fichier partagé, source unique commune à ce skill et aux skills `generate` et `email`: liste des 45 pastilles et périmètre, Règles du texte, Règles du titre, Règles d'écriture pour la pastille finale, spec du prompt image et gabarits, charte graphique, boite à outils de revue. Lis-le avant de commencer:
+Les normes de la série vivent dans un fichier partagé, source unique commune à ce skill et aux skills `generate`, `review` et `email`: liste des 45 pastilles et périmètre, Règles du texte, Règles du titre, Règles d'écriture pour la pastille finale, spec du prompt image et gabarits, charte graphique, boite à outils de revue. Lis-le avant de commencer:
 
 `${CLAUDE_SKILL_DIR}/references/regles-pastille.md` (c'est le fichier `references/regles-pastille.md` situé dans le dossier de ce skill).
 
 Toute retouche que tu appliques doit rester conforme à ces normes. Ne recopie pas ces règles ici: si elles doivent évoluer, modifie la spec partagée.
 
 ## Environnement
-Le coeur du skill (édition et, au besoin, recherche web ciblée) ne requiert pas de sous-agents et fonctionne partout. Seule la revue critique optionnelle lance trois sous-agents (outil Task); si les sous-agents ne sont pas disponibles, propose une relecture globale unique par l'orchestrateur à la place.
+Le coeur du skill (édition et, au besoin, recherche web ciblée) ne requiert pas de sous-agents et fonctionne partout. Seule la revue critique optionnelle en lance trois, et elle est déléguée au skill `review`, qui gère aussi ses replis quand les sous-agents ne sont pas disponibles.
 
 ## Entrées
 L'entrée type est soit le texte seul, soit le texte plus le prompt image.
@@ -72,12 +72,12 @@ Principe directeur: ne régénère jamais le prompt image gratuitement. Si la re
   - Le schéma est systématique: ne le retire jamais. Si la retouche déplace le mécanisme illustré, ajuste sa description selon les gabarits de la spec partagée. S'il manque au prompt fourni, ajoute-le.
   - Ni le titre rendu ni le concept illustré ne changent: laisse le prompt image entièrement inchangé. Le contexte caché "à ne pas afficher" n'affecte pas le rendu; ne le rafraîchis que si l'utilisateur le demande.
 
-## Étape 5, revue critique (proposée, non imposée)
-Ne relance pas de revue d'office. Propose-la, et ne la lance qu'avec l'accord de l'utilisateur (elle coûte trois sous-agents).
+## Étape 5, revue critique (déléguée au skill `review`, proposée et non imposée)
+Ne déclenche pas de revue d'office. Propose-la, et ne la déclenche qu'avec l'accord de l'utilisateur (elle coûte trois sous-agents).
 
-Si l'utilisateur accepte: applique la boite à outils de revue de la spec partagée (principe des constats, périmètre de jugement, les trois grilles, gabarit de relecteur). Lance trois sous-agents en parallèle (parallélisme explicite, sinon exécution séquentielle), un par grille, chaque prompt autonome et complet: titre canonique et titre retenu, texte raffiné, bloc prompt image (ou mention "inchangé"), brief de référence (les Sources fournies ou le brief reconstitué à l'étape 2; s'il manque vraiment, signale-le au relecteur), liste "déjà traité ailleurs" et textes voisins si disponibles, et la liste des 45 titres. Puis, en orchestrateur: rassemble et dédoublonne les constats, arbitre les contradictions, garde-fou anti-gonflement (à conseil équivalent, la concision l'emporte sauf erreur de fond), applique bloquants et recommandés, écarte ou mentionne les mineurs, réécris en une seule voix. Une seule passe, pas de boucle.
+Si l'utilisateur accepte: invoque le skill `review` via l'outil Skill, et passe-lui le dossier complet, à savoir le titre canonique et le titre retenu, le texte raffiné, le bloc prompt image (ou la mention "inchangé", ou son absence), le brief de référence (les Sources fournies ou le brief reconstitué à l'étape 2, et signale-le s'il manque vraiment), la liste "déjà traité ailleurs" et les textes voisins si disponibles. Précise que tu l'appelles depuis `refine`: dans ce mode, il rend la liste consolidée des constats et n'affiche pas de rapport.
 
-En l'absence de sous-agents, propose une relecture globale unique par l'orchestrateur contre les trois grilles.
+Puis applique: la revue rend des constats déjà dédoublonnés et arbitrés selon la spec partagée, section « Arbitrage des constats ». Réécris en une seule voix, une seule passe, sans boucler. Si un constat contredit une norme de la spec, écarte-le en le disant.
 
 ## Format de sortie
 N'affiche que le livrable, dans cet ordre:

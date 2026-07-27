@@ -7,10 +7,10 @@ description: Fabrique le courriel de diffusion d'une pastille LLM déjà rédig�
 ## Ce que fait ce skill
 Prend une pastille dont le texte est validé et dont les deux visuels ont été générés, puis produit un `.msg` unique: brouillon non envoyé, sujet au format de la série, corps HTML au gabarit, illustration-titre et schéma attachés et affichés dans le corps par référence `cid:`. Le fichier s'ouvre dans Outlook, il ne reste qu'à renseigner les destinataires et à envoyer.
 
-Frontière avec les autres skills: `generate` écrit la pastille et produit le prompt d'images, `refine` retouche un texte existant, et ce skill ne s'occupe que de la mise en courriel. Il ne réécrit jamais le texte: si une correction rédactionnelle apparaît en route, signale-la et propose `refine`, ne la décide pas ici.
+Frontière avec les autres skills: `generate` écrit la pastille et produit le prompt d'images, `refine` retouche un texte existant, `review` la juge sans y toucher, et ce skill ne s'occupe que de la mise en courriel. Il ne réécrit jamais le texte: si une correction rédactionnelle apparaît en route, signale-la et propose `refine`, ne la décide pas ici.
 
 ## Spec partagée (à lire en premier)
-Les normes de la série vivent dans un fichier partagé, source unique commune aux trois skills. La section qui te concerne au premier chef est « Gabarit de diffusion », mais lis aussi les Règles du texte: c'est ce qui te dit combien de puces et de paragraphes sont admissibles, et ce que le courriel doit refuser.
+Les normes de la série vivent dans un fichier partagé, source unique commune aux quatre skills. La section qui te concerne au premier chef est « Gabarit de diffusion », mais lis aussi les Règles du texte: c'est ce qui te dit combien de puces et de paragraphes sont admissibles, et ce que le courriel doit refuser.
 
 `${CLAUDE_SKILL_DIR}/references/regles-pastille.md`
 
