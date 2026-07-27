@@ -79,7 +79,10 @@ ANNEXES = {
 
 def table(extra="", fond=None):
     """Table de mise en page. Le fond est posé en attribut et en style: Word lit
-    l'attribut, les clients modernes le style."""
+    l'attribut, les clients modernes le style. Attention: Word ne peint jamais un
+    fond de table, seulement un fond de cellule. Un bloc coloré doit donc aussi
+    porter son fond sur son <td>, via cellule(); le fond de table ne sert qu'aux
+    autres clients."""
     attribut = f' bgcolor="{fond}"' if fond else ""
     css = f" background-color:{fond};" if fond else ""
     return ('<table role="presentation" cellpadding="0" cellspacing="0" border="0" '
@@ -182,8 +185,16 @@ def para(contenu, couleur=NOIR, taille=16, interligne=26, extra="", align="justi
     return f'<p style="margin:{marge}; padding:0; {st}">{corps}</p>'
 
 
-def ligne(cellule, padding):
-    return f'<tr>\n<td style="padding:{padding};">\n{cellule}\n</td>\n</tr>\n'
+def cellule(padding, fond=None, extra=""):
+    """Cellule de contenu. C'est ici que le fond d'un bloc coloré doit vivre pour
+    que Word le peigne."""
+    attribut = f' bgcolor="{fond}"' if fond else ""
+    css = f"background-color:{fond}; " if fond else ""
+    return f'<td{attribut} style="{css}padding:{padding};{extra}">\n'
+
+
+def ligne(contenu, padding):
+    return f'<tr>\n<td style="padding:{padding};">\n{contenu}\n</td>\n</tr>\n'
 
 
 def image(cid, alt, largeur):
@@ -240,7 +251,7 @@ def html_pastille(c):
     essentiel = (
         table(extra=f" border:{BORDURE_ESSENTIEL};" if BORDURE_ESSENTIEL else "",
               fond=FOND_ESSENTIEL)
-        + '<td style="padding:16px 18px;">\n'
+        + cellule("16px 18px", fond=FOND_ESSENTIEL)
         + para("L'ESSENTIEL", ORANGE_TEXTE, 12, 16,
                "font-weight:700; letter-spacing:0.6px; ", align=None, gras=True)
         + f'\n<ul style="margin:10px 0 0 0; padding:0 0 0 20px; {style(MARQUE_BLEU, 16, 25, "font-weight:700; ")}">\n'
@@ -266,7 +277,7 @@ def html_pastille(c):
             table(fond=teintes["fond"])
             + f'<td width="4" bgcolor="{teintes["barre"]}" style="background-color:'
               f'{teintes["barre"]}; width:4px; font-size:0; line-height:0;">&nbsp;</td>\n'
-            + '<td style="padding:16px 18px;">\n'
+            + cellule("16px 18px", fond=teintes["fond"])
             + para(a["etiquette"].upper(), teintes["etiquette"], 12, 16,
                    "font-weight:700; letter-spacing:0.4px; ", align=None, gras=True)
             + "\n" + para(a["texte"], teintes["texte"], 15, 24, align=None,

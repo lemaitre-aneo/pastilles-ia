@@ -156,6 +156,7 @@ Contraintes de mise en page:
 
 Contraintes imposées par le moteur de rendu de Word. Ce sont des corrections de défauts constatés, pas des préférences: chacune a produit un rendu faux dans Outlook avant d'être ajoutée.
 - Aucune couleur de texte portée par un `<td>`: Word ne l'hérite pas vers le texte, il applique celle du thème de rédaction. La couleur est déclarée sur l'élément qui porte réellement le texte.
+- Aucun fond de bloc porté par la seule `<table>`: Word ne peint pas un fond de table, seulement un fond de cellule. Un bloc coloré pose donc son fond sur son `<td>`, le fond de table ne servant qu'aux autres clients. C'est la symétrie du point précédent: la couleur du texte descend jusqu'à l'élément textuel, la couleur du fond descend jusqu'à la cellule.
 - `color` déclaré avant `font-family` dans chaque style. Un nom de police entre apostrophes casse l'analyse CSS de Word, qui abandonne la fin de la déclaration; ce qui compte doit être passé avant ce point de rupture.
 - Aucun nom de police entre apostrophes, pour la même raison.
 - Mise en forme doublée en balises présentationnelles (`<font color face>`, `<b>`, `<i>`), que Word applique sans passer par le CSS.
