@@ -34,6 +34,13 @@ BLANC = "#FFFFFF"
 GRIS = "#6B7280"
 BLEU = "#174E86"
 
+# Encadré de synthèse: texte en gras sur teinte claire. Le gras est le seul poids
+# fiable en courriel, Word ne rend pas les poids intermédiaires. La teinte reste
+# distincte du gris bleuté de l'annexe "Le piège", et la bordure pleine sur les
+# quatre côtés achève de séparer les deux blocs.
+FOND_ESSENTIEL = "#F4F7FB"
+BORDURE_ESSENTIEL = f"1px solid {MARINE}"
+
 ANNEXES = {
     "essayer": {"fond": "#FFF4EA", "barre": "#E46C0C", "etiquette": "#A34D08",
                 "texte": "#5C3208"},
@@ -41,9 +48,15 @@ ANNEXES = {
               "texte": "#31445C"},
 }
 
-TABLE = ('<table role="presentation" cellpadding="0" cellspacing="0" border="0" '
-         'width="100%" style="width:100%; border-collapse:collapse; '
-         'mso-table-lspace:0pt; mso-table-rspace:0pt;{extra}"><tr>\n')
+
+def table(extra="", fond=None):
+    """Table de mise en page. Le fond est posé en attribut et en style: Word lit
+    l'attribut, les clients modernes le style."""
+    attribut = f' bgcolor="{fond}"' if fond else ""
+    css = f" background-color:{fond};" if fond else ""
+    return ('<table role="presentation" cellpadding="0" cellspacing="0" border="0" '
+            f'width="100%"{attribut} style="width:100%; border-collapse:collapse; '
+            f'mso-table-lspace:0pt; mso-table-rspace:0pt;{css}{extra}"><tr>\n')
 
 
 # La rubrique suit la position du sujet dans la liste des 45, jamais le numéro
@@ -162,17 +175,17 @@ def sujet(c):
 
 
 def html_pastille(c):
-    out = [TABLE.format(extra=" background-color:#FFFFFF;")]
+    out = [table(fond="#FFFFFF")]
     out.append('<td align="center" valign="top" style="padding:0;">\n')
     # Word ignore max-width: le plafond lui est donné en commentaire conditionnel,
     # que les autres clients traitent comme un commentaire ordinaire.
     out.append(f'<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" '
                f'border="0" width="{MAX_W}" align="center" style="width:{MAX_W}px;"><tr>'
                f'<td style="padding:0;"><![endif]-->\n')
-    out.append(TABLE.format(extra=f" max-width:{MAX_W}px;"))
+    out.append(table(extra=f" max-width:{MAX_W}px;"))
 
     bandeau = (
-        TABLE.format(extra="")
+        table()
         + '<td align="left" valign="middle" style="padding:0;">\n'
         + f'<p style="margin:0; padding:0; {style(BLANC, 13, 24)}">'
         + span(str(c["numero"]), ORANGE_VIF, 22, 24, "font-weight:700; ", gras=True)
@@ -192,16 +205,17 @@ def html_pastille(c):
                + image("IMAGE_TITRE", c["titre"], W_TITRE) + "\n</td>\n</tr>\n")
 
     puces = "".join(
-        f'<li style="{style(MARINE, 16, 25)} margin:0; '
+        f'<li style="{style(MARINE, 16, 25, "font-weight:700; ")} margin:0; '
         f'padding:0 0 {6 if i < len(c["essentiel"]) - 1 else 0}px 0;">'
-        + span(p, MARINE, 16, 25) + "</li>\n"
+        + span(p, MARINE, 16, 25, "font-weight:700; ", gras=True) + "</li>\n"
         for i, p in enumerate(c["essentiel"]))
     essentiel = (
-        TABLE.format(extra=f" border:1px solid {MARINE};")
+        table(extra=f" border:{BORDURE_ESSENTIEL};" if BORDURE_ESSENTIEL else "",
+              fond=FOND_ESSENTIEL)
         + '<td style="padding:16px 18px;">\n'
         + para("L'ESSENTIEL", ORANGE, 12, 16,
                "font-weight:700; letter-spacing:0.6px; ", align=None, gras=True)
-        + f'\n<ul style="margin:10px 0 0 0; padding:0 0 0 20px; {style(MARINE, 16, 25)}">\n'
+        + f'\n<ul style="margin:10px 0 0 0; padding:0 0 0 20px; {style(MARINE, 16, 25, "font-weight:700; ")}">\n'
         + puces + "</ul>\n</td>\n</tr>\n</table>"
     )
     out.append(ligne(essentiel, "24px 20px 0 20px"))
@@ -221,8 +235,7 @@ def html_pastille(c):
         a = c["annexe"]
         teintes = ANNEXES[a.get("style", "essayer")]
         bloc = (
-            TABLE.format(extra=f' background-color:{teintes["fond"]};')
-            .replace('width="100%" style=', f'width="100%" bgcolor="{teintes["fond"]}" style=')
+            table(fond=teintes["fond"])
             + f'<td width="4" bgcolor="{teintes["barre"]}" style="background-color:'
               f'{teintes["barre"]}; width:4px; font-size:0; line-height:0;">&nbsp;</td>\n'
             + '<td style="padding:16px 18px;">\n'
@@ -234,7 +247,7 @@ def html_pastille(c):
         )
         out.append(ligne(bloc, "24px 20px 0 20px"))
 
-    trait = (TABLE.format(extra="")
+    trait = (table()
              + '<td height="1" bgcolor="#DFE3E8" style="background-color:#DFE3E8; '
                'height:1px; font-size:0; line-height:0;">&nbsp;</td>\n</tr>\n</table>')
     out.append('<tr>\n<td style="padding:26px 20px 0 20px; font-size:0; line-height:0;">\n'

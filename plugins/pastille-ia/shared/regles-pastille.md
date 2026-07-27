@@ -150,6 +150,7 @@ Contraintes de mise en page:
 - Images à taille fixe, 600 pixels pour l'illustration-titre et 560 pour le schéma, hauteur automatique: elles ne sont jamais étirées au delà de leur taille nominale et se réduisent seulement si la fenêtre passe en dessous. Chaque image porte un texte alternatif renseigné.
 - Texte justifié, conformément au choix éditorial de la série. Le HTML de courriel ne gérant pas la césure, la justification étire les espaces entre les mots; c'est la contrainte de taille des paragraphes qui compense, puisque la dernière ligne d'un paragraphe n'est jamais étirée.
 - Corps de texte à 16 pixels, interligne 26 pixels.
+- L'encadré de synthèse porte son texte en gras, sur une teinte claire, avec une bordure pleine sur les quatre côtés. Le gras est le seul poids fiable en courriel: Word ne rend pas les poids intermédiaires, un demi-gras retombe sur le régulier. La bordure pleine et la teinte le séparent des blocs annexes, qui n'ont qu'une barre latérale.
 
 Contraintes imposées par le moteur de rendu de Word. Ce sont des corrections de défauts constatés, pas des préférences: chacune a produit un rendu faux dans Outlook avant d'être ajoutée.
 - Aucune couleur de texte portée par un `<td>`: Word ne l'hérite pas vers le texte, il applique celle du thème de rédaction. La couleur est déclarée sur l'élément qui porte réellement le texte.
