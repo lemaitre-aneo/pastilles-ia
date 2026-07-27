@@ -46,13 +46,13 @@ Reconstitue le cadre à partir de la spec partagée et des entrées:
 - Repère les 1 à 3 pastilles voisines et la liste "déjà traité ailleurs, à ne pas ré-expliquer". Demande les textes voisins seulement si la retouche touche à la frontière entre pastilles.
 - Note le titre retenu, le titre canonique, le texte, le prompt image (si fourni) et les sources (si fournies). Ce sont tes artefacts de départ.
 
-## Étape 2, classer la retouche
-- Retouche éditoriale, stylistique ou structurelle (ton, longueur, rythme, emphases, clarté, reformulation, changement de titre à périmètre constant): aucune recherche. N'introduis aucun fait nouveau.
-- Retouche factuelle (ajout ou modification d'un chiffre, d'une date, d'un fait, ou demande d'actualiser une donnée): il lui faut une base factuelle fiable, et le brief d'origine est perdu avec la conversation.
-  - Si l'utilisateur a fourni les Sources d'origine et qu'elles couvrent le point touché, appuie-toi dessus. Ne relance une recherche que si elles ne couvrent pas ce point, ou si la donnée est mouvante et risque d'être périmée (coûts, empreinte, modèles, réglementation).
-  - Sinon (pas de sources fournies, ou sources insuffisantes pour le point touché): relance une petite recherche web ciblée, ancrée sur la date du jour (champ currentDate), en priorité sur des sources officielles ou originales, juste assez pour sécuriser le point. C'est le cas clé: une retouche factuelle sans source disponible impose de refaire la recherche, jamais d'affirmer de mémoire.
-  - Dans tous les cas, n'invente jamais un chiffre. Si tu ne peux vérifier ni par une source fournie ni par une recherche, dis-le et demande la donnée à l'utilisateur plutôt que d'affirmer.
-En cas de doute sur la catégorie, traite la retouche comme factuelle.
+## Étape 2, reconstituer la base factuelle (le brief)
+Le brief de recherche d'origine est perdu avec la conversation. Or il ne sert pas qu'à valider un chiffre isolé: il ancre la justesse de toute la pastille, il guide la qualité de n'importe quel ajustement (même stylistique: on reformule mieux en sachant précisément de quoi on parle), et il est indispensable à la revue (la grille "exactitude" n'a aucune référence sans lui et tourne à vide). Donc on ne raffine pas à l'aveugle: tu dois disposer d'un brief avant de toucher au texte.
+
+- Sources fournies par l'utilisateur: elles tiennent lieu de brief. Appuie-toi dessus. Ne relance une recherche que si elles ne couvrent pas le point touché, ou si une donnée est mouvante et risque d'être périmée (coûts, empreinte, modèles, réglementation).
+- Sources manquantes ou insuffisantes: relance une recherche web ciblée pour reconstituer un brief compact (faits clés, chiffres utiles, 2 à 4 sources), ancrée sur la date du jour (champ currentDate), en priorité sur des sources officielles ou originales. Fais-le dès que les sources manquent, sans attendre que la retouche porte explicitement sur un fait: le brief sécurise la reformulation et rend la revue exploitable. Garde la recherche proportionnée (une petite passe suffit pour une simple retouche), mais ne l'escamote pas.
+
+Seule exception: si l'utilisateur demande explicitement de ne pas rechercher, respecte-le, mais signale que la justesse et la revue en pâtiront. Dans tous les cas, n'invente jamais un chiffre: si tu ne peux vérifier ni par une source fournie ni par une recherche, dis-le et demande la donnée à l'utilisateur plutôt que d'affirmer.
 
 ## Étape 3, appliquer le diff minimal
 - Applique uniquement ce qui est demandé et ce qui en découle nécessairement. Préserve tout le reste: n'en profite pas pour réécrire des passages non concernés.
@@ -73,7 +73,7 @@ Principe directeur: ne régénère jamais le prompt image gratuitement. Si la re
 ## Étape 5, revue critique (proposée, non imposée)
 Ne relance pas de revue d'office. Propose-la, et ne la lance qu'avec l'accord de l'utilisateur (elle coûte trois sous-agents).
 
-Si l'utilisateur accepte: applique la boite à outils de revue de la spec partagée (principe des constats, périmètre de jugement, les trois grilles, gabarit de relecteur). Lance trois sous-agents en parallèle (parallélisme explicite, sinon exécution séquentielle), un par grille, chaque prompt autonome et complet: titre canonique et titre retenu, texte raffiné, bloc prompt image (ou mention "inchangé"), brief de référence (les Sources fournies, ou le brief de la recherche ciblée si tu en as lancé une, sinon signale son absence au relecteur), liste "déjà traité ailleurs" et textes voisins si disponibles, et la liste des 45 titres. Puis, en orchestrateur: rassemble et dédoublonne les constats, arbitre les contradictions, garde-fou anti-gonflement (à conseil équivalent, la concision l'emporte sauf erreur de fond), applique bloquants et recommandés, écarte ou mentionne les mineurs, réécris en une seule voix. Une seule passe, pas de boucle.
+Si l'utilisateur accepte: applique la boite à outils de revue de la spec partagée (principe des constats, périmètre de jugement, les trois grilles, gabarit de relecteur). Lance trois sous-agents en parallèle (parallélisme explicite, sinon exécution séquentielle), un par grille, chaque prompt autonome et complet: titre canonique et titre retenu, texte raffiné, bloc prompt image (ou mention "inchangé"), brief de référence (les Sources fournies ou le brief reconstitué à l'étape 2; s'il manque vraiment, signale-le au relecteur), liste "déjà traité ailleurs" et textes voisins si disponibles, et la liste des 45 titres. Puis, en orchestrateur: rassemble et dédoublonne les constats, arbitre les contradictions, garde-fou anti-gonflement (à conseil équivalent, la concision l'emporte sauf erreur de fond), applique bloquants et recommandés, écarte ou mentionne les mineurs, réécris en une seule voix. Une seule passe, pas de boucle.
 
 En l'absence de sous-agents, propose une relecture globale unique par l'orchestrateur contre les trois grilles.
 
@@ -83,7 +83,7 @@ N'affiche que le livrable, dans cet ordre:
 - Le titre retenu, en tête. S'il diffère du titre canonique de la série, ajoute juste en dessous une ligne discrète, par exemple: Titre canonique de la série: "...". Dites-moi si vous préférez le conserver, je reviens dessus en un mot.
 - Le texte raffiné.
 - Le prompt image seulement s'il a changé: un bloc de code intitulé "Prompt images (à coller dans Gemini)", prêt à copier. S'il n'a pas changé, écris une seule ligne: "Prompt images: inchangé (la retouche n'affecte pas le rendu)." S'il n'y a pas de prompt image et que rien n'en impose un, n'en parle pas.
-- Une section "Sources" si la retouche a touché aux faits: les références effectivement utilisées pour vérifier ou ajouter la donnée, qu'elles viennent d'une recherche relancée ou des Sources fournies par l'utilisateur (2 à 4, de préférence officielles). Inutile pour une retouche purement éditoriale.
+- Une section "Sources" listant les références du brief effectivement mobilisé, qu'il vienne des Sources fournies par l'utilisateur ou d'une recherche relancée (2 à 4, de préférence officielles). À omettre seulement si, exceptionnellement, aucune source n'a été mobilisée.
 
 Termine toujours par cette question exacte:
 "Comment trouvez-vous le titre, le texte, l'image titre et le diagramme (si généré) ? Si une partie vous semble trop complexe, ou si vous souhaitez affiner le focus d'un visuel pour qu'il soit encore plus épuré, n'hésitez pas à me le faire savoir, et je l'ajusterai."
