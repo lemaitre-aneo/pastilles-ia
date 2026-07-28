@@ -55,7 +55,7 @@ Dans les deux cas, dis ce que la revue n'a pas pu juger: pas de rendu d'image, b
 
 Trois questions à distinguer, dans cet ordre:
 1. **Avis ou modification ?** C'est ce qui décide entre ce skill et le reste. « Qu'est-ce qui cloche dans cette pastille » est une demande d'avis, donc ce skill, qui ne touche à rien. « Relis et corrige » est une demande de modification: ce n'est pas ce skill, même si une revue peut être proposée en chemin.
-2. **Si c'est une modification, de quelle ampleur ?** Retouche de surface, ou demande structurelle (changement d'axe, déplacement du sujet, restructuration) ? Le structurel se régénère avec `generate`, après confirmation de l'utilisateur; il ne se raffine pas.
-3. **Et si c'est une retouche, le contexte est-il là ?** C'est seulement ici que `refine` entre en jeu. Pastille dont le dossier est dans la conversation: retouche directe, sans skill. Pastille recollée sans son contexte de production: `refine`. Voir la spec partagée, section « Faire évoluer une pastille ».
+2. **Si c'est une modification, de quelle ampleur ?** Retouche de surface, réagencement du texte existant, ou demande structurelle qui réclame du matériau neuf ? Les deux premières se traitent sur place; la troisième se régénère avec `generate`, après confirmation de l'utilisateur, et ne se raffine pas.
+3. **Et si c'est une retouche ou un réagencement, le contexte est-il là ?** C'est seulement ici que `refine` entre en jeu. Pastille dont le dossier est dans la conversation: retouche directe, sans skill. Pastille recollée sans son contexte de production: `refine`. Voir la spec partagée, section « Faire évoluer une pastille ».
 
 L'erreur courante est de sauter les deux dernières questions et de renvoyer toute demande de modification vers `refine`: la plupart du temps le contexte est intact et `refine` n'a rien à réhydrater, et quand la demande est structurelle un diff minimal n'est de toute façon pas le bon outil.
