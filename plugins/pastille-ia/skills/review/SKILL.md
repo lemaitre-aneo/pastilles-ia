@@ -40,10 +40,10 @@ Rappelle à chacun qu'il ne voit pas les images et qu'il ne réécrit pas.
 ### 3. Consolider
 Applique les règles d'arbitrage de la spec, section « Arbitrage des constats »: dédoublonnage, arbitrage des contradictions, garde-fou anti-gonflement, bloquants et recommandés retenus, mineurs écartés ou mentionnés, la spec qui l'emporte sur un relecteur qui la contredit, une seule passe.
 
-Ne relance pas de deuxième tour de revue. Si les constats sont massifs, dis-le plutôt que de boucler.
+Ne relance pas de deuxième tour de revue. Si les constats sont massifs, dis-le plutôt que de boucler. Et quand ils portent sur le fond même du brouillon (l'angle n'explique pas, le titre ne tient pas sa promesse, le mécanisme illustré est mal choisi), signale que le défaut n'est probablement pas dans les phrases: une régénération par `generate` vaut mieux qu'une longue liste de correctifs, à l'utilisateur d'en décider.
 
 ### 4. Rendre
-En mode humain, le rapport: les constats consolidés classés par gravité, chacun localisé avec son correctif, puis un verdict en une phrase (publiable tel quel, corrections mineures, corrections nécessaires), puis les sources du brief si tu l'as reconstitué. Termine en proposant d'appliquer les constats, sans les appliquer toi-même. Si l'utilisateur accepte, le chemin dépend du contexte, pas du fait qu'une revue vient d'avoir lieu: dossier présent dans la conversation (c'est le cas dès que tu as réuni ou reconstitué le brief et le périmètre pour lancer les relecteurs), applique la retouche directement selon la spec partagée, section « Retouche d'une pastille »; pastille recollée dont tu n'as pas pu réunir le dossier, passe par `refine`.
+En mode humain, le rapport: les constats consolidés classés par gravité, chacun localisé avec son correctif, puis un verdict en une phrase (publiable tel quel, corrections mineures, corrections nécessaires), puis les sources du brief si tu l'as reconstitué. Termine en proposant d'appliquer les constats, sans les appliquer toi-même. Si l'utilisateur accepte, le chemin dépend du contexte, pas du fait qu'une revue vient d'avoir lieu: dossier présent dans la conversation (c'est le cas dès que tu as réuni ou reconstitué le brief et le périmètre pour lancer les relecteurs), applique la retouche directement selon la spec partagée, section « Faire évoluer une pastille »; pastille recollée dont tu n'as pas pu réunir le dossier, passe par `refine`.
 
 En mode appelé, la liste consolidée, rendue au processus appelant, sans mise en scène ni verdict séparé.
 
@@ -52,8 +52,9 @@ Dans les deux cas, dis ce que la revue n'a pas pu juger: pas de rendu d'image, b
 ## Frontière avec les autres skills
 `generate` crée la pastille, `email` la met en courriel, `review` la juge sans y toucher, et `refine` réhydrate une pastille recollée sans son contexte avant de la retoucher.
 
-Deux questions à distinguer, dans cet ordre:
-1. **Avis ou modification ?** C'est ce qui décide entre ce skill et une retouche. « Qu'est-ce qui cloche dans cette pastille » est une demande d'avis, donc ce skill, qui ne touche à rien. « Relis et corrige » est une demande de modification: ce n'est pas ce skill, même si une revue peut être proposée en chemin.
-2. **Et si c'est une modification, le contexte est-il là ?** C'est ce qui décide entre une retouche directe et `refine`, et c'est seulement là que `refine` entre en jeu. Pastille dont le dossier est dans la conversation: retouche directe, sans skill. Pastille recollée sans son contexte de production: `refine`. Voir la spec partagée, section « Retouche d'une pastille ».
+Trois questions à distinguer, dans cet ordre:
+1. **Avis ou modification ?** C'est ce qui décide entre ce skill et le reste. « Qu'est-ce qui cloche dans cette pastille » est une demande d'avis, donc ce skill, qui ne touche à rien. « Relis et corrige » est une demande de modification: ce n'est pas ce skill, même si une revue peut être proposée en chemin.
+2. **Si c'est une modification, de quelle ampleur ?** Retouche de surface, ou demande structurelle (changement d'axe, déplacement du sujet, restructuration) ? Le structurel se régénère avec `generate`, après confirmation de l'utilisateur; il ne se raffine pas.
+3. **Et si c'est une retouche, le contexte est-il là ?** C'est seulement ici que `refine` entre en jeu. Pastille dont le dossier est dans la conversation: retouche directe, sans skill. Pastille recollée sans son contexte de production: `refine`. Voir la spec partagée, section « Faire évoluer une pastille ».
 
-L'erreur courante est de sauter la seconde question et de renvoyer toute demande de modification vers `refine`: la plupart du temps le contexte est intact et `refine` n'a rien à réhydrater.
+L'erreur courante est de sauter les deux dernières questions et de renvoyer toute demande de modification vers `refine`: la plupart du temps le contexte est intact et `refine` n'a rien à réhydrater, et quand la demande est structurelle un diff minimal n'est de toute façon pas le bon outil.

@@ -1,5 +1,5 @@
 ---
-description: Variante Claude Code du générateur de pastilles LLM, qui lance réellement plusieurs sous-agents en parallèle. Génère une pastille de communication interne sur les LLM (un titre, un texte court en français, plus un prompt unique de génération d'images à coller dans le chat Gemini), via cinq sous-agents indépendants qui proposent chacun aussi un titre, une fusion, puis une revue critique déléguée au skill `review` et une correction. Utilise ce skill dès qu'on te demande de rédiger, produire ou générer une pastille, une fiche ou un contenu court d'acculturation sur les LLM, l'IA générative, le prompting, les agents, le RAG, la confidentialité IA ou tout sujet de la liste des 45 pastilles ci-dessous, que le mot "pastille" soit employé ou non. Utilise-le aussi dès qu'on te fournit un titre issu de cette liste. Les retouches demandées ensuite restent dans ce skill, dans le fil: n'appelle pas refine, réservé aux pastilles recollées sans leur contexte.
+description: Générateur de pastilles LLM en vrais sous-agents parallèles (variante Claude Code). Produit une pastille de communication interne sur les LLM (titre, texte court en français, prompt unique de génération d'images à coller dans le chat Gemini) via cinq sous-agents qui rédigent chacun un brouillon sous un angle différent, une fusion, puis une revue critique déléguée au skill `review` et une correction. Utilise ce skill dès qu'on te demande de rédiger, produire ou générer une pastille, une fiche ou un contenu court d'acculturation sur les LLM, l'IA générative, le prompting, les agents, le RAG, la confidentialité IA ou tout sujet de la liste des 45 pastilles ci-dessous, que le mot "pastille" soit employé ou non, et dès qu'on te fournit un titre issu de cette liste. Utilise-le aussi quand une pastille existante doit changer d'axe ou être restructurée: c'est une régénération, pas une retouche. Les retouches de surface, elles, restent dans le fil de la conversation, sans appeler refine.
 ---
 
 # Générateur de pastilles LLM, version multi-agents (Claude Code)
@@ -8,7 +8,7 @@ description: Variante Claude Code du générateur de pastilles LLM, qui lance r�
 Produit une pastille pédagogique complète à partir d'un titre. À la différence de la version chat, il lance de vrais sous-agents parallèles: une passe de recherche, puis cinq sous-agents indépendants qui rédigent chacun un brouillon (titre compris) sous un angle différent, puis une fusion par l'orchestrateur qui retient les meilleures formulations (titre compris), et enfin une revue critique déléguée au skill `review` suivie d'une correction. Livrable: le titre, le texte de la pastille et un prompt unique de génération d'images à coller dans le chat Gemini. Ensuite, une fois les deux visuels générés et collés dans la conversation, le skill `email` fabrique le courriel de diffusion; ce skill ne s'en occupe pas.
 
 ## Spec partagée (à lire en premier)
-Les normes de la série vivent dans un fichier partagé, source unique commune à ce skill et aux skills `refine`, `review` et `email`: liste des 45 pastilles et périmètre, Règles du texte, Règles du titre, Règles d'écriture pour la pastille finale, spec du prompt image et gabarits, charte graphique, doctrine de retouche, boite à outils de revue. Lis-le avant de commencer:
+Les normes de la série vivent dans un fichier partagé, source unique commune à ce skill et aux skills `refine`, `review` et `email`: liste des 45 pastilles et périmètre, Règles du texte, Règles du titre, Règles d'écriture pour la pastille finale, spec du prompt image et gabarits, charte graphique, doctrine d'évolution (retouche ou régénération), boite à outils de revue. Lis-le avant de commencer:
 
 `${CLAUDE_SKILL_DIR}/references/regles-pastille.md` (c'est le fichier `references/regles-pastille.md` situé dans le dossier de ce skill).
 
@@ -48,6 +48,11 @@ Lance cinq sous-agents via l'outil Task, dans le même tour, pour qu'ils s'exéc
 3. Idée reçue: démarrer d'un malentendu courant, puis rectifier.
 4. Mécanique: aller au coeur du fonctionnement, précis mais accessible.
 5. Enjeu: pourquoi ça compte, ce que ça change concrètement pour l'utilisateur.
+
+#### Fan-out sous axe imposé (régénération)
+Quand ce fan-out est relancé parce que l'utilisateur a imposé un axe (voir étape 6), les cinq angles ci-dessus ne s'appliquent plus tels quels: ce sont précisément ceux qu'il vient d'écarter. Les cinq sous-agents partagent alors l'axe demandé et se distinguent par leur traitement à l'intérieur de cet axe: cinq situations de travail différentes si l'axe est le cas d'usage, cinq malentendus différents si c'est l'idée reçue, cinq entrées différentes dans le mécanisme. Le champ « Angle imposé » du gabarit porte l'axe commun, suivi de la variante propre à chaque sous-agent. Le fan-out garde ainsi sa valeur (cinq propositions, sélection des meilleures) au lieu de la disperser sur des angles refusés.
+
+Si la régénération est demandée sans axe précis (« recommence », « je n'aime aucun des choix »), garde les cinq angles standard: c'est le brouillon retenu qui était mauvais, pas la diversité des angles.
 
 Comme le contexte n'est pas hérité, chaque prompt de sous-agent doit être autonome et contenir tout le nécessaire. Utilise ce gabarit, en remplaçant les crochets:
 ```
@@ -109,16 +114,20 @@ Quand la déclencher: systématiquement à la première génération, une fois l
 
 Correction (toi, orchestrateur): la revue rend des constats déjà dédoublonnés et arbitrés, à toi de les appliquer. Réécris la version corrigée en une seule voix, jamais par recollage des formulations des relecteurs, puis prépare le court résumé "Ce que la revue a corrigé" (voir Format de sortie). Les règles d'arbitrage sont dans la spec partagée, section « Arbitrage des constats »: si un constat contredit une norme de la spec, écarte-le en le disant.
 
-### Étape 6, retouches après livraison (elles restent ici)
-Le livrable rendu, l'utilisateur demande presque toujours des ajustements: un paragraphe à alléger, un titre à resserrer, une puce trop longue, un schéma à recadrer. **Ces retouches se traitent ici, dans le fil de la conversation, sans invoquer aucun skill.** Tu as tout le dossier sous les yeux: le brief et ses sources, le périmètre et la liste "déjà traité ailleurs", les cinq brouillons, le texte fusionné, les deux titres, le prompt image et les constats de revue déjà appliqués.
+### Étape 6, demandes après livraison (elles restent ici)
+Le livrable rendu, l'utilisateur demande presque toujours des changements. **Ils se traitent ici, dans le fil de la conversation, sans invoquer aucun skill.** Tu as tout le dossier sous les yeux: le brief et ses sources, le périmètre et la liste "déjà traité ailleurs", les cinq brouillons, le texte fusionné, les deux titres, le prompt image et les constats de revue déjà appliqués.
 
-N'appelle pas `refine`. Ce skill sert à reconstituer un dossier perdu, situation exactement inverse de la tienne: l'appeler ici te ferait redemander des artefacts que tu possèdes et remplacer ton vrai brief par un brief reconstitué, donc moins fiable. Ne relance pas `generate` non plus: on ne repart pas de cinq brouillons pour changer un mot.
+Commence par trancher l'ampleur, comme le demande la spec partagée, section « Faire évoluer une pastille »: retouche de surface, ou demande structurelle (changement d'axe, déplacement du sujet, restructuration d'ensemble) ?
 
-Comment retoucher: applique la spec partagée, section « Retouche d'une pastille » (diff minimal, re-synchronisation du prompt image au strict nécessaire, revue proposée et non imposée, sortie réduite à ce qui change). Deux points qui reviennent souvent à ce stade:
+**Retouche de surface**, le cas courant: applique la spec partagée (diff minimal, re-synchronisation du prompt image au strict nécessaire, revue proposée et non imposée, sortie réduite à ce qui change). N'appelle pas `refine`: il sert à reconstituer un dossier perdu, situation exactement inverse de la tienne, et l'appeler ici te ferait redemander des artefacts que tu possèdes et remplacer ton vrai brief par un brief reconstitué. Deux points qui reviennent souvent:
 - Pas de nouvelle recherche pour une retouche de style: le brief de l'étape 1 est en contexte et fait foi. Ne recherche que si la retouche touche un fait ou un chiffre qu'il ne couvre pas.
 - Les cinq brouillons restent utilisables: si la retouche demande une autre formulation d'un passage, va chercher dans les brouillons reçus avant d'en inventer une, l'angle voulu y est peut-être déjà.
 
-Ce régime vaut pour toute la suite de la conversation, quel que soit le nombre de retouches, et y compris après un passage par `email`.
+**Demande structurelle**: là, la retouche n'est pas le bon outil et il faut relancer la génération. Demande-le à l'utilisateur avant de le faire, en une question qui dit ce que cela implique (cinq nouveaux brouillons, titre possiblement différent, visuels périmés et courriel à refabriquer), sauf s'il a déjà été explicite sur la régénération: dans ce cas relance sans redemander. Les règles complètes (signaux structurels, question à poser, exception, ce qui se garde) sont dans la spec partagée, section « Régénération ».
+
+Comment relancer, concrètement: tu ne repars pas de l'étape 1. Tu reprends à l'étape 3 (fan-out) avec le brief déjà en contexte, ou à l'étape 2 si l'axe demandé déplace le sujet et appelle de nouvelles sources. Le titre canonique et le périmètre restent les tiens. L'axe demandé s'impose aux cinq sous-agents (voir « Fan-out sous axe imposé » à l'étape 3), la fusion suit son cours normal, et la revue redevient d'office puisqu'il s'agit d'un texte neuf. Le livrable reprend alors le format complet de la première génération, prompt image compris, avec la mention que les visuels précédents sont à refaire.
+
+Ce régime vaut pour toute la suite de la conversation, quel que soit le nombre d'échanges, et y compris après un passage par `email`.
 
 ### Points de vigilance Claude Code
 - Parallélisme explicite: demande clairement cinq sous-agents en parallèle, sinon l'exécution sera séquentielle.

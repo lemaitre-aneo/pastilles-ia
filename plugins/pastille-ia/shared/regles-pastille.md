@@ -2,7 +2,7 @@
 
 Ce fichier est la source unique des normes de la série. Les skills `generate` (création), `refine` (réhydratation d'une pastille venue d'ailleurs), `review` (revue critique) et `email` (mise en courriel) le lisent tous les quatre via `${CLAUDE_SKILL_DIR}/references/regles-pastille.md`. Ne duplique pas ces règles dans un SKILL.md: modifie-les ici.
 
-Il contient: la liste des 45 pastilles et les consignes de périmètre, les Règles du texte, les Règles du titre, les Règles d'écriture pour la pastille finale, la spec du prompt de génération d'images (avec gabarits), la charte graphique, la doctrine de retouche (qui dit aussi quand un skill est nécessaire et quand il ne l'est pas), le gabarit de diffusion, et la boite à outils de revue (grilles + gabarit de relecteur).
+Il contient: la liste des 45 pastilles et les consignes de périmètre, les Règles du texte, les Règles du titre, les Règles d'écriture pour la pastille finale, la spec du prompt de génération d'images (avec gabarits), la charte graphique, la doctrine d'évolution d'une pastille (ampleur de la demande, contexte disponible, et quand il faut régénérer plutôt que retoucher), le gabarit de diffusion, et la boite à outils de revue (grilles + gabarit de relecteur).
 
 ## Liste des 45 pastilles (pour la continuité)
 1. Au fait, c'est quoi un LLM ?
@@ -130,11 +130,43 @@ Génère dans un premier temps seulement la première image (l'illustration-titr
 Les trois couleurs officielles sont `#FE5100` (orange), `#000F9F` (bleu) et `#FFB600` (orange clair). Elles sont la source commune des illustrations et du courriel: le bloc ci-dessous les donne au générateur d'images, et le gabarit de diffusion en dérive ses teintes. Toute autre valeur employée quelque part est un dérivé de ces trois, jamais une couleur inventée.
 Style propre, moderne et professionnel, fond blanc. Palette: orange #FE5100 et bleu #000F9F en dominantes, orange clair #FFB600 en appui, blanc et gris pour les respirations, accents multiculturels discrets (rouge, vert, jaune, bleu) reprenant subtilement un motif de couleurs de logo. Superpositions graphiques épurées: motifs géométriques abstraits, quartiers de cercle, lignes claires. Composition aérée, jamais surchargée. Typographie sans serif, propre et corporate.
 
-## Retouche d'une pastille (doctrine commune)
-Une pastille se retouche bien plus souvent qu'elle ne se crée: un mot qui gêne, un paragraphe trop dense, un titre à resserrer, une puce qui déborde. C'est une opération ordinaire. La première chose à trancher n'est pas *comment* retoucher, mais *avec quoi on travaille*.
+## Faire évoluer une pastille (doctrine commune: retouche ou régénération)
+Une pastille se retouche bien plus souvent qu'elle ne se crée: un mot qui gêne, un paragraphe trop dense, un titre à resserrer, une puce qui déborde. C'est une opération ordinaire. Deux questions la cadrent, dans cet ordre: l'ampleur de ce qui est demandé, puis, si c'est bien une retouche, le contexte dont on dispose.
 
-### Test du contexte (avant toute retouche)
-Une seule question: le dossier de la pastille est-il dans la conversation courante ?
+### Test de l'ampleur (en premier)
+La demande porte-t-elle sur la façon de dire, ou sur ce que la pastille raconte ?
+
+- **Retouche**: l'axe et le fond restent, la surface bouge. Ton, longueur, un paragraphe, une puce, le titre, un chiffre, un exemple à remplacer, l'enjeu à remettre en clôture, un libellé de schéma. C'est le cas ordinaire: passe au test du contexte.
+- **Structurel**: l'axe change, le sujet se déplace, ou il faut réorganiser l'ensemble. Le diff minimal n'y arrive pas: appliqué à un axe qui change, il garde la charpente de l'ancien angle sous le vocabulaire du nouveau, exactement le patchwork que la règle de la voix unique veut éviter. Il faut régénérer, voir « Régénération » ci-dessous.
+
+Signaux structurels:
+- Changement d'axe, demandé explicitement ou en substance: « reprends-le en partant d'une situation de travail », « plutôt sous l'angle de l'idée reçue », « explique le mécanisme au lieu de filer la métaphore ». Ce sont les cinq angles du fan-out de `generate`, et on ne passe pas de l'un à l'autre par retouches.
+- Déplacement du sujet ou du périmètre: la pastille doit traiter autre chose, empiéter volontairement sur une voisine, ou son titre canonique change.
+- Restructuration d'ensemble: plus de la moitié du texte est à réécrire, ou l'ordre des paragraphes, le mécanisme illustré et l'encadré bougent ensemble.
+- Insatisfaction qui se répète: après deux ou trois retouches sur le même point, si rien ne convainc, ce n'est plus la formulation qui est en cause mais le brouillon retenu. Dis-le et propose la régénération plutôt que d'enchainer une quatrième retouche.
+- Revue qui rend des constats de fond massifs (l'angle n'explique pas, le titre ne tient pas sa promesse, le mécanisme est mal choisi): le défaut est dans le brouillon, pas dans les phrases.
+
+Ne surinterprète pas: « refais-moi ce paragraphe », « change le titre », « raccourcis », « ajoute un exemple » ne sont pas structurels. Un doute se tranche en posant la question, pas en choisissant l'option la plus chère.
+
+### Régénération (cas structurel)
+Régénérer, c'est relancer le processus de `generate`, cinq brouillons compris. Cela coûte, et cela jette du travail validé: le texte change en entier, le titre retenu peut changer, le prompt image est reconstruit, les visuels déjà rendus deviennent périmés et le courriel doit être refabriqué.
+
+**Demande donc avant de régénérer.** Une seule question, qui dit ce que cela implique et laisse l'alternative ouverte, du genre: « Cet axe-là demande de reprendre la génération: cinq nouveaux brouillons, titre possiblement différent, visuels à refaire. Je relance, ou je reste sur une retouche plus locale ? »
+
+Exception, et elle compte: si l'utilisateur a déjà été explicite (« régénère », « relance la génération », « refais les cinq brouillons », « reprends de zéro », « réécris-la complètement sous cet angle »), relance sans redemander. Faire reconfirmer une décision qui vient d'être prise n'est pas de la prudence.
+
+Ce qui se garde, ce qui se refait:
+- Le brief de recherche se garde s'il couvre encore le sujet. Nouvelle recherche seulement si l'axe déplace le sujet ou appelle des faits qu'il ne porte pas.
+- Le titre canonique et le périmètre se gardent: ils ne dépendent pas de l'axe. Si c'est le sujet lui-même qui se déplace, le titre canonique change, et cela se tranche avec l'utilisateur avant de relancer.
+- L'axe demandé devient une contrainte du fan-out, et non l'une des cinq variantes: les cinq brouillons partagent l'axe imposé et se distinguent par leur traitement. Le fan-out garde ainsi sa valeur (cinq propositions, sélection des meilleures) sans la disperser sur des angles que l'utilisateur vient justement d'écarter.
+- La revue est d'office sur un texte régénéré, comme à toute première génération.
+- Le texte précédent ne se recycle pas phrase par phrase. Une formulation vraiment réussie peut être transmise aux sous-agents comme matériau, mais la nouvelle pastille s'écrit depuis son axe.
+- Le prompt image se reconstruit entièrement, et les visuels existants sont périmés: dis-le sans attendre la question.
+
+Si le contexte de production est perdu et que la demande est structurelle, le bon chemin est `generate` (à partir du titre canonique, avec une passe de recherche), pas `refine`: il n'y a pas de diff minimal à appliquer à un texte qu'on va réécrire.
+
+### Test du contexte (pour une retouche)
+Deuxième question, une fois l'ampleur tranchée: le dossier de la pastille est-il dans la conversation courante ?
 
 Le dossier, c'est le texte et son titre retenu, le titre canonique, le brief et ses sources, le périmètre (voisines et liste "déjà traité ailleurs"), et le prompt image s'il existe.
 
@@ -221,7 +253,7 @@ La rubrique, elle, suit le sujet et non le numéro de diffusion: elle se lit sur
 - Risques et cadre: position 15, puis 39 à 45
 
 ## Boite à outils de revue (grilles + gabarit de relecteur)
-Ces grilles et ce gabarit sont les normes de la revue critique. Le processus, lui, est porté par le skill `review`: c'est lui qui lance les relecteurs et consolide leurs constats, qu'il soit invoqué directement par un humain, par `generate` et `refine` au moment de leur revue, ou depuis une retouche menée dans le fil de la conversation (voir « Retouche d'une pastille »). Celui qui déclenche la revue ne la conduit jamais lui-même: il la déclenche puis applique ce qu'elle rend.
+Ces grilles et ce gabarit sont les normes de la revue critique. Le processus, lui, est porté par le skill `review`: c'est lui qui lance les relecteurs et consolide leurs constats, qu'il soit invoqué directement par un humain, par `generate` et `refine` au moment de leur revue, ou depuis une retouche menée dans le fil de la conversation (voir « Faire évoluer une pastille »). Celui qui déclenche la revue ne la conduit jamais lui-même: il la déclenche puis applique ce qu'elle rend.
 
 Principe: les relecteurs produisent des CONSTATS, jamais une réécriture. Chacun renvoie une liste de problèmes localisés, assortis d'une gravité et d'un correctif précis. C'est le skill appelant qui applique et réécrit, pour garder une voix unique et éviter l'effet patchwork.
 

@@ -1,5 +1,5 @@
 ---
-description: Réhydrate le dossier d'une pastille LLM venue d'ailleurs, puis lui applique la retouche demandée. À n'utiliser QUE si le contexte de production est perdu: l'utilisateur recolle le texte d'une pastille écrite dans une autre conversation ou session, et il n'y a en contexte ni brief, ni sources, ni périmètre, ni prompt image. Ce skill reconstitue ce dossier manquant, puis applique un diff minimal fidèle. N'utilise PAS ce skill quand la pastille est déjà dans la conversation courante (produite, retouchée ou travaillée ici): son dossier est intact, la retouche s'applique alors directement dans le fil, sans skill, selon la section « Retouche d'une pastille » de la spec partagée. Les mots de la demande ne déclenchent rien: retoucher, corriger, reformuler, raccourcir, retitrer se disent pareil dans les deux cas, seule l'absence de contexte déclenche ce skill. Pour créer une pastille depuis un titre, generate.
+description: Réhydrate le dossier d'une pastille LLM venue d'ailleurs, puis lui applique une retouche de surface. À n'utiliser QUE si le contexte de production est perdu: l'utilisateur recolle le texte d'une pastille écrite dans une autre conversation ou session, et il n'y a en contexte ni brief, ni sources, ni périmètre, ni prompt image. Ce skill reconstitue ce dossier manquant, puis applique un diff minimal fidèle. N'utilise PAS ce skill quand la pastille est déjà dans la conversation courante (produite, retouchée ou travaillée ici): son dossier est intact, la retouche s'applique alors directement dans le fil, sans skill, selon la section « Faire évoluer une pastille » de la spec partagée. Ne l'utilise pas non plus pour une demande structurelle, changement d'axe ou restructuration: cela se régénère avec generate. Les mots de la demande ne déclenchent rien: retoucher, corriger, reformuler, raccourcir, retitrer se disent pareil dans tous ces cas.
 ---
 
 # Réhydratation puis retouche d'une pastille (Claude Code)
@@ -9,22 +9,28 @@ Ce skill ne sert qu'à un cas: **la pastille existe, mais son dossier de product
 
 Il ne sert pas à retoucher une pastille dont le dossier est déjà là. Si la pastille a été produite, retouchée ou déjà travaillée dans la conversation courante, tu as le texte, les deux titres, le brief, les sources, le périmètre et le prompt image: il n'y a rien à réhydrater, et la retouche s'applique directement dans le fil, sans invoquer de skill.
 
-Le test qui décide, ses cas limites et les règles de retouche communes aux deux situations vivent dans la spec partagée, section « Retouche d'une pastille ». C'est la référence: applique-la, ne la réinvente pas ici.
+Le test qui décide, ses cas limites et les règles de retouche communes aux deux situations vivent dans la spec partagée, section « Faire évoluer une pastille ». C'est la référence: applique-la, ne la réinvente pas ici.
+
+Il ne sert pas non plus quand la demande est structurelle: changement d'axe, déplacement du sujet, restructuration d'ensemble. Un diff minimal appliqué à un axe qui change produit un texte à double charpente. Ce cas relève de `generate`, même quand le contexte est perdu: voir « Demande structurelle » ci-dessous.
 
 Ce qu'il faut retenir de la frontière:
 - La demande de l'utilisateur ne dit rien du bon chemin. « corrige ce paragraphe » se formule à l'identique avec ou sans contexte.
 - Le déclencheur est l'absence de dossier, jamais l'intention de modifier.
 - Un texte recollé qui avait été produit plus haut dans la même conversation n'est pas un contexte perdu.
+- Ce skill traite les retouches de surface. Le structurel se régénère, il ne se raffine pas.
+
+### Demande structurelle
+Avant de raffiner, tranche l'ampleur de la demande selon la spec partagée, section « Faire évoluer une pastille », sous-section « Test de l'ampleur ». Si la demande est structurelle, ne déroule pas les étapes ci-dessous: dis-le, et propose la régénération par `generate` en disant ce qu'elle implique (cinq brouillons, une passe de recherche, titre possiblement différent, visuels périmés). Ne régénère pas de ta propre initiative; mais si l'utilisateur a déjà été explicite (« régénère », « reprends de zéro sous cet angle »), bascule sur `generate` sans redemander de confirmation. Le texte recollé et ses sources ne sont pas perdus pour autant: ils servent de matériau et de point de départ du brief.
 
 ### Sortie anticipée
-Si tu arrives ici (typiquement parce que l'utilisateur a tapé `/refine`) alors que le dossier de la pastille est présent dans la conversation, ne déroule pas le processus. Dis-le en une ligne, du genre: « Le contexte de la pastille est déjà là, je retouche directement sans repasser par une réhydratation. » Puis applique la retouche selon la spec partagée, section « Retouche d'une pastille » (lis quand même le fichier, il porte les règles du diff minimal et la re-synchronisation du prompt image). Surtout, ne redemande pas des artefacts que tu as déjà et ne reconstitue pas un brief par recherche quand le vrai brief est en contexte: un brief reconstitué est moins fiable que celui d'origine.
+Si tu arrives ici (typiquement parce que l'utilisateur a tapé `/refine`) alors que le dossier de la pastille est présent dans la conversation, ne déroule pas le processus. Dis-le en une ligne, du genre: « Le contexte de la pastille est déjà là, je retouche directement sans repasser par une réhydratation. » Puis applique la retouche selon la spec partagée, section « Faire évoluer une pastille » (lis quand même le fichier, il porte les règles du diff minimal et la re-synchronisation du prompt image). Surtout, ne redemande pas des artefacts que tu as déjà et ne reconstitue pas un brief par recherche quand le vrai brief est en contexte: un brief reconstitué est moins fiable que celui d'origine.
 
 Frontière avec les autres skills: `generate` crée une pastille à partir d'un titre (recherche, cinq brouillons, fusion, revue). `review` juge sans rien modifier. `email` met en courriel. Si l'utilisateur n'a pas de texte existant et veut une nouvelle pastille, bascule sur `generate`.
 
 Après une retouche, si la pastille a déjà été mise en courriel, le skill `email` régénère le `.msg` sans rien relancer d'autre.
 
 ## Spec partagée (à lire en premier)
-Les normes de la série vivent dans un fichier partagé, source unique commune à ce skill et aux skills `generate`, `review` et `email`: liste des 45 pastilles et périmètre, Règles du texte, Règles du titre, Règles d'écriture pour la pastille finale, spec du prompt image et gabarits, charte graphique, doctrine de retouche, boite à outils de revue. Lis-le avant de commencer:
+Les normes de la série vivent dans un fichier partagé, source unique commune à ce skill et aux skills `generate`, `review` et `email`: liste des 45 pastilles et périmètre, Règles du texte, Règles du titre, Règles d'écriture pour la pastille finale, spec du prompt image et gabarits, charte graphique, doctrine d'évolution (retouche ou régénération), boite à outils de revue. Lis-le avant de commencer:
 
 `${CLAUDE_SKILL_DIR}/references/regles-pastille.md` (c'est le fichier `references/regles-pastille.md` situé dans le dossier de ce skill).
 
@@ -70,8 +76,10 @@ Cette étape est le coeur du skill, et la raison pour laquelle il n'a pas de sen
 
 Seule exception: si l'utilisateur demande explicitement de ne pas rechercher, respecte-le, mais signale que la justesse et la revue en pâtiront. Dans tous les cas, n'invente jamais un chiffre: si tu ne peux vérifier ni par une source fournie ni par une recherche, dis-le et demande la donnée à l'utilisateur plutôt que d'affirmer.
 
+Si le brief reconstitué révèle que le problème n'est pas la formulation mais l'angle même de la pastille (le texte explique mal ce que les sources disent, l'axe ne tient pas), dis-le et propose la régénération plutôt que d'enchainer des retouches: à ce stade tu as le titre canonique, le périmètre et un brief, c'est-à-dire tout ce dont `generate` a besoin.
+
 ## Étape 3, appliquer le diff minimal
-Applique les règles de la spec partagée, section « Retouche d'une pastille », sous-section « Règles du diff minimal »: ne changer que ce qui est demandé et ce qui en découle, une seule voix, conformité aux normes de la série, et vérification des contraintes de comptage que la retouche déplace (taille des paragraphes, place de l'enjeu, longueur des puces, emphases).
+Applique les règles de la spec partagée, section « Faire évoluer une pastille », sous-section « Règles du diff minimal »: ne changer que ce qui est demandé et ce qui en découle, une seule voix, conformité aux normes de la série, et vérification des contraintes de comptage que la retouche déplace (taille des paragraphes, place de l'enjeu, longueur des puces, emphases).
 
 ## Étape 4, re-synchronisation du prompt image (diff minimal)
 Applique la sous-section « Re-synchronisation du prompt image » de la même section de la spec partagée. Rappel du cas propre à ce skill: quand l'utilisateur a fourni un prompt image, pars de CE prompt et n'y applique que le plus petit changement nécessaire; s'il n'en a pas fourni, n'en fabrique pas sans demande explicite.
