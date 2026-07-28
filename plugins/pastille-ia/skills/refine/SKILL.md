@@ -1,18 +1,30 @@
 ---
-description: Raffine (itérativement) une pastille LLM déjà rédigée quand la conversation d'origine n'est plus disponible. L'utilisateur fournit le texte de la pastille (et selon le cas son titre, son prompt image, ses sources) plus la retouche voulue; ce skill réhydrate le contexte à partir des normes de la série et applique un diff minimal fidèle, sans relancer la génération complète (pas de fan-out à cinq brouillons). Utilise ce skill dès qu'on te demande de retoucher, ajuster, corriger, reformuler, raccourcir, allonger, retitrer, changer le ton ou faire évoluer une pastille existante déjà écrite, que le mot "pastille" soit employé ou non, dès lors qu'un texte de pastille est fourni avec une demande de modification. Pour créer une pastille à partir d'un simple titre (sans texte existant), utilise plutôt le skill generate.
+description: Réhydrate le dossier d'une pastille LLM venue d'ailleurs, puis lui applique la retouche demandée. À n'utiliser QUE si le contexte de production est perdu: l'utilisateur recolle le texte d'une pastille écrite dans une autre conversation ou session, et il n'y a en contexte ni brief, ni sources, ni périmètre, ni prompt image. Ce skill reconstitue ce dossier manquant, puis applique un diff minimal fidèle. N'utilise PAS ce skill quand la pastille est déjà dans la conversation courante (produite, retouchée ou travaillée ici): son dossier est intact, la retouche s'applique alors directement dans le fil, sans skill, selon la section « Retouche d'une pastille » de la spec partagée. Les mots de la demande ne déclenchent rien: retoucher, corriger, reformuler, raccourcir, retitrer se disent pareil dans les deux cas, seule l'absence de contexte déclenche ce skill. Pour créer une pastille depuis un titre, generate.
 ---
 
-# Raffineur de pastilles LLM (Claude Code)
+# Réhydratation puis retouche d'une pastille (Claude Code)
 
-## Ce que fait ce skill
-Fait évoluer une pastille déjà produite, à partir des artefacts que l'utilisateur recolle (au minimum le texte), sans repasser par la génération complète. Il réhydrate le contexte à partir des normes de la série, classe la retouche demandée, applique un diff minimal en une seule voix, re-synchronise le prompt image au strict nécessaire, et propose (sans l'imposer) de déclencher le skill `review`, qui conduit la revue critique à trois relecteurs.
+## Quand ce skill sert, et quand il ne sert pas
+Ce skill ne sert qu'à un cas: **la pastille existe, mais son dossier de production a disparu**. L'utilisateur recolle un texte produit ailleurs (autre conversation, session antérieure, courriel déjà diffusé) et demande une modification. Il n'y a en contexte ni brief de recherche, ni sources, ni périmètre, ni prompt image. Le travail utile est alors la réhydratation: reconstituer ce dossier avant de toucher au texte.
+
+Il ne sert pas à retoucher une pastille dont le dossier est déjà là. Si la pastille a été produite, retouchée ou déjà travaillée dans la conversation courante, tu as le texte, les deux titres, le brief, les sources, le périmètre et le prompt image: il n'y a rien à réhydrater, et la retouche s'applique directement dans le fil, sans invoquer de skill.
+
+Le test qui décide, ses cas limites et les règles de retouche communes aux deux situations vivent dans la spec partagée, section « Retouche d'une pastille ». C'est la référence: applique-la, ne la réinvente pas ici.
+
+Ce qu'il faut retenir de la frontière:
+- La demande de l'utilisateur ne dit rien du bon chemin. « corrige ce paragraphe » se formule à l'identique avec ou sans contexte.
+- Le déclencheur est l'absence de dossier, jamais l'intention de modifier.
+- Un texte recollé qui avait été produit plus haut dans la même conversation n'est pas un contexte perdu.
+
+### Sortie anticipée
+Si tu arrives ici (typiquement parce que l'utilisateur a tapé `/refine`) alors que le dossier de la pastille est présent dans la conversation, ne déroule pas le processus. Dis-le en une ligne, du genre: « Le contexte de la pastille est déjà là, je retouche directement sans repasser par une réhydratation. » Puis applique la retouche selon la spec partagée, section « Retouche d'une pastille » (lis quand même le fichier, il porte les règles du diff minimal et la re-synchronisation du prompt image). Surtout, ne redemande pas des artefacts que tu as déjà et ne reconstitue pas un brief par recherche quand le vrai brief est en contexte: un brief reconstitué est moins fiable que celui d'origine.
+
+Frontière avec les autres skills: `generate` crée une pastille à partir d'un titre (recherche, cinq brouillons, fusion, revue). `review` juge sans rien modifier. `email` met en courriel. Si l'utilisateur n'a pas de texte existant et veut une nouvelle pastille, bascule sur `generate`.
 
 Après une retouche, si la pastille a déjà été mise en courriel, le skill `email` régénère le `.msg` sans rien relancer d'autre.
 
-Frontière avec `generate`: `generate` crée une pastille à partir d'un titre (recherche, cinq brouillons, fusion, revue). `refine` part d'une pastille existante fournie et ne fait que la retoucher. Si l'utilisateur n'a pas de texte existant et veut une nouvelle pastille, bascule sur `generate`.
-
 ## Spec partagée (à lire en premier)
-Les normes de la série vivent dans un fichier partagé, source unique commune à ce skill et aux skills `generate`, `review` et `email`: liste des 45 pastilles et périmètre, Règles du texte, Règles du titre, Règles d'écriture pour la pastille finale, spec du prompt image et gabarits, charte graphique, boite à outils de revue. Lis-le avant de commencer:
+Les normes de la série vivent dans un fichier partagé, source unique commune à ce skill et aux skills `generate`, `review` et `email`: liste des 45 pastilles et périmètre, Règles du texte, Règles du titre, Règles d'écriture pour la pastille finale, spec du prompt image et gabarits, charte graphique, doctrine de retouche, boite à outils de revue. Lis-le avant de commencer:
 
 `${CLAUDE_SKILL_DIR}/references/regles-pastille.md` (c'est le fichier `references/regles-pastille.md` situé dans le dossier de ce skill).
 
@@ -22,7 +34,7 @@ Toute retouche que tu appliques doit rester conforme à ces normes. Ne recopie p
 Le coeur du skill (édition et, au besoin, recherche web ciblée) ne requiert pas de sous-agents et fonctionne partout. Seule la revue critique optionnelle en lance trois, et elle est déléguée au skill `review`, qui gère aussi ses replis quand les sous-agents ne sont pas disponibles.
 
 ## Entrées
-L'entrée type est soit le texte seul, soit le texte plus le prompt image.
+L'entrée type est soit le texte seul, soit le texte plus le prompt image, recollés par l'utilisateur.
 
 Requis pour travailler:
 - La demande de retouche: quoi changer, et si possible pourquoi.
@@ -54,23 +66,15 @@ Le brief de recherche d'origine est perdu avec la conversation. Or il ne sert pa
 - Sources fournies par l'utilisateur: elles tiennent lieu de brief. Appuie-toi dessus. Ne relance une recherche que si elles ne couvrent pas le point touché, ou si une donnée est mouvante et risque d'être périmée (coûts, empreinte, modèles, réglementation).
 - Sources manquantes ou insuffisantes: relance une recherche web ciblée pour reconstituer un brief compact (faits clés, chiffres utiles, 2 à 4 sources), ancrée sur la date du jour (champ currentDate), en priorité sur des sources officielles ou originales. Fais-le dès que les sources manquent, sans attendre que la retouche porte explicitement sur un fait: le brief sécurise la reformulation et rend la revue exploitable. Garde la recherche proportionnée (une petite passe suffit pour une simple retouche), mais ne l'escamote pas.
 
+Cette étape est le coeur du skill, et la raison pour laquelle il n'a pas de sens quand le contexte est intact: reconstituer un brief que l'on a déjà, c'est le remplacer par une approximation.
+
 Seule exception: si l'utilisateur demande explicitement de ne pas rechercher, respecte-le, mais signale que la justesse et la revue en pâtiront. Dans tous les cas, n'invente jamais un chiffre: si tu ne peux vérifier ni par une source fournie ni par une recherche, dis-le et demande la donnée à l'utilisateur plutôt que d'affirmer.
 
 ## Étape 3, appliquer le diff minimal
-- Applique uniquement ce qui est demandé et ce qui en découle nécessairement. Préserve tout le reste: n'en profite pas pour réécrire des passages non concernés.
-- Réécris en une seule voix cohérente, sans effet patchwork à la jointure de la retouche.
-- Respecte toutes les normes de la spec partagée (Règles du texte, Règles du titre, Règles d'écriture pour la pastille finale), y compris les contraintes dures: français, pas de tiret cadratin ni caractère non standard, aucun nom d'entreprise ni ANEO, corps explicatif en prose sans listes ni puces. Les blocs structurés definis par la spec (encadre de synthese, bloc annexe) restent autorises et ne comptent pas comme des listes.
-- Titre: si la retouche implique le titre, applique les Règles du titre; garde le périmètre ancré sur le canonique. Sinon, laisse le titre retenu tel quel.
+Applique les règles de la spec partagée, section « Retouche d'une pastille », sous-section « Règles du diff minimal »: ne changer que ce qui est demandé et ce qui en découle, une seule voix, conformité aux normes de la série, et vérification des contraintes de comptage que la retouche déplace (taille des paragraphes, place de l'enjeu, longueur des puces, emphases).
 
 ## Étape 4, re-synchronisation du prompt image (diff minimal)
-Principe directeur: ne régénère jamais le prompt image gratuitement. Si la retouche ne change pas ce que les images doivent montrer, le prompt image reste inchangé.
-
-- Prompt image non fourni: n'en fabrique pas, sauf demande explicite. Si la retouche modifie le titre retenu ou le concept illustré, signale à l'utilisateur que son prompt image (s'il en a un ailleurs) devra être mis à jour, et propose de le régénérer selon la spec partagée.
-- Prompt image fourni: pars de CE prompt et applique le plus petit changement nécessaire.
-  - Titre retenu modifié: remplace le titre exact (la ligne du type `Le titre exact: "..."`) au caractère près, et rien d'autre.
-  - Concept central déplacé par la retouche (l'illustration-titre ou le schéma ne colle plus au texte): ajuste la description de l'illustration (et/ou du schéma) en conservant la charte, le style et la structure du prompt fourni. Diff minimal, pas de réécriture complète.
-  - Le schéma est systématique: ne le retire jamais. Si la retouche déplace le mécanisme illustré, ajuste sa description selon les gabarits de la spec partagée. S'il manque au prompt fourni, ajoute-le.
-  - Ni le titre rendu ni le concept illustré ne changent: laisse le prompt image entièrement inchangé. Le contexte caché "à ne pas afficher" n'affecte pas le rendu; ne le rafraîchis que si l'utilisateur le demande.
+Applique la sous-section « Re-synchronisation du prompt image » de la même section de la spec partagée. Rappel du cas propre à ce skill: quand l'utilisateur a fourni un prompt image, pars de CE prompt et n'y applique que le plus petit changement nécessaire; s'il n'en a pas fourni, n'en fabrique pas sans demande explicite.
 
 ## Étape 5, revue critique (déléguée au skill `review`, proposée et non imposée)
 Ne déclenche pas de revue d'office. Propose-la, et ne la déclenche qu'avec l'accord de l'utilisateur (elle coûte trois sous-agents).
@@ -80,6 +84,8 @@ Si l'utilisateur accepte: invoque le skill `review` via l'outil Skill, et passe-
 Puis applique: la revue rend des constats déjà dédoublonnés et arbitrés selon la spec partagée, section « Arbitrage des constats ». Réécris en une seule voix, une seule passe, sans boucler. Si un constat contredit une norme de la spec, écarte-le en le disant.
 
 ## Format de sortie
+Ce format vaut pour le cas de ce skill, le contexte perdu: l'utilisateur n'a rien d'autre sous les yeux que ce que tu affiches, donc le livrable est complet. (Pour une retouche menée dans le fil avec le contexte intact, la sortie est réduite à ce qui change, voir la spec partagée.)
+
 N'affiche que le livrable, dans cet ordre:
 - Si une revue a eu lieu: un court résumé "Ce que la revue a corrigé" (2 à 4 lignes), avant le reste. Sinon, pas de résumé.
 - Le titre retenu, en tête. S'il diffère du titre canonique de la série, ajoute juste en dessous une ligne discrète, par exemple: Titre canonique de la série: "...". Dites-moi si vous préférez le conserver, je reviens dessus en un mot.
@@ -89,3 +95,5 @@ N'affiche que le livrable, dans cet ordre:
 
 Termine toujours par cette question exacte:
 "Comment trouvez-vous le titre, le texte, l'image titre et le diagramme (si généré) ? Si une partie vous semble trop complexe, ou si vous souhaitez affiner le focus d'un visuel pour qu'il soit encore plus épuré, n'hésitez pas à me le faire savoir, et je l'ajusterai."
+
+Les retouches suivantes, elles, se font dans le fil: à partir de maintenant le dossier est en contexte, donc plus aucune réhydratation et plus aucun appel à ce skill.

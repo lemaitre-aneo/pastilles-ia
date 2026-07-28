@@ -3,11 +3,22 @@
 Outils multi-agents pour les **pastilles** pédagogiques internes sur les LLM: un texte court en français, un prompt unique de génération d'images à coller dans Gemini, puis le courriel de diffusion. Quatre skills:
 
 - **`generate`**: crée une pastille à partir d'un titre. Lance de vrais sous-agents en parallèle (rédaction sous cinq angles, fusion, puis revue critique par trois relecteurs et correction).
-- **`refine`**: raffine une pastille déjà rédigée dont la conversation d'origine est perdue. On recolle le texte (et selon le cas le titre, le prompt image, les sources) plus la retouche voulue; le skill réhydrate le contexte et applique un diff minimal, sans relancer la génération complète.
-- **`review`**: fait relire une pastille par trois relecteurs indépendants et parallèles (fond et exactitude, forme et pédagogie, conformité et visuel), qui rendent des constats localisés, consolidés et arbitrés, sans rien réécrire. Invocable seul pour un diagnostic, et déclenché par `generate` (d'office) et `refine` (sur accord) au moment de leur revue.
+- **`refine`**: réhydrate une pastille venue d'ailleurs, puis la retouche. Réservé au cas où le contexte de production est perdu: on recolle le texte (et selon le cas le titre, le prompt image, les sources) plus la retouche voulue; le skill reconstitue le dossier manquant (périmètre, brief, sources) et applique un diff minimal, sans relancer la génération complète. **Une retouche demandée alors que la pastille est déjà dans la conversation ne passe pas par ce skill**: elle s'applique directement dans le fil, le dossier étant intact (voir « Retoucher une pastille »).
+- **`review`**: fait relire une pastille par trois relecteurs indépendants et parallèles (fond et exactitude, forme et pédagogie, conformité et visuel), qui rendent des constats localisés, consolidés et arbitrés, sans rien réécrire. Invocable seul pour un diagnostic, et déclenché par `generate` (d'office), par `refine` (sur accord) ou depuis une retouche dans le fil (sur accord).
 - **`email`**: fabrique le courriel de diffusion, un `.msg` Outlook prêt à compléter et à envoyer, à partir du texte validé et des deux visuels collés dans la conversation. Corps HTML au gabarit, images affichées dans le corps, typographie française appliquée.
 
-Les deux skills partagent **une seule source de vérité pour les normes de la série** (`plugins/pastille-ia/shared/regles-pastille.md`): liste des 45 pastilles et périmètre, Règles du texte et du titre, spec du prompt image, charte graphique, gabarit de diffusion, boite à outils de revue. Le gabarit HTML de diffusion vit à côté, dans `plugins/pastille-ia/shared/template-pastille.html`. Chaque skill n'y ajoute que son propre processus.
+Les quatre skills partagent **une seule source de vérité pour les normes de la série** (`plugins/pastille-ia/shared/regles-pastille.md`): liste des 45 pastilles et périmètre, Règles du texte et du titre, spec du prompt image, charte graphique, doctrine de retouche, gabarit de diffusion, boite à outils de revue. Le gabarit HTML de diffusion vit à côté, dans `plugins/pastille-ia/shared/template-pastille.html`. Chaque skill n'y ajoute que son propre processus.
+
+## Retoucher une pastille
+
+Une pastille se retouche plus souvent qu'elle ne se crée, et **la retouche n'est pas un skill par défaut**. Un seul test tranche: le dossier de la pastille (texte, deux titres, brief et sources, périmètre, prompt image) est-il dans la conversation courante ?
+
+| Situation | Chemin |
+| --- | --- |
+| La pastille a été produite, retouchée ou déjà travaillée dans cette conversation | Retouche directe dans le fil, **aucun skill**. Le dossier est intact, il n'y a rien à réhydrater. |
+| L'utilisateur recolle une pastille produite ailleurs (autre conversation, session antérieure, courriel déjà diffusé) | `/refine`, qui reconstitue d'abord le dossier manquant |
+
+Les mots de la demande ne décident de rien: « corrige », « raccourcis », « change le titre » se disent pareil dans les deux cas. La doctrine complète (test du contexte et ses cas limites, règles du diff minimal, re-synchronisation du prompt image, revue proposée et non imposée, sortie réduite à ce qui change) est dans la spec partagée, section « Retouche d'une pastille »; `generate` la suit à son étape 6 et `refine` à ses étapes 3 à 5.
 
 | Entrée | Invocation | Installation |
 | --- | --- | --- |
@@ -32,7 +43,7 @@ plugins/pastille-ia/
     SKILL.md                                                           # processus de création
     references -> ../../shared                                         # symlink -> ${CLAUDE_SKILL_DIR}/references/regles-pastille.md
   skills/refine/
-    SKILL.md                                                           # processus de raffinement
+    SKILL.md                                                           # processus de réhydratation puis retouche
     references -> ../../shared                                         # symlink -> ${CLAUDE_SKILL_DIR}/references/regles-pastille.md
   skills/review/
     SKILL.md                                                           # processus de revue critique (trois relecteurs)
@@ -59,12 +70,12 @@ Rien à installer. Ouvrez le dépôt, accordez la confiance du dossier, puis:
 
 ```
 /generate      # créer une pastille à partir d'un titre
-/refine        # raffiner une pastille existante (recollez son texte)
+/refine        # reprendre une pastille venue d'une autre conversation (recollez son texte)
 /review        # faire relire une pastille, sans la modifier
 /email         # fabriquer le courriel .msg (collez les deux visuels générés)
 ```
 
-Le parcours complet d'une pastille: `/generate` produit le texte et le prompt d'images, vous générez les deux visuels dans Gemini et vous les collez dans la conversation, `/email` fabrique le `.msg`. `/refine` s'intercale à tout moment pour retoucher le texte, et `/email` se rejoue ensuite sans rien régénérer. `/review` juge sans modifier: `generate` le déclenche d'office, `refine` le propose, et vous pouvez l'appeler seul sur n'importe quelle pastille.
+Le parcours complet d'une pastille: `/generate` produit le texte et le prompt d'images, vous générez les deux visuels dans Gemini et vous les collez dans la conversation, `/email` fabrique le `.msg`. Les retouches se demandent en langage naturel, sans commande: tant que la pastille est dans la conversation, elles s'appliquent dans le fil, puis `/email` se rejoue sans rien régénérer d'autre. `/refine` ne sert qu'à reprendre une pastille dont la conversation d'origine est perdue. `/review` juge sans modifier: `generate` le déclenche d'office, et vous pouvez l'appeler seul sur n'importe quelle pastille.
 
 Fonctionne à l'identique en local et en session Claude Code sur le web (les skills sont lus depuis `.claude/skills/` du clone). Aucune marketplace, aucun `/plugin install`, aucun rafraîchissement de cache.
 
@@ -84,11 +95,11 @@ Puis `/pastille-ia:generate`, `/pastille-ia:refine`, `/pastille-ia:review` ou `/
 
 ## Développement
 
-Les normes de la série sont centralisées dans `plugins/pastille-ia/shared/regles-pastille.md`: modifiez-les là, et les deux skills en héritent (pas de duplication à synchroniser). Les processus propres à chaque skill vivent dans leur `SKILL.md`. En ouvrant le dépôt, `/generate` et `/refine` pointent (via les symlinks) directement sur ces fichiers: vos modifications sont prises en compte tout de suite, `/reload-plugins` recharge après édition. Pour publier vers Cowork et les autres postes, poussez sur GitHub (ils rafraîchissent ensuite la marketplace).
+Les normes de la série sont centralisées dans `plugins/pastille-ia/shared/regles-pastille.md`: modifiez-les là, et les quatre skills en héritent (pas de duplication à synchroniser). Les processus propres à chaque skill vivent dans leur `SKILL.md`. En ouvrant le dépôt, `/generate` et `/refine` pointent (via les symlinks) directement sur ces fichiers: vos modifications sont prises en compte tout de suite, `/reload-plugins` recharge après édition. Pour publier vers Cowork et les autres postes, poussez sur GitHub (ils rafraîchissent ensuite la marketplace).
 
 ## Notes
 
-- **Sous-agents parallèles:** `generate` en lance cinq pour ses brouillons; `review` en lance trois, un par grille de relecture; `refine` n'en lance aucun lui-même et se contente de proposer `review`; `email` n'en lance aucun. Le processus tourne dans Claude Code et dans Cowork. Dans le chat simple de claude.ai (hors Cowork), les sous-agents ne s'exécutent pas; `generate` bascule sur son repli séquentiel documenté et `review` se replie sur un relecteur global unique.
+- **Sous-agents parallèles:** `generate` en lance cinq pour ses brouillons; `review` en lance trois, un par grille de relecture; `refine` n'en lance aucun lui-même et se contente de proposer `review`; `email` n'en lance aucun. Une retouche menée dans le fil n'en lance aucun non plus, sauf si l'utilisateur accepte la revue proposée. Le processus tourne dans Claude Code et dans Cowork. Dans le chat simple de claude.ai (hors Cowork), les sous-agents ne s'exécutent pas; `generate` bascule sur son repli séquentiel documenté et `review` se replie sur un relecteur global unique.
 - **Symlinks:** valables sous Linux/WSL et dans le cloud Linux d'Anthropic, aussi bien pour les skills projet (`.claude/skills/*`) que pour les `references -> ../../shared` internes. Un clone Windows sans support des symlinks git verrait des liens cassés; remplacer alors le lien concerné par une copie réelle du fichier cible. Même solution de repli si une session cloud ne suivait pas un symlink.
 - **Courriel et Outlook:** le rendu du `.msg` est contraint par le moteur de rendu de Word, qui affiche les messages ouverts dans Outlook pour Windows. Les contournements (couleur jamais portée par un `<td>`, `color` avant `font-family`, aucun nom de police entre apostrophes, mise en forme doublée en balises `<font>`, plafond de largeur en commentaire conditionnel) sont documentés dans la spec partagée et appliqués par `render.py`. `verify.py` échoue si l'un d'eux est défait. Aucun Outlook n'existe dans l'environnement de génération: la validation finale du rendu appartient toujours à l'humain.
 - **Dépendances du skill `email`:** `olefile` (vérification) et `pillow` (conversion webp et aplatissement de la transparence). Le conteneur `.msg` lui-même est écrit sans aucune dépendance.

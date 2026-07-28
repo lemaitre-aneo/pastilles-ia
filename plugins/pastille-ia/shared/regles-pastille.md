@@ -1,8 +1,8 @@
 # Spec partagée des pastilles LLM
 
-Ce fichier est la source unique des normes de la série. Les skills `generate` (création), `refine` (raffinement), `review` (revue critique) et `email` (mise en courriel) le lisent tous les quatre via `${CLAUDE_SKILL_DIR}/references/regles-pastille.md`. Ne duplique pas ces règles dans un SKILL.md: modifie-les ici.
+Ce fichier est la source unique des normes de la série. Les skills `generate` (création), `refine` (réhydratation d'une pastille venue d'ailleurs), `review` (revue critique) et `email` (mise en courriel) le lisent tous les quatre via `${CLAUDE_SKILL_DIR}/references/regles-pastille.md`. Ne duplique pas ces règles dans un SKILL.md: modifie-les ici.
 
-Il contient: la liste des 45 pastilles et les consignes de périmètre, les Règles du texte, les Règles du titre, les Règles d'écriture pour la pastille finale, la spec du prompt de génération d'images (avec gabarits), la charte graphique, et la boite à outils de revue (grilles + gabarit de relecteur).
+Il contient: la liste des 45 pastilles et les consignes de périmètre, les Règles du texte, les Règles du titre, les Règles d'écriture pour la pastille finale, la spec du prompt de génération d'images (avec gabarits), la charte graphique, la doctrine de retouche (qui dit aussi quand un skill est nécessaire et quand il ne l'est pas), le gabarit de diffusion, et la boite à outils de revue (grilles + gabarit de relecteur).
 
 ## Liste des 45 pastilles (pour la continuité)
 1. Au fait, c'est quoi un LLM ?
@@ -130,6 +130,50 @@ Génère dans un premier temps seulement la première image (l'illustration-titr
 Les trois couleurs officielles sont `#FE5100` (orange), `#000F9F` (bleu) et `#FFB600` (orange clair). Elles sont la source commune des illustrations et du courriel: le bloc ci-dessous les donne au générateur d'images, et le gabarit de diffusion en dérive ses teintes. Toute autre valeur employée quelque part est un dérivé de ces trois, jamais une couleur inventée.
 Style propre, moderne et professionnel, fond blanc. Palette: orange #FE5100 et bleu #000F9F en dominantes, orange clair #FFB600 en appui, blanc et gris pour les respirations, accents multiculturels discrets (rouge, vert, jaune, bleu) reprenant subtilement un motif de couleurs de logo. Superpositions graphiques épurées: motifs géométriques abstraits, quartiers de cercle, lignes claires. Composition aérée, jamais surchargée. Typographie sans serif, propre et corporate.
 
+## Retouche d'une pastille (doctrine commune)
+Une pastille se retouche bien plus souvent qu'elle ne se crée: un mot qui gêne, un paragraphe trop dense, un titre à resserrer, une puce qui déborde. C'est une opération ordinaire. La première chose à trancher n'est pas *comment* retoucher, mais *avec quoi on travaille*.
+
+### Test du contexte (avant toute retouche)
+Une seule question: le dossier de la pastille est-il dans la conversation courante ?
+
+Le dossier, c'est le texte et son titre retenu, le titre canonique, le brief et ses sources, le périmètre (voisines et liste "déjà traité ailleurs"), et le prompt image s'il existe.
+
+- **Contexte présent**, cas le plus fréquent: la pastille a été produite, retouchée ou déjà travaillée dans cette conversation, ou l'utilisateur en a fourni les pièces au fil de l'échange. **Aucun skill à invoquer.** Applique la retouche directement, dans le fil, en suivant les règles ci-dessous. N'appelle pas `refine`: il ne ferait que redemander ou reconstituer un dossier que tu as déjà sous les yeux, avec le risque de repartir sur un brief reconstitué moins fiable que le vrai. N'appelle pas `generate` non plus: il repartirait de zéro.
+- **Contexte perdu**: l'utilisateur recolle une pastille produite ailleurs (autre conversation, session antérieure, courriel déjà diffusé) et demande une modification. Il n'y a en contexte ni brief, ni périmètre, ni prompt image, et le texte collé est tout ce qui existe. C'est le cas d'usage du skill `refine`, et le seul: sans réhydratation préalable, la retouche se ferait à l'aveugle et la revue tournerait à vide.
+
+Le vocabulaire de la demande ne décide de rien. « retouche », « corrige », « raccourcis », « reformule », « change le titre », « relis et corrige » se disent exactement pareil dans les deux cas: seule la présence ou l'absence du dossier tranche. Un texte qui apparaît dans la conversation n'est pas pour autant un texte sans contexte: ce qui compte est de savoir si son dossier de production est là, pas si son texte est visible.
+
+Cas limites:
+- Pastille produite plus haut dans cette conversation, dossier présent: contexte présent, retouche directe. C'est le cas le plus courant, et celui où l'appel à un skill de retouche est une erreur.
+- Texte recollé alors qu'il a été produit plus haut dans la même conversation: contexte présent. Le collage ne perd rien, le dossier est toujours là.
+- Dossier partiel (le texte est là, le brief manque): traite le manque comme tel, ne bascule pas sur `refine` pour autant. Reconstitue ce qui manque si la retouche en dépend, comme le ferait `refine` à son étape de brief.
+- Doute réel: la question à poser à l'utilisateur est « ce texte vient-il d'une autre conversation ? », pas « voulez-vous un raffinement ? ».
+
+### Règles du diff minimal (dans les deux cas)
+- Applique uniquement ce qui est demandé et ce qui en découle nécessairement. Préserve tout le reste: n'en profite pas pour réécrire des passages non concernés, ni pour "améliorer" au passage.
+- Réécris en une seule voix cohérente, sans effet patchwork à la jointure de la retouche.
+- Respecte toutes les normes de cette spec (Règles du texte, Règles du titre, Règles d'écriture pour la pastille finale), y compris les contraintes dures: français, pas de tiret cadratin ni caractère non standard, aucun nom d'entreprise ni ANEO, corps explicatif en prose sans listes ni puces. Les blocs structurés définis par cette spec (encadré de synthèse, bloc annexe) restent autorisés et ne comptent pas comme des listes.
+- Vérifie ce que la retouche déplace: la taille des paragraphes touchés (45 à 60 mots), la place de l'enjeu (dernier paragraphe), la longueur des puces de « L'essentiel » (douze mots ou soixante-dix signes), le nombre d'emphases. Une retouche locale casse souvent une contrainte de comptage voisine.
+- Titre: si la retouche implique le titre, applique les Règles du titre et garde le périmètre ancré sur le canonique. Sinon, laisse le titre retenu tel quel.
+- Recherche: ne relance une recherche web que si la retouche touche un fait, un chiffre ou une donnée mouvante que le brief disponible ne couvre pas. Une retouche de style ne demande aucune recherche quand le brief est là. N'invente jamais un chiffre: si tu ne peux le vérifier ni par le brief ni par une recherche, demande la donnée à l'utilisateur plutôt que d'affirmer.
+
+### Re-synchronisation du prompt image (diff minimal)
+Principe directeur: ne régénère jamais le prompt image gratuitement. Si la retouche ne change pas ce que les images doivent montrer, le prompt image reste inchangé.
+
+- Titre retenu modifié: remplace le titre exact (la ligne du type `Le titre exact: "..."`) au caractère près, et rien d'autre.
+- Concept central déplacé par la retouche (l'illustration-titre ou le schéma ne colle plus au texte): ajuste la description de l'illustration et/ou du schéma en conservant la charte, le style et la structure du prompt existant. Diff minimal, pas de réécriture complète.
+- Le schéma est systématique: ne le retire jamais. Si la retouche déplace le mécanisme illustré, ajuste sa description selon les gabarits de la section « Prompt de génération d'images ». S'il manque au prompt existant, ajoute-le.
+- Ni le titre rendu ni le concept illustré ne changent: laisse le prompt image entièrement inchangé. Le contexte caché "à ne pas afficher" n'affecte pas le rendu; ne le rafraîchis que si l'utilisateur le demande.
+- Pas de prompt image disponible: n'en fabrique pas, sauf demande explicite. Si la retouche touche au titre ou au concept illustré, signale que le prompt existant ailleurs devra être mis à jour, et propose de le régénérer.
+- Dès que le prompt image change, les visuels déjà rendus sont périmés: dis-le, ils doivent être régénérés avant toute nouvelle diffusion.
+
+### Revue après retouche
+Ne déclenche pas de revue d'office sur une retouche: elle coûte trois sous-agents. Propose-la, et ne la déclenche qu'avec l'accord de l'utilisateur, en passant par le skill `review`. La revue d'office ne vaut que pour la première génération d'une pastille.
+
+### Sortie d'une retouche
+- Contexte présent: n'affiche que ce qui change. Le passage retouché (ou le texte complet si la retouche le traverse), une ligne sur le prompt image seulement s'il bouge, et rien d'autre. Ne rejoue pas le livrable entier, ne réaffiche pas les sources inchangées, n'annonce pas de processus: l'utilisateur voit déjà tout le reste plus haut dans la conversation.
+- Contexte perdu: le livrable complet, tel que le définit le skill `refine`, puisque l'utilisateur n'a rien d'autre sous les yeux.
+
 ## Gabarit de diffusion (mise en forme du courriel)
 La pastille est diffusée par courriel, dans une mise en forme qui fait partie des normes de la série au même titre que le texte et les images. Le skill `email` fabrique ce courriel: un `.msg` Outlook contenant le corps HTML et les deux visuels affichés dans le corps. Le fichier de référence `plugins/pastille-ia/shared/template-pastille.html` est produit par le même code, avec un contenu de remplacement: c'est la version à coller à la main si le `.msg` ne peut pas servir, et elle ne peut pas prendre de retard sur le générateur.
 
@@ -177,7 +221,7 @@ La rubrique, elle, suit le sujet et non le numéro de diffusion: elle se lit sur
 - Risques et cadre: position 15, puis 39 à 45
 
 ## Boite à outils de revue (grilles + gabarit de relecteur)
-Ces grilles et ce gabarit sont les normes de la revue critique. Le processus, lui, est porté par le skill `review`: c'est lui qui lance les relecteurs et consolide leurs constats, qu'il soit invoqué directement par un humain ou par `generate` et `refine` au moment de leur revue. Ces deux skills ne conduisent pas la revue eux-mêmes, ils la déclenchent puis appliquent ce qu'elle rend.
+Ces grilles et ce gabarit sont les normes de la revue critique. Le processus, lui, est porté par le skill `review`: c'est lui qui lance les relecteurs et consolide leurs constats, qu'il soit invoqué directement par un humain, par `generate` et `refine` au moment de leur revue, ou depuis une retouche menée dans le fil de la conversation (voir « Retouche d'une pastille »). Celui qui déclenche la revue ne la conduit jamais lui-même: il la déclenche puis applique ce qu'elle rend.
 
 Principe: les relecteurs produisent des CONSTATS, jamais une réécriture. Chacun renvoie une liste de problèmes localisés, assortis d'une gravité et d'un correctif précis. C'est le skill appelant qui applique et réécrit, pour garder une voix unique et éviter l'effet patchwork.
 

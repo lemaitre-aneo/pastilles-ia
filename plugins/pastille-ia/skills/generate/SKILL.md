@@ -1,5 +1,5 @@
 ---
-description: Variante Claude Code du générateur de pastilles LLM, qui lance réellement plusieurs sous-agents en parallèle. Génère une pastille de communication interne sur les LLM (un titre, un texte court en français, plus un prompt unique de génération d'images à coller dans le chat Gemini), via cinq sous-agents indépendants qui proposent chacun aussi un titre, une fusion, puis une revue critique déléguée au skill `review` et une correction. Utilise ce skill dès qu'on te demande de rédiger, produire ou générer une pastille, une fiche ou un contenu court d'acculturation sur les LLM, l'IA générative, le prompting, les agents, le RAG, la confidentialité IA ou tout sujet de la liste des 45 pastilles ci-dessous, que le mot "pastille" soit employé ou non. Utilise-le aussi dès qu'on te fournit un titre issu de cette liste. Pour retoucher une pastille déjà rédigée (texte fourni), utilise plutôt le skill refine.
+description: Variante Claude Code du générateur de pastilles LLM, qui lance réellement plusieurs sous-agents en parallèle. Génère une pastille de communication interne sur les LLM (un titre, un texte court en français, plus un prompt unique de génération d'images à coller dans le chat Gemini), via cinq sous-agents indépendants qui proposent chacun aussi un titre, une fusion, puis une revue critique déléguée au skill `review` et une correction. Utilise ce skill dès qu'on te demande de rédiger, produire ou générer une pastille, une fiche ou un contenu court d'acculturation sur les LLM, l'IA générative, le prompting, les agents, le RAG, la confidentialité IA ou tout sujet de la liste des 45 pastilles ci-dessous, que le mot "pastille" soit employé ou non. Utilise-le aussi dès qu'on te fournit un titre issu de cette liste. Les retouches demandées ensuite restent dans ce skill, dans le fil: n'appelle pas refine, réservé aux pastilles recollées sans leur contexte.
 ---
 
 # Générateur de pastilles LLM, version multi-agents (Claude Code)
@@ -8,7 +8,7 @@ description: Variante Claude Code du générateur de pastilles LLM, qui lance r�
 Produit une pastille pédagogique complète à partir d'un titre. À la différence de la version chat, il lance de vrais sous-agents parallèles: une passe de recherche, puis cinq sous-agents indépendants qui rédigent chacun un brouillon (titre compris) sous un angle différent, puis une fusion par l'orchestrateur qui retient les meilleures formulations (titre compris), et enfin une revue critique déléguée au skill `review` suivie d'une correction. Livrable: le titre, le texte de la pastille et un prompt unique de génération d'images à coller dans le chat Gemini. Ensuite, une fois les deux visuels générés et collés dans la conversation, le skill `email` fabrique le courriel de diffusion; ce skill ne s'en occupe pas.
 
 ## Spec partagée (à lire en premier)
-Les normes de la série vivent dans un fichier partagé, source unique commune à ce skill et aux skills `refine`, `review` et `email`: liste des 45 pastilles et périmètre, Règles du texte, Règles du titre, Règles d'écriture pour la pastille finale, spec du prompt image et gabarits, charte graphique, boite à outils de revue. Lis-le avant de commencer:
+Les normes de la série vivent dans un fichier partagé, source unique commune à ce skill et aux skills `refine`, `review` et `email`: liste des 45 pastilles et périmètre, Règles du texte, Règles du titre, Règles d'écriture pour la pastille finale, spec du prompt image et gabarits, charte graphique, doctrine de retouche, boite à outils de revue. Lis-le avant de commencer:
 
 `${CLAUDE_SKILL_DIR}/references/regles-pastille.md` (c'est le fichier `references/regles-pastille.md` situé dans le dossier de ce skill).
 
@@ -109,19 +109,33 @@ Quand la déclencher: systématiquement à la première génération, une fois l
 
 Correction (toi, orchestrateur): la revue rend des constats déjà dédoublonnés et arbitrés, à toi de les appliquer. Réécris la version corrigée en une seule voix, jamais par recollage des formulations des relecteurs, puis prépare le court résumé "Ce que la revue a corrigé" (voir Format de sortie). Les règles d'arbitrage sont dans la spec partagée, section « Arbitrage des constats »: si un constat contredit une norme de la spec, écarte-le en le disant.
 
+### Étape 6, retouches après livraison (elles restent ici)
+Le livrable rendu, l'utilisateur demande presque toujours des ajustements: un paragraphe à alléger, un titre à resserrer, une puce trop longue, un schéma à recadrer. **Ces retouches se traitent ici, dans le fil de la conversation, sans invoquer aucun skill.** Tu as tout le dossier sous les yeux: le brief et ses sources, le périmètre et la liste "déjà traité ailleurs", les cinq brouillons, le texte fusionné, les deux titres, le prompt image et les constats de revue déjà appliqués.
+
+N'appelle pas `refine`. Ce skill sert à reconstituer un dossier perdu, situation exactement inverse de la tienne: l'appeler ici te ferait redemander des artefacts que tu possèdes et remplacer ton vrai brief par un brief reconstitué, donc moins fiable. Ne relance pas `generate` non plus: on ne repart pas de cinq brouillons pour changer un mot.
+
+Comment retoucher: applique la spec partagée, section « Retouche d'une pastille » (diff minimal, re-synchronisation du prompt image au strict nécessaire, revue proposée et non imposée, sortie réduite à ce qui change). Deux points qui reviennent souvent à ce stade:
+- Pas de nouvelle recherche pour une retouche de style: le brief de l'étape 1 est en contexte et fait foi. Ne recherche que si la retouche touche un fait ou un chiffre qu'il ne couvre pas.
+- Les cinq brouillons restent utilisables: si la retouche demande une autre formulation d'un passage, va chercher dans les brouillons reçus avant d'en inventer une, l'angle voulu y est peut-être déjà.
+
+Ce régime vaut pour toute la suite de la conversation, quel que soit le nombre de retouches, et y compris après un passage par `email`.
+
 ### Points de vigilance Claude Code
 - Parallélisme explicite: demande clairement cinq sous-agents en parallèle, sinon l'exécution sera séquentielle.
 - Contexte non hérité: mets tout dans le prompt du sous-agent, en particulier le brief de recherche.
 - Pas d'imbrication: un sous-agent ne peut pas en lancer un autre, garde recherche et fusion chez l'orchestrateur.
 - Coût et limites: cinq sous-agents en parallèle multiplient l'usage de jetons et peuvent déclencher des limites de débit. En cas de limite, replie-toi sur une exécution séquentielle.
 - Revue: elle est portée par le skill `review`, qui ajoute trois sous-agents. Elle est déclenchée d'office à la première génération; sur les demandes d'ajustement ultérieures, propose-la et ne la déclenche qu'avec l'accord de l'utilisateur. Les replis (séquentiel, relecteur global unique) sont gérés par `review`, pas ici.
+- Retouches: elles restent dans ce skill (étape 6). Le réflexe d'appeler `refine` dès que l'utilisateur demande une modification est l'erreur la plus fréquente: `refine` réhydrate un contexte perdu, or ici il est intact.
 - Réemploi optionnel: tu peux définir les cinq angles comme sous-agents personnalisés dans .claude/agents/ pour les réutiliser, mais ce n'est pas obligatoire, les sous-agents polyvalents suffisent.
 
 ## Format de sortie
 Le travail des sous-agents reste dans leur propre contexte, seuls leurs retours te reviennent. N'affiche donc que le livrable final (déjà corrigé par l'étape de revue), la conversation principale reste propre. Si l'utilisateur demande à voir l'atelier, restitue les cinq brouillons reçus et les constats de revue.
 
 Livrable final, dans cet ordre:
-- Quand une revue a eu lieu (systématiquement à la première génération), un court résumé "Ce que la revue a corrigé" (2 à 4 lignes) présentant les principaux ajustements, avant le reste. Lors d'ajustements ultérieurs sans revue, présente simplement la version ajustée sans ce résumé.
+- Quand une revue a eu lieu (systématiquement à la première génération), un court résumé "Ce que la revue a corrigé" (2 à 4 lignes) présentant les principaux ajustements, avant le reste.
+
+Ce format complet vaut pour la première livraison. Les retouches ultérieures (étape 6) n'affichent que ce qui change, sans résumé de revue et sans rejouer le livrable entier: l'utilisateur a déjà tout le reste plus haut dans la conversation.
 - Le titre retenu, affiché en tête comme titre de la pastille. S'il diffère du titre canonique de la série, ajoute juste en dessous une ligne discrète, par exemple: Titre canonique de la série: "...". Dites-moi si vous préférez le conserver, je reviens dessus en un mot. S'il est identique au canonique, n'ajoute pas cette ligne.
 - L'encadré "L'essentiel", puis le texte de la pastille (3 à 4 paragraphes de 45 à 60 mots) dans sa version corrigée, puis le bloc annexe s'il y en a un.
 - La légende du schéma, une phrase, et les deux textes alternatifs à renseigner à la diffusion: le titre exact pour l'illustration-titre, une phrase décrivant le schéma pour le second visuel.
