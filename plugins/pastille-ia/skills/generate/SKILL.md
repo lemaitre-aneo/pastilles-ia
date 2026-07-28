@@ -40,6 +40,7 @@ Toi, l'orchestrateur, fais d'abord une passe de recherche web ciblée sur le suj
 ### Étape 2, affinement de la thématique (orchestrateur, une seule fois)
 Si plusieurs axes apparaissent pertinents après avoir enlever les axes adressés par d'autres pastilles prévues, dialogue avec l'utilisateur pour choisir l'axe de la pastille.
 Si l'axe choisi nécessite de nouvelles sources, refait en une recherche web selon les consignes précédentes.
+Note au passage ce que ce dialogue produit d'exploitable: préférences, exclusions, exemples à privilégier ou à fuir, public visé plus précis. Tu le transmettras aux sous-agents à l'étape 3 (voir « Ce que tu transmets en plus »), car ils n'en sauront rien autrement.
 
 ### Étape 3, fan-out (cinq sous-agents en parallèle)
 Lance cinq sous-agents via l'outil Task, dans le même tour, pour qu'ils s'exécutent en parallèle. Sois explicite sur le parallélisme: par défaut Claude Code reste séquentiel, il ne parallélise que si tu le demandes clairement. Un sous-agent par angle:
@@ -54,12 +55,33 @@ Quand ce fan-out est relancé parce que l'utilisateur a imposé un axe (voir ét
 
 Si la régénération est demandée sans axe précis (« recommence », « je n'aime aucun des choix »), garde les cinq angles standard: c'est le brouillon retenu qui était mauvais, pas la diversité des angles.
 
+#### Ce que tu transmets en plus (aiguillage des sous-agents)
+Les sous-agents ne voient rien de la conversation. Tout ce qui a orienté la demande doit donc leur être écrit, sinon ils rejouent exactement la version que l'utilisateur vient de refuser: ils n'ont aucun moyen de savoir qu'elle a existé. C'est le bloc « Consignes de l'utilisateur » du gabarit ci-dessous, à remplir quand tu as de la matière, à omettre sinon.
+
+Trois choses à y transmettre, quand elles existent:
+- **Le retour de l'utilisateur**: ce qu'il demande, ce qu'il a rejeté, et pourquoi. Cite ses mots plutôt que de les paraphraser: « trop scolaire », « ça ne parle pas à un non-technique », « l'analogie tombe à plat » portent le grief exact, là où ta reformulation le lisse et le rend inoffensif.
+- **Ce qui est validé et doit survivre**: un titre qui lui plaît, un exemple qu'il veut garder, une formule réussie, une contrainte de longueur qu'il a fixée. Sans cela, la régénération jette aussi ce qui marchait.
+- **Ce qui est écarté**: une analogie déjà vue ailleurs, un exemple qui a raté, un angle refusé, un chiffre qu'il conteste.
+
+Comment le formuler:
+- Distingue le ferme du préférable, et dis lequel est lequel. « Le titre reste tel quel » est une contrainte; « il trouvait la métaphore un peu scolaire » est une préférence. Un sous-agent qui ne peut pas faire la différence traite tout comme un ordre.
+- Reste court, quelques lignes. Plus tu contrains, plus les cinq brouillons se ressemblent, et c'est leur diversité qui fait la valeur de la fusion. Ne transmets que ce qui change vraiment l'écriture.
+- N'invente pas de consigne et ne comble pas les silences: si tu n'as rien reçu, omets le bloc. Une consigne inventée est une contrainte que l'utilisateur n'a pas posée.
+- La version précédente: ne la transmets que si le reproche porte sur son contenu même, et présente-la comme repère négatif (« voici ce qui a été refusé, ne le refais pas »), jamais comme une base à corriger. Sinon les cinq brouillons convergent vers une réécriture de l'ancien texte et le fan-out ne sert plus à rien.
+- Ce bloc sert aussi à la première génération, quand l'étape 2 a produit des préférences ou des exclusions: mêmes règles.
+
 Comme le contexte n'est pas hérité, chaque prompt de sous-agent doit être autonome et contenir tout le nécessaire. Utilise ce gabarit, en remplaçant les crochets:
 ```
 Tu rédiges un brouillon d'une pastille pédagogique interne sur les LLM. Tu travailles seul, sans accès au reste de la conversation.
 
 Titre canonique de la pastille (issu de la série, ancre de périmètre et libellé par défaut): [TITRE]
 Angle imposé: [ANGLE, par exemple "Analogie: expliquer via une métaphore concrète du quotidien"]
+
+Consignes de l'utilisateur (elles priment sur tes préférences de rédaction, mais pas sur les Règles ci-dessous: si une consigne les contredit, respecte les Règles et dis-le en fin de réponse; bloc à supprimer s'il n'y en a pas):
+[RETOUR: ce que l'utilisateur demande et ce qu'il a rejeté, avec ses mots]
+[À CONSERVER: ce qui est validé et doit survivre, en précisant ce qui est une contrainte ferme]
+[À ÉVITER: analogies, exemples, angles ou formulations écartés]
+[VERSION REFUSÉE, seulement si le reproche porte sur son contenu, à titre de repère négatif et non de base à corriger: ...]
 
 À NE PAS ré-expliquer (déjà couvert par d'autres pastilles), à mentionner en une phrase au maximum:
 [LISTE des points déjà traités ailleurs, à ne pas retraiter]
@@ -91,6 +113,8 @@ ILLUSTRATION_TITRE:
 [une phrase décrivant le concept central à illustrer]
 SCHEMA:
 [décris en 2 à 3 lignes le diagramme et ses libellés en français. Le schéma est systématique. Il illustre le mécanisme exposé dans les deux premiers paragraphes, jamais la conclusion. Cinq blocs au maximum]
+CONFLIT:
+[une ligne, seulement si une consigne de l'utilisateur contredit une Règle ci-dessus, en disant laquelle tu as respectée. Rien à signaler: omets ce champ]
 ```
 
 ### Étape 4, fan-in et fusion (orchestrateur)
@@ -101,6 +125,7 @@ Attends les cinq retours, puis fusionne en une seule pastille finale:
 - Respecte la longueur adaptée à la profondeur et le ton décontracté, précis et léger, sans name-dropping.
 - Le schéma est systématique: fusionne les meilleures idées de schéma reçues. Il illustre le mécanisme exposé dans les deux premiers paragraphes, jamais la conclusion, puisqu'il s'insère avant le dernier paragraphe.
 - Vérifie l'ordre des paragraphes: le dernier doit porter l'enjeu. Les cinq angles peuvent produire une fusion où l'enjeu se retrouve au milieu, c'est à toi de le remettre en clôture.
+- Si tu as transmis des consignes de l'utilisateur, vérifie que la fusion y répond, titre et encadré compris: c'est toi qui en réponds, pas les brouillons. Regarde aussi les champs CONFLIT éventuels: quand plusieurs sous-agents signalent la même contradiction entre une consigne et une norme de la spec, c'est la consigne qui pose problème, pas eux. Tout point non satisfait (consigne contraire à la spec, ou deux consignes qui s'opposent) se dit en une ligne dans la sortie, à l'utilisateur de trancher; ne le laisse pas passer en silence.
 - Fusionne l'encadré de synthèse "L'essentiel" une fois le texte fusionné, jamais avant: retiens les meilleures puces parmi les cinq propositions reçues, ou synthétise-en de nouvelles si aucune ne dénoue vraiment le titre. Deux à trois puces, douze mots ou soixante-dix signes chacune au maximum, ou une phrase unique si le sujet n'a qu'un seul angle. Compte les mots: une puce qui déborde porte en général deux idées, coupe-la ou choisis. L'encadré dénoue ce que le titre annonce au lieu de le reformuler, et il ne doit pas pouvoir se substituer à l'article.
 - Décide s'il y a lieu d'ajouter un bloc annexe, un seul au maximum: un encadré actionnable (prompt à copier, méthode courte) ou un encadré de mise en garde.
 - Construis ensuite le prompt image unique (voir la spec partagée, section « Prompt de génération d'images » et « Charte graphique »).
@@ -108,7 +133,7 @@ Attends les cinq retours, puis fusionne en une seule pastille finale:
 Règles d'écriture pour la pastille finale: voir la spec partagée, section « Règles d'écriture pour la pastille finale ».
 
 ### Étape 5, revue critique (déléguée au skill `review`) et correction
-Tu ne conduis pas la revue toi-même: invoque le skill `review` via l'outil Skill, et passe-lui le dossier complet, à savoir le titre canonique et le titre retenu, le texte fusionné, le bloc prompt image, le brief de recherche de l'étape 1, la liste "déjà traité ailleurs" et les textes voisins s'ils sont disponibles. Précise que tu l'appelles depuis `generate`: dans ce mode, il rend la liste consolidée des constats et n'affiche pas de rapport.
+Tu ne conduis pas la revue toi-même: invoque le skill `review` via l'outil Skill, et passe-lui le dossier complet, à savoir le titre canonique et le titre retenu, le texte fusionné, le bloc prompt image, le brief de recherche de l'étape 1, la liste "déjà traité ailleurs", les textes voisins s'ils sont disponibles, et les consignes de l'utilisateur si tu en as transmis aux rédacteurs: les relecteurs doivent savoir ce qui a été imposé, sans quoi ils le compteront comme un défaut. Précise que tu l'appelles depuis `generate`: dans ce mode, il rend la liste consolidée des constats et n'affiche pas de rapport.
 
 Quand la déclencher: systématiquement à la première génération, une fois le texte fusionné et le prompt image construits. Ensuite, si l'utilisateur demande des ajustements, ne la relance pas d'office: propose-la, et ne la déclenche qu'avec son accord (elle coûte trois sous-agents de plus).
 
@@ -125,7 +150,9 @@ Commence par trancher l'ampleur, comme le demande la spec partagée, section « 
 
 **Demande structurelle**: là, la retouche n'est pas le bon outil et il faut relancer la génération. Demande-le à l'utilisateur avant de le faire, en une question qui dit ce que cela implique (cinq nouveaux brouillons, titre possiblement différent, visuels périmés et courriel à refabriquer), sauf s'il a déjà été explicite sur la régénération: dans ce cas relance sans redemander. Les règles complètes (signaux structurels, question à poser, exception, ce qui se garde) sont dans la spec partagée, section « Régénération ».
 
-Comment relancer, concrètement: tu ne repars pas de l'étape 1. Tu reprends à l'étape 3 (fan-out) avec le brief déjà en contexte, ou à l'étape 2 si l'axe demandé déplace le sujet et appelle de nouvelles sources. Le titre canonique et le périmètre restent les tiens. L'axe demandé s'impose aux cinq sous-agents (voir « Fan-out sous axe imposé » à l'étape 3), la fusion suit son cours normal, et la revue redevient d'office puisqu'il s'agit d'un texte neuf. Le livrable reprend alors le format complet de la première génération, prompt image compris, avec la mention que les visuels précédents sont à refaire.
+Comment relancer, concrètement: tu ne repars pas de l'étape 1. Tu reprends à l'étape 3 (fan-out) avec le brief déjà en contexte, ou à l'étape 2 si l'axe demandé déplace le sujet et appelle de nouvelles sources. Le titre canonique et le périmètre restent les tiens. L'axe demandé s'impose aux cinq sous-agents (voir « Fan-out sous axe imposé » à l'étape 3), la fusion suit son cours normal, et la revue redevient d'office puisqu'il s'agit d'un texte neuf.
+
+Le point à ne pas manquer: **transmets le retour de l'utilisateur aux cinq sous-agents** (son grief avec ses mots, ce qui est validé, ce qui est écarté), comme décrit dans « Ce que tu transmets en plus » à l'étape 3. Tu es le seul à l'avoir entendu; eux repartent de zéro et refont, sans le savoir, exactement la pastille qu'il vient de refuser. Le livrable reprend alors le format complet de la première génération, prompt image compris, avec la mention que les visuels précédents sont à refaire.
 
 Ce régime vaut pour toute la suite de la conversation, quel que soit le nombre d'échanges, et y compris après un passage par `email`.
 

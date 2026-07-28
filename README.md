@@ -23,6 +23,8 @@ Les mots de la demande ne décident de rien: « corrige », « raccourcis », «
 
 Une régénération n'est pas gratuite: cinq nouveaux brouillons, un titre possiblement différent, un prompt image reconstruit, donc des visuels à refaire dans Gemini et un courriel à refabriquer. C'est pour cela qu'elle se confirme avant d'être lancée. En revanche, quand l'axe est imposé, le fan-out ne se disperse plus sur cinq angles: les cinq brouillons partagent l'axe demandé et ne varient que par leur traitement.
 
+Les sous-agents n'héritent d'aucun contexte, donc l'orchestrateur leur transmet aussi **ce qui a orienté la demande**: le retour de l'utilisateur avec ses mots, ce qui est validé et doit survivre, ce qui est écarté, et la version refusée seulement comme repère négatif. Sans cela ils rejoueraient la pastille qui vient d'être refusée, faute de savoir qu'elle a existé. Les mêmes consignes partent aux relecteurs de `review`, pour qu'ils ne prennent pas une contrainte assumée pour un défaut. Le dosage compte: trop de consignes uniformise les cinq brouillons, et c'est leur diversité qui fait la valeur de la fusion.
+
 | Entrée | Invocation | Installation |
 | --- | --- | --- |
 | Ouvrir le dépôt dans Claude Code (local **ou** cloud web) | `/generate`, `/refine`, `/review`, `/email` | aucune, chargé automatiquement |

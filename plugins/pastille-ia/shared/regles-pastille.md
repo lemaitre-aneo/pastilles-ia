@@ -161,6 +161,7 @@ Ce qui se garde, ce qui se refait:
 - L'axe demandé devient une contrainte du fan-out, et non l'une des cinq variantes: les cinq brouillons partagent l'axe imposé et se distinguent par leur traitement. Le fan-out garde ainsi sa valeur (cinq propositions, sélection des meilleures) sans la disperser sur des angles que l'utilisateur vient justement d'écarter.
 - La revue est d'office sur un texte régénéré, comme à toute première génération.
 - Le texte précédent ne se recycle pas phrase par phrase. Une formulation vraiment réussie peut être transmise aux sous-agents comme matériau, mais la nouvelle pastille s'écrit depuis son axe.
+- Le retour de l'utilisateur se transmet aux sous-agents: ce n'est pas une information réservée à l'orchestrateur. Ils n'héritent d'aucun contexte, donc sans son grief (avec ses mots, pas paraphrasé), sans ce qu'il veut conserver et sans ce qu'il écarte, ils reproduisent la version qu'il vient de refuser, faute de savoir qu'elle a existé. Il en va de même de tout ce qui a orienté la demande: public visé précisé, exemple imposé, analogie interdite, contrainte de longueur. Le skill de génération dit comment le formuler, et rappelle qu'un excès de consignes uniformise les cinq brouillons: on ne transmet que ce qui change l'écriture.
 - Le prompt image se reconstruit entièrement, et les visuels existants sont périmés: dis-le sans attendre la question.
 
 Si le contexte de production est perdu et que la demande est structurelle, le bon chemin est `generate` (à partir du titre canonique, avec une passe de recherche), pas `refine`: il n'y a pas de diff minimal à appliquer à un texte qu'on va réécrire.
@@ -271,6 +272,7 @@ Une fois les trois relecteurs revenus, leurs constats sont consolidés avant d'�
 - Garde-fou anti-gonflement: entre "ajouter" et "raccourcir", la concision l'emporte, sauf erreur de fond avérée.
 - Appliquer les constats bloquants et recommandés, écarter ou mentionner les mineurs.
 - Un constat qui contredit une norme de cette spec est écarté, en le disant: la spec fait foi, pas le relecteur.
+- Un constat qui reproche ce que l'utilisateur a expressément demandé (un titre imposé, un exemple qu'il tient à garder, un parti pris qu'il a choisi) ne s'applique pas contre lui. Mentionne-le une fois, en disant que cela vient d'une consigne, et laisse-le trancher. Ce cas se réduit d'ailleurs en amont: les consignes de l'utilisateur sont transmises aux relecteurs, pour qu'ils ne prennent pas une contrainte pour un défaut.
 - Le titre retenu est corrigé au même titre que le texte.
 - Une seule passe, jamais de boucle. On ne relance pas une revue sur le texte corrigé.
 - La réécriture se fait en une seule voix, par le skill appelant, jamais par recollage des formulations des relecteurs.
@@ -281,6 +283,9 @@ Tu relis un brouillon quasi final de pastille pédagogique interne sur les LLM. 
 
 Titre canonique de la pastille (issu de la série, ancre de périmètre): [TITRE_CANONIQUE]
 Titre retenu (à juger, peut différer du canonique): [TITRE_RETENU]
+
+Consignes posées par l'utilisateur (contraintes assumées, ne les compte pas comme des défauts; bloc à supprimer s'il n'y en a pas):
+[CONSIGNES: ce qu'il a imposé ou écarté, avec ses mots. Si l'une de ces consignes te parait poser un problème réel, dis-le comme une alerte séparée, pas comme un constat à corriger]
 
 Texte à relire:
 [TEXTE COMPLET]

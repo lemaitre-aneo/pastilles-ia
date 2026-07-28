@@ -24,16 +24,17 @@ Trois sous-agents (outil Task) en parallèle. Si les sous-agents ne sont pas dis
 2. **Le prompt image**, s'il existe. Les relecteurs ne voient aucune image: la revue du visuel porte sur le prompt, jamais sur un rendu. S'il n'y a pas de prompt, dis-le au relecteur conformité pour qu'il ne juge pas dans le vide.
 3. **Un brief de référence**, qui fait foi pour l'exactitude. C'est la pièce la plus souvent absente, et la plus indispensable: sans lui, la grille exactitude tourne à vide et la revue se réduit à du style. Si l'utilisateur fournit des sources, elles font le brief. Sinon, reconstitue-le par une petite recherche web ciblée, ancrée sur la date du jour (champ currentDate), en priorité sur des sources officielles ou originales, avant de lancer les relecteurs. Si l'utilisateur refuse la recherche, respecte-le mais signale que la grille exactitude en pâtira.
 4. **Le périmètre**: la liste "déjà traité ailleurs" et, si disponibles, les textes des pastilles voisines. À défaut, déduis les voisines de la liste des 45 dans la spec.
+5. **Les consignes de l'utilisateur**, s'il en a posé: titre imposé, exemple qu'il tient à garder, angle qu'il a choisi, formulation qu'il a écartée. Transmets-les aux relecteurs, sinon ils reprochent au texte ce qui a été décidé exprès, et le rapport se remplit de faux défauts. Le skill appelant les a: demande-les. Une consigne n'est pas un tabou pour autant, un relecteur peut la juger risquée, mais il le dira comme une alerte et non comme un constat à corriger.
 
 Ce qui manque se demande, ne s'invente pas. En particulier, ne fabrique jamais un chiffre pour donner une référence à la grille exactitude.
 
 ## Processus
 
 ### 1. Réunir le dossier
-Rassemble les quatre entrées ci-dessus. Le contexte n'étant pas hérité par les sous-agents, tout devra tenir dans leur prompt: vérifie que rien ne manque avant de lancer, une relecture sur dossier incomplet coûte trois sous-agents pour rien.
+Rassemble les entrées ci-dessus. Le contexte n'étant pas hérité par les sous-agents, tout devra tenir dans leur prompt: vérifie que rien ne manque avant de lancer, une relecture sur dossier incomplet coûte trois sous-agents pour rien.
 
 ### 2. Lancer les trois relecteurs, en parallèle
-Trois sous-agents dans le même tour, un par grille, avec le gabarit de relecteur de la spec. Sois explicite sur le parallélisme: par défaut l'exécution reste séquentielle. Chaque prompt est autonome et complet: titre canonique et titre retenu, texte à relire, bloc prompt image, brief de référence, liste "déjà traité ailleurs" et textes voisins si disponibles, liste des 45 titres, et la grille du relecteur, une seule.
+Trois sous-agents dans le même tour, un par grille, avec le gabarit de relecteur de la spec. Sois explicite sur le parallélisme: par défaut l'exécution reste séquentielle. Chaque prompt est autonome et complet: titre canonique et titre retenu, texte à relire, bloc prompt image, brief de référence, liste "déjà traité ailleurs" et textes voisins si disponibles, consignes de l'utilisateur s'il en a posé, liste des 45 titres, et la grille du relecteur, une seule.
 
 Rappelle à chacun qu'il ne voit pas les images et qu'il ne réécrit pas.
 
