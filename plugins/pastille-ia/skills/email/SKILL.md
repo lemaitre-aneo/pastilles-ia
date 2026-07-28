@@ -36,7 +36,7 @@ python3 ${CLAUDE_SKILL_DIR}/scripts/extract_images.py --dossier <dossier de trav
 
 Le script écrit les dernières images de la conversation, dans l'ordre de collage, et affiche leurs dimensions. Sers-toi de ces dimensions pour identifier laquelle est laquelle sans te tromper: l'illustration-titre est en 16:9, le schéma en 4:3. Si l'ordre et les proportions se contredisent, demande confirmation plutôt que de deviner.
 
-Le webp et la transparence sont convertis plus loin par le script de construction: ne fais pas la conversion à la main.
+Le webp, la transparence et les bandes de fond sont traités plus loin par le script de construction: ne fais ni la conversion ni le rognage à la main.
 
 ### 2. Vérifier que les visuels correspondent au texte
 Les images sont des artefacts déjà rendus, elles ne suivent pas les retouches du texte. L'illustration-titre affiche un titre, et tu ne peux pas le lire: rien ne garantit que ce soit le titre retenu.
@@ -69,8 +69,12 @@ Points de vigilance: `numero` est le numéro de diffusion donné par l'utilisate
 ### 4. Construire et contrôler
 ```
 python3 ${CLAUDE_SKILL_DIR}/scripts/build.py fiche.json --msg pastille-NN.msg --apercu apercu.html
-python3 ${CLAUDE_SKILL_DIR}/scripts/verify.py pastille-NN.msg <image titre> <image schema>
+python3 ${CLAUDE_SKILL_DIR}/scripts/verify.py pastille-NN.msg pastille-NN-illustration-titre.png pastille-NN-schema.png
 ```
+
+`build.py` écrit à côté de la fiche les deux PNG qu'il attache réellement, `pastille-NN-illustration-titre.png` et `pastille-NN-schema.png`. Ce sont eux qu'il faut passer à `verify.py`, et non les images d'origine: celles-ci ont pu être converties depuis le webp, aplaties ou rognées, auquel cas elles ne correspondent plus. Ce sont eux, aussi, que l'aperçu affiche.
+
+Un mot sur le rognage, actif par défaut. Un schéma sorti de Gemini arrive souvent avec de larges bandes de fond en haut et en bas, et la tentation est de le rogner dans Outlook: ne le fais pas et ne le propose pas, car le rognage y réécrit les dimensions de l'image en dur, emporte le `max-width` et donne au bloc une largeur minimale qu'il ne sait plus réduire. Le script mesure donc les bandes de fond quasi blanc, garde 16 pixels de respiration et rogne avant de construire, en annonçant ce qu'il a retiré. Il s'abstient dans deux cas, en le disant: une image entièrement blanche, et un rognage qui emporterait plus de 60% de la surface, signe d'une détection douteuse plutôt que d'une vraie marge. Le drapeau `--sans-rognage` conserve les bandes et se contente de signaler celles qu'il a vues. Une illustration-titre pleine page n'est jamais concernée, faute de marge à retirer.
 
 `verify.py` rouvre le fichier avec un parseur indépendant et sort en erreur si une contrainte est violée: conteneur invalide, propriété manquante, pièce jointe qui ne correspond pas à sa source, `cid` non référencé, police entre apostrophes, couleur portée par une cellule, apostrophe droite restante. Ne livre pas un fichier dont la vérification échoue.
 
@@ -92,6 +96,7 @@ Ces choix sont des corrections de défauts constatés dans Outlook, pas des pré
 
 - **Largeur fluide, plafonnée.** Aucune largeur de colonne imposée: la colonne suit la fenêtre et cesse de s'étirer au delà du plafond (1000 pixels). Comme Word ignore `max-width`, le plafond lui est donné en plus par un commentaire conditionnel `[if mso]`.
 - **Images à taille fixe**, 600 pixels pour l'illustration-titre et 560 pour le schéma, avec hauteur automatique: elles ne sont jamais étirées au delà de leur taille nominale et se réduisent seulement si la fenêtre passe en dessous.
+- **Bandes de fond rognées à la construction.** Un visuel arrive fréquemment avec de larges marges blanches, et les rogner dans le client de messagerie est un piège: Outlook y réécrit les dimensions en dur, ce qui emporte le `max-width` et fige la largeur minimale du bloc. Le rognage a donc lieu en amont, sur le fichier, pour qu'il n'y ait plus de raison d'y toucher ensuite.
 - **Couleurs déclarées là où Word les lit.** Word n'hérite pas la couleur d'un `<td>` vers son texte, il applique celle du thème de rédaction. Chaque bloc porte donc sa couleur sur l'élément qui porte le texte, `color` est déclaré avant `font-family` (un nom de police entre apostrophes casse l'analyse CSS de Word et emporte la fin de la déclaration), les noms de police ne sont jamais quotés, et tout est doublé en balises présentationnelles `<font color face>`, `<b>`, `<i>`.
 - **Typographie française** appliquée par le code: espace insécable avant `:` `;` `!` `?`, apostrophes typographiques, dans le corps HTML comme dans la version texte.
 - **Corps en entités ASCII**, pour ne dépendre d'aucune détection d'encodage côté client.
