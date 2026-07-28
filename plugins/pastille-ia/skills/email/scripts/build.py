@@ -83,34 +83,100 @@ def charger(chemin):
     return fiche
 
 
-def preparer_image(chemin, base):
-    """Normalise en PNG opaque: Outlook ne sait pas afficher le webp, et une
-    transparence peut ressortir en noir selon le client."""
-    donnees = open(chemin, "rb").read()
-    if donnees[:8] == b"\x89PNG\r\n\x1a\n":
-        try:
-            from PIL import Image
-            with Image.open(chemin) as im:
-                if im.mode in ("RGBA", "LA", "P"):
-                    fond = Image.new("RGB", im.size, (255, 255, 255))
-                    im = im.convert("RGBA")
-                    fond.paste(im, mask=im.split()[3])
-                    sortie = os.path.join(os.path.dirname(os.path.abspath(chemin)),
-                                          base + ".png")
-                    fond.save(sortie, "PNG", optimize=True)
-                    return open(sortie, "rb").read()
-        except ImportError:
-            pass
-        return donnees
+TOLERANCE_BLANC = 6      # un pixel plus clair que ça compte comme fond
+MARGE_CONSERVEE = 16     # respiration gardée autour du contenu, en pixels source
+BANDE_MINIMALE = 0.02    # en deçà, la bande ne vaut pas un rognage
+ROGNAGE_MAXIMAL = 0.60   # au delà, on suspecte une fausse détection et on s'abstient
+
+
+def mesurer_marges(im):
+    """Bandes de fond quasi blanc autour du contenu: (gauche, haut, droite, bas).
+
+    Renvoie aussi la boîte du contenu. None si l'image est entièrement blanche,
+    cas où il n'y a rien à mesurer."""
+    from PIL import Image, ImageChops
+    rgb = im.convert("RGB")
+    fond = Image.new("RGB", rgb.size, (255, 255, 255))
+    ecart = ImageChops.difference(rgb, fond).convert("L")
+    boite = ecart.point(lambda v: 255 if v > TOLERANCE_BLANC else 0).getbbox()
+    if boite is None:
+        return None, None
+    marges = (boite[0], boite[1], im.width - boite[2], im.height - boite[3])
+    return marges, boite
+
+
+def rogner_marges(im, etiquette):
+    """Retire les bandes de fond, en gardant une respiration.
+
+    Le rognage se fait ici plutôt que dans le client de messagerie: rogner une
+    image dans Outlook réécrit ses dimensions en dur et emporte le max-width,
+    ce qui donne au bloc une largeur minimale qu'il ne sait plus réduire."""
+    marges, boite = mesurer_marges(im)
+    if marges is None:
+        print(f"attention: {etiquette} semble entièrement blanche, pas de rognage")
+        return im
+    seuils = (im.width * BANDE_MINIMALE, im.height * BANDE_MINIMALE) * 2
+    if not any(m > s for m, s in zip(marges, seuils)):
+        return im
+
+    boite = (max(0, boite[0] - MARGE_CONSERVEE), max(0, boite[1] - MARGE_CONSERVEE),
+             min(im.width, boite[2] + MARGE_CONSERVEE),
+             min(im.height, boite[3] + MARGE_CONSERVEE))
+    aire = (boite[2] - boite[0]) * (boite[3] - boite[1])
+    if aire < (1 - ROGNAGE_MAXIMAL) * im.width * im.height:
+        print(f"attention: {etiquette}, le rognage retirerait plus de "
+              f"{int(ROGNAGE_MAXIMAL * 100)}% de l'image, abstention: vérifiez le "
+              "visuel, ou rognez-le à la main avant de reconstruire")
+        return im
+
+    rogne = im.crop(boite)
+    cotes = ", ".join(f"{nom} {int(m)} px" for nom, m in
+                      zip(("gauche", "haut", "droite", "bas"), marges) if m > 1)
+    print(f"{etiquette}: bandes de fond rognées ({cotes}), "
+          f"{im.width}x{im.height} -> {rogne.width}x{rogne.height}")
+    return rogne
+
+
+def preparer_image(chemin, base, rognage=True):
+    """Normalise en PNG opaque, retire les bandes de fond, renvoie le chemin écrit.
+
+    Outlook ne sait pas afficher le webp, et une transparence peut ressortir en
+    noir selon le client. Le fichier produit est celui que porte le courriel:
+    c'est donc lui que l'aperçu doit afficher et que la vérification compare."""
+    etiquette = os.path.basename(chemin)
     try:
         from PIL import Image
     except ImportError:
+        with open(chemin, "rb") as f:
+            entete = f.read(8)
+        if entete == b"\x89PNG\r\n\x1a\n":
+            print(f"attention: Pillow est absent, {etiquette} est reprise telle "
+                  "quelle, sans rognage des bandes de fond (pip install pillow)")
+            return os.path.abspath(chemin)
         raise SystemExit(f"{chemin} n'est pas un PNG et Pillow est absent: "
                          "pip install pillow, ou convertissez l'image à la main")
-    with Image.open(chemin) as im:
+
+    with Image.open(chemin) as source:
+        im = source
+        if im.mode in ("RGBA", "LA", "P"):
+            im = im.convert("RGBA")
+            aplat = Image.new("RGB", im.size, (255, 255, 255))
+            aplat.paste(im, mask=im.split()[3])
+            im = aplat
+        else:
+            im = im.convert("RGB")
+        if rognage:
+            im = rogner_marges(im, etiquette)
+        else:
+            marges, _ = mesurer_marges(im)
+            seuils = (im.width * BANDE_MINIMALE, im.height * BANDE_MINIMALE) * 2
+            if marges and any(m > s for m, s in zip(marges, seuils)):
+                print(f"{etiquette}: bandes de fond détectées, rognage désactivé. "
+                      "Ne les rognez pas dans Outlook, cela fige la largeur de "
+                      "l'image et le bloc ne sait plus se réduire")
         sortie = os.path.join(os.path.dirname(os.path.abspath(chemin)), base + ".png")
-        im.convert("RGB").save(sortie, "PNG", optimize=True)
-    return open(sortie, "rb").read()
+        im.save(sortie, "PNG", optimize=True)
+    return sortie
 
 
 def main():
@@ -119,6 +185,9 @@ def main():
     ap.add_argument("--msg", help="chemin du .msg à écrire")
     ap.add_argument("--apercu", help="chemin d'un HTML autonome pour contrôle visuel")
     ap.add_argument("--gabarit", help="régénère le gabarit de diffusion à ce chemin")
+    ap.add_argument("--sans-rognage", action="store_true",
+                    help="conserve les bandes de fond des visuels, au lieu de les "
+                         "retirer; les bandes détectées sont alors seulement signalées")
     args = ap.parse_args()
 
     if args.gabarit:
@@ -148,9 +217,10 @@ def main():
         chemin = fiche[cle]
         if not os.path.isabs(chemin):
             chemin = os.path.join(dossier, chemin)
+        produit = preparer_image(chemin, base, rognage=not args.sans_rognage)
         images.append({"cid": cid, "nom": base + ".png", "nom_court": court[:12],
-                       "type_mime": "image/png",
-                       "donnees": preparer_image(chemin, base)})
+                       "type_mime": "image/png", "fichier": produit,
+                       "donnees": open(produit, "rb").read()})
 
     msgfile.ecrire(args.msg, render.sujet(fiche), document, texte, images)
     print("msg écrit:", args.msg, os.path.getsize(args.msg), "octets")
@@ -158,11 +228,8 @@ def main():
 
     if args.apercu:
         apercu = corps
-        for img, cle in zip(images, ("image_titre", "image_schema")):
-            chemin = fiche[cle]
-            if not os.path.isabs(chemin):
-                chemin = os.path.join(dossier, chemin)
-            apercu = apercu.replace(f'cid:{img["cid"]}', chemin)
+        for img in images:
+            apercu = apercu.replace(f'cid:{img["cid"]}', img["fichier"])
         with open(args.apercu, "w", encoding="utf-8") as f:
             f.write(render.document_html(fiche, apercu))
         print("aperçu écrit:", args.apercu)
