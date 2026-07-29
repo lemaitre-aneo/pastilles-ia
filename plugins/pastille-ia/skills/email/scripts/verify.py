@@ -2,15 +2,20 @@
 """Contrôle un .msg fabriqué: structure, propriétés, pièces jointes, typographie.
 
     python3 verify.py pastille-13.msg [image-titre.png image-schema.png]
+                      [--html "pastille 13 les tokens.html"]
 
 Un parseur indépendant (olefile) rouvre le fichier: c'est le seul moyen de
 vérifier le conteneur sans Outlook. Le rendu visuel, lui, se contrôle avec
-l'aperçu HTML et un navigateur.
+l'artefact HTML et un navigateur.
 """
 import hashlib
+import os
 import re
 import struct
 import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import render                     # noqa: E402
 
 try:
     import olefile
@@ -31,11 +36,67 @@ def proprietes(ole, chemin, taille_entete):
     return table
 
 
+def controler_artefact(chemin, problemes):
+    """L'artefact conservé ne passe pas par Outlook, mais il a ses propres règles:
+    il doit se suffire à lui-même (sinon il n'est ni archivable ni importable
+    seul) et rester sans mise en page en tables (sinon un importeur l'aplatit)."""
+    print("\nHTML conservé")
+    corps = open(chemin, encoding="utf-8").read()
+    sources = re.findall(r'<img src="([^"]+)"', corps)
+    incorporees = sum(s.startswith("data:image/") for s in sources)
+    tables = len(re.findall(r"<table", corps, re.I))
+    print("  images incorporées         :", incorporees)
+    print("  tables                     :", tables, "(1 attendue: le bandeau)")
+    if incorporees != len(sources) or incorporees != 2:
+        problemes.append(f"{chemin}: {incorporees} image(s) incorporée(s) sur "
+                         f"{len(sources)} au lieu de 2; le fichier doit se suffire "
+                         "à lui-même")
+    if "cid:" in corps:
+        problemes.append(f"{chemin}: références cid: restantes, elles ne "
+                         "s'affichent que dans un client de messagerie")
+    # Une table simple s'importe comme une table, ce qui est voulu pour le
+    # bandeau. Ce qu'un importeur aplatit mal, ce sont les tables de mise en
+    # page, imbriquées: c'est cela qu'on refuse, pas la table en soi.
+    if tables > 1:
+        problemes.append(f"{chemin}: {tables} tables; seul le bandeau en justifie "
+                         "une, au-delà c'est de la mise en page, et c'est ce qu'un "
+                         "importeur aplatit mal")
+    if re.search(r"<table[^>]*>(?:(?!</table>).)*<table", corps, re.I | re.S):
+        problemes.append(f"{chemin}: table imbriquée; le bandeau doit rester une "
+                         "table simple, une ligne et trois cellules")
+    # Sans son dossier, l'artefact se lit encore mais ne se reprend plus: il
+    # cesse d'être la référence pour retravailler la pastille.
+    try:
+        dossier = render.lire_dossier(corps)
+        champs = [c for c in ("titre", "paragraphes", "essentiel") if c in dossier]
+        print("  dossier incorporé          : relu,", len(dossier), "champs")
+        if len(champs) < 3:
+            problemes.append(f"{chemin}: dossier incomplet, il manque le texte même "
+                             "de la pastille")
+        absents = [c for c in ("titre_canonique", "axe", "prompt_image", "sources")
+                   if not dossier.get(c)]
+        if absents:
+            print("    champs de reprise absents :", ", ".join(absents))
+    except ValueError as erreur:
+        problemes.append(f"{chemin}: {erreur}; l'artefact ne pourra pas servir de "
+                         "référence pour reprendre la pastille")
+
+
 def main():
-    if len(sys.argv) < 2:
-        raise SystemExit("usage: verify.py fichier.msg [sources d'images...]")
-    chemin = sys.argv[1]
-    sources = sys.argv[2:]
+    argv = sys.argv[1:]
+    # Attention au nom: `html` désigne plus bas le corps HTML lu dans le .msg.
+    artefact = None
+    if "--html" in argv:
+        i = argv.index("--html")
+        artefact = argv[i + 1] if i + 1 < len(argv) else None
+        if not artefact:
+            raise SystemExit("--html attend un chemin")
+        del argv[i:i + 2]
+    if not argv:
+        raise SystemExit('usage: verify.py fichier.msg [sources d\'images...] '
+                         '[--html "pastille NN accroche.html"]')
+    chemin = argv[0]
+    sources = argv[1:]
     if not olefile.isOleFile(chemin):
         raise SystemExit("ce fichier n'est pas un conteneur OLE valide")
     ole = olefile.OleFileIO(chemin)
@@ -98,6 +159,24 @@ def main():
     if droites:
         problemes.append(f"{droites} apostrophes droites dans le texte visible")
     print("  espaces insécables         :", len(re.findall(r"&(?:nbsp|#160);[;:!?]", html)))
+    # Le corps est en entités ASCII, donc insensible au codage; l'objet, lui,
+    # est le seul texte accentué du fichier, et Outlook (new) le rabat en octets
+    # avant de le relire. Voir render.objet_ambigu.
+    ambigus = dict(render.objet_ambigu(sujet))
+    print("  objet lisible en deux octets:",
+          ", ".join(ambigus) or "aucun codage",
+          f"(bloquant: {render.CODAGE_CONSTATE})")
+    if render.CODAGE_CONSTATE in ambigus:
+        problemes.append(
+            f"objet entièrement décodable en {render.CODAGE_CONSTATE}: Outlook "
+            f"(new) affichera « {ambigus[render.CODAGE_CONSTATE]} »; il manque la "
+            "rupture d'encodage que render.sujet place entre le préfixe et le "
+            "numéro")
+    hors = render.hors_cp1252(sujet)
+    if hors:
+        problemes.append("l'objet porte " + ", ".join(f"U+{ord(c):04X}" for c in hors)
+                         + ", absents de cp1252: un client qui rabat l'objet en "
+                         "octets les remplacera par des « ? » visibles")
 
     print("\npièces jointes")
     empreintes = {hashlib.sha256(open(s, "rb").read()).hexdigest(): s for s in sources}
@@ -122,6 +201,9 @@ def main():
         if drapeaux != 4:
             problemes.append(f"{nom}: AttachFlags devrait valoir 4 (ATT_MHTML_REF)")
     ole.close()
+
+    if artefact:
+        controler_artefact(artefact, problemes)
 
     print()
     if problemes:

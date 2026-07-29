@@ -3,9 +3,9 @@
 Outils multi-agents pour les **pastilles** pédagogiques internes sur les LLM: un texte court en français, un prompt unique de génération d'images à coller dans Gemini, puis le courriel de diffusion. Quatre skills:
 
 - **`generate`**: crée une pastille à partir d'un titre. Lance de vrais sous-agents en parallèle (six rédacteurs sous des angles différents, fusion pondérée, puis revue critique par trois relecteurs et correction). C'est aussi lui qui régénère une pastille existante quand la demande réclame du matériau neuf, un changement d'axe par exemple; le nouvel axe est alors partagé par les six brouillons, qui gardent leur jeu d'angles. Pour un seul morceau à reprendre, il sait aussi lancer un fan-out ciblé, trois rédacteurs sur ce fragment.
-- **`refine`**: réhydrate une pastille venue d'ailleurs, puis lui applique une retouche de surface. Réservé au cas où le contexte de production est perdu: on recolle le texte (et selon le cas le titre, le prompt image, les sources) plus la retouche voulue; le skill reconstitue le dossier manquant (périmètre, brief, sources) et applique un diff minimal, sans relancer la génération complète. **Une retouche demandée alors que la pastille est déjà dans la conversation ne passe pas par ce skill**, et une demande qui réclame du matériau neuf non plus (voir « Faire évoluer une pastille »).
+- **`refine`**: reprend une pastille venue d'ailleurs, quand le contexte de sa production est perdu. Entrée de référence: son fichier HTML, dont le dossier incorporé dispense de toute reconstitution. À défaut, et cela reste un chemin entier pour les pastilles antérieures au dossier, on recolle le texte et le skill reconstitue ce qui manque avant d'appliquer un diff minimal. **Une retouche demandée alors que la pastille est déjà dans la conversation ne passe pas par ce skill**, et une demande qui réclame du matériau neuf non plus (voir « Faire évoluer une pastille »).
 - **`review`**: fait relire une pastille par trois relecteurs indépendants et parallèles (fond et exactitude, forme et pédagogie, conformité et visuel), qui rendent des constats localisés, consolidés et arbitrés, sans rien réécrire. Invocable seul pour un diagnostic, et déclenché par `generate` (d'office), par `refine` (sur accord) ou depuis une retouche dans le fil (sur accord).
-- **`email`**: fabrique le courriel de diffusion, un `.msg` Outlook prêt à compléter et à envoyer, à partir du texte validé et des deux visuels collés dans la conversation. Corps HTML au gabarit, images affichées dans le corps, typographie française appliquée.
+- **`email`**: fabrique le courriel de diffusion, un `.msg` Outlook prêt à compléter et à envoyer, à partir du texte validé et des deux visuels collés dans la conversation. Corps HTML au gabarit, images affichées dans le corps, typographie française appliquée. La même passe écrit un second fichier, un HTML aux teintes de la série avec ses visuels incorporés et le dossier de la pastille en commentaire: il s'importe dans Notion tel quel, tient lieu d'archive et sert de référence pour reprendre la pastille (voir « Les deux artefacts »).
 
 Les quatre skills partagent **une seule source de vérité pour les normes de la série** (`plugins/pastille-ia/shared/regles-pastille.md`): liste des 45 pastilles et périmètre, vocabulaire de l'axe et de l'angle avec la bibliothèque d'angles, Règles du texte et du titre, spec du prompt image, charte graphique, doctrine d'évolution (retoucher, réagencer ou régénérer), gabarit de diffusion, boite à outils de revue. Le gabarit HTML de diffusion vit à côté, dans `plugins/pastille-ia/shared/template-pastille.html`. Chaque skill n'y ajoute que son propre processus.
 
@@ -33,6 +33,32 @@ Les angles retenus sont annoncés dès qu'on s'écarte du défaut, et tracés da
 Six angles à parts égales donnent un texte sans porte d'entrée. L'orchestrateur décide donc du **poids** des angles avant de rédiger la version fusionnée. Sans demande particulière, aucun ne domine a priori. Mais quand l'utilisateur demande un angle, ou qu'un angle sert manifestement mieux l'axe, il devient **dominant**: il donne la porte d'entrée, la charpente et le registre, dès le premier paragraphe.
 
 Dominant n'est pas exclusif. Ce n'est pas un copier-coller du brouillon concerné: les autres angles continuent d'alimenter ce qui reste pertinent, un chiffre juste venu de la mécanique, une clôture mieux tournée venue de l'enjeu, un exemple frappant venu d'ailleurs, dès lors que cela se coule dans le registre dominant. Les deux dérives sont symétriques: diluer l'angle demandé jusqu'à ce que l'utilisateur ne le reconnaisse plus, ou réduire la fusion à un seul brouillon et jeter les cinq autres.
+
+## Les deux artefacts
+
+Une seule fiche, un seul code de rendu, deux sorties et rien de plus:
+
+| Fichier | Usage | Particularité |
+| --- | --- | --- |
+| `pastille NN accroche.msg` | diffuser | brouillon Outlook, visuels en pièces jointes `cid:`, corps optimisé pour le moteur de rendu de Word |
+| `pastille NN accroche.html` | **importer dans Notion**, lire, conserver, **reprendre** | HTML sémantique aux teintes de la série, visuels **incorporés**, et le dossier complet de la pastille en commentaire |
+
+Le second fait quatre métiers à la fois, lire, importer, conserver et reprendre, ce qui a permis d'abandonner les variantes qui les séparaient: le Markdown, la copie fidèle du courriel, la version aux images voisines. L'archive d'une pastille, ce sont ce fichier et le dossier qui le contient, avec la fiche et les PNG d'origine.
+
+**Les deux fichiers portent le même nom**, à l'extension près, avec des espaces. Notion nomme la page importée d'après le nom du fichier, pas d'après le `h1` du document; et les tirets ne survivent pas à toutes les chaînes de téléchargement, qui les suppriment et recollent les mots. `build.py` calcule le nom depuis le titre, en gardant l'accroche jusqu'au deux-points, et le rappelle si celui reçu diffère: `pastille 7 les tokens.html`, `pastille 45 la chaine de pensee.html`.
+
+Quatre détails de cet artefact, dont trois viennent de l'import, et aucun n'est cosmétique:
+
+- **Le titre ouvre le fichier mais reste masqué au rendu** (`h1` détouré, pas `display:none`). En tête, il ouvre la page importée; masqué, il ne fait pas doublon avec l'illustration qui le porte déjà; masqué visuellement plutôt que supprimé, il reste annoncé par un lecteur d'écran.
+- **Le bandeau est une table** d'une ligne et trois cellules, seule table du fichier. Une table simple s'importe comme une table, ce qui garde le compte, la rubrique et le temps de lecture séparés au lieu de les coller en une ligne de texte. `verify.py` tolère cette table et une seule, et refuse toute imbrication: c'est la mise en page en tables qui s'importe mal, pas la table en soi.
+- **Le dossier de la pastille voyage dans un commentaire HTML**, `<!--pastille:dossier … pastille:fin-->`, en fin de corps: la fiche entière en JSON, texte, titres, axe, prompt d'images, sources et notes d'échange. C'est ce qui fait de ce fichier la **référence pour reprendre une pastille** des mois plus tard, et pas seulement de quoi la relire. Un commentaire parce qu'un analyseur HTML les supprime par définition, là où un importeur naïf pourrait recracher le contenu d'un `<script>` dans la page. Les visuels étant déjà incorporés, `scripts/dossier.py` ressort du seul fichier une `fiche.json` et les deux PNG: de quoi tout refabriquer sans rien redemander.
+- **Les sources vivent dans un `<details>` replié.** Un navigateur le replie nativement, et Notion exporte ses blocs dépliants sous cette forme, donc l'import devrait donner un bloc dépliant. Le courriel ne les porte pas, la norme les réservant à la vérification; mais une archive sans ses références ne peut plus être rejugée.
+
+Ce que Notion garde: la structure des blocs. Ce qu'il ne garde pas: les couleurs. Seule la légende y ressort en gris, et c'est Notion qui colore nativement ses légendes, pas un style qui survivrait. L'habillage aux teintes de la série vaut donc pour la lecture du fichier dans un navigateur; sa palette de texte étant une liste de noms et non des valeurs hexadécimales, les teintes exactes de la charte n'y seraient de toute façon pas reproductibles.
+
+Attention à la taille: le base64 gonfle les visuels d'un tiers, pour un import plafonné à 5 Mo sur le plan gratuit de Notion et 50 Mo sinon. `build.py` alerte au-delà de 4,5 Mo; il faut alors régénérer des visuels plus légers.
+
+Les deux fichiers vivent dans un dossier par pastille, `sorties/pastille-NN-accroche/`, avec la fiche et les visuels. Ce dossier n'est pas suivi par git: ce dépôt s'installe comme plugin chez des collègues qui n'ont pas accès à GitHub, il porte donc l'outillage et non les pastilles diffusées. En session cloud, récupérez les fichiers avant la fin de la session.
 
 ## Faire évoluer une pastille
 
@@ -87,12 +113,13 @@ plugins/pastille-ia/
     SKILL.md                                                           # processus de mise en courriel
     references -> ../../shared                                         # symlink -> ${CLAUDE_SKILL_DIR}/references/regles-pastille.md
     exemple/fiche-modele.json                                          # modele de fiche a copier (aucun contenu reel)
-    scripts/build.py                                                   # fiche JSON -> .msg (+ apercu HTML, + gabarit partage)
-    scripts/render.py                                                  # corps HTML et texte, typographie FR, contournements Word
+    scripts/build.py                                                   # fiche JSON -> .msg + HTML conservable (+ gabarit)
+    scripts/render.py                                                  # corps du courriel et de l'artefact, typographie FR
     scripts/msg.py                                                     # proprietes MAPI et pieces jointes en ligne
     scripts/cfb.py                                                     # ecriture du conteneur OLE2 du .msg, sans dependance
     scripts/extract_images.py                                          # recupere les images collees dans la conversation
-    scripts/verify.py                                                  # relit le .msg produit et echoue si une regle est violee
+    scripts/dossier.py                                                  # ressort la fiche et les visuels d'un artefact HTML
+    scripts/verify.py                                                  # relit le .msg et le HTML, echoue si violation
 ```
 
 Le symlink interne `references -> ../../shared` reste dans le dossier du plugin: c'est le contournement officiel documenté pour partager un fichier entre skills, préservé à l'installation du plugin comme à l'ouverture du dépôt. Chaque SKILL.md lit la spec via `${CLAUDE_SKILL_DIR}/references/regles-pastille.md`.
@@ -105,12 +132,12 @@ Rien à installer. Ouvrez le dépôt, accordez la confiance du dossier, puis:
 
 ```
 /generate      # créer une pastille à partir d'un titre
-/refine        # reprendre une pastille venue d'une autre conversation (recollez son texte)
+/refine        # reprendre une pastille venue d'ailleurs (son fichier HTML, ou son texte recollé)
 /review        # faire relire une pastille, sans la modifier
 /email         # fabriquer le courriel .msg (collez les deux visuels générés)
 ```
 
-Le parcours complet d'une pastille: `/generate` produit le texte et le prompt d'images, vous générez les deux visuels dans Gemini et vous les collez dans la conversation, `/email` fabrique le `.msg`. Les retouches se demandent en langage naturel, sans commande: tant que la pastille est dans la conversation, elles s'appliquent dans le fil, puis `/email` se rejoue sans rien régénérer d'autre. `/refine` ne sert qu'à reprendre une pastille dont la conversation d'origine est perdue. `/review` juge sans modifier: `generate` le déclenche d'office, et vous pouvez l'appeler seul sur n'importe quelle pastille.
+Le parcours complet d'une pastille: `/generate` produit le texte et le prompt d'images, vous générez les deux visuels dans Gemini et vous les collez dans la conversation, `/email` fabrique le `.msg` et le HTML conservable. Les retouches se demandent en langage naturel, sans commande: tant que la pastille est dans la conversation, elles s'appliquent dans le fil, puis `/email` se rejoue sans rien régénérer d'autre. `/refine` ne sert qu'à reprendre une pastille dont la conversation d'origine est perdue: donnez-lui son fichier HTML, il y lit tout le dossier; à défaut, recollez le texte, ce qui reste le chemin des pastilles antérieures au dossier. `/review` juge sans modifier: `generate` le déclenche d'office, et vous pouvez l'appeler seul sur n'importe quelle pastille.
 
 Fonctionne à l'identique en local et en session Claude Code sur le web (les skills sont lus depuis `.claude/skills/` du clone). Aucune marketplace, aucun `/plugin install`, aucun rafraîchissement de cache.
 
@@ -137,6 +164,7 @@ Les normes de la série sont centralisées dans `plugins/pastille-ia/shared/regl
 - **Sous-agents parallèles:** `generate` en lance six pour ses brouillons; `review` en lance trois, un par grille de relecture; `refine` n'en lance aucun lui-même et se contente de proposer `review`; `email` n'en lance aucun. Une retouche menée dans le fil n'en lance aucun non plus, sauf si l'utilisateur accepte la revue proposée. Une régénération, en revanche, en relance six puis trois: c'est le coût qui justifie de la confirmer d'abord. Le processus tourne dans Claude Code et dans Cowork. Dans le chat simple de claude.ai (hors Cowork), les sous-agents ne s'exécutent pas; `generate` bascule sur son repli séquentiel documenté et `review` se replie sur un relecteur global unique.
 - **Symlinks:** valables sous Linux/WSL et dans le cloud Linux d'Anthropic, aussi bien pour les skills projet (`.claude/skills/*`) que pour les `references -> ../../shared` internes. Un clone Windows sans support des symlinks git verrait des liens cassés; remplacer alors le lien concerné par une copie réelle du fichier cible. Même solution de repli si une session cloud ne suivait pas un symlink.
 - **Courriel et Outlook:** le rendu du `.msg` est contraint par le moteur de rendu de Word, qui affiche les messages ouverts dans Outlook pour Windows. Les contournements (couleur jamais portée par un `<td>`, `color` avant `font-family`, aucun nom de police entre apostrophes, mise en forme doublée en balises `<font>`, plafond de largeur en commentaire conditionnel) sont documentés dans la spec partagée et appliqués par `render.py`. `verify.py` échoue si l'un d'eux est défait. Aucun Outlook n'existe dans l'environnement de génération: la validation finale du rendu appartient toujours à l'humain.
+- **Le sujet du courriel est le seul texte accentué du fichier**, le corps partant en entités ASCII. Outlook (new) le rabat en octets cp1252 puis le relit dans un codage sur deux octets, ce qui avale les caractères deux par deux: sans précaution, 29 des 45 titres s'affichent `[Pastille IA de l掗t閉 #7 : ...`. Une seule séquence invalide fait échouer ce décodage et sauve le sujet entier par repli, d'où l'espace insécable que `render.sujet` place entre le préfixe et le numéro: octet `0xA0` suivi du dièse, invisible, indépendante du libellé du préfixe et du titre. `build.py` alerte et `verify.py` refuse le fichier si elle a sauté.
 - **Dépendances du skill `email`:** `olefile` (vérification) et `pillow` (conversion webp et aplatissement de la transparence). Le conteneur `.msg` lui-même est écrit sans aucune dépendance.
 - **Nom de marketplace vs dépôt:** la marketplace s'appelle `alliance-ia`, le dépôt GitHub `pastilles-ia`; les installations lisent `pastille-ia@alliance-ia`.
 ```

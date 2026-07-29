@@ -1,21 +1,43 @@
 ---
-description: Réhydrate le dossier d'une pastille LLM venue d'ailleurs, puis lui applique une retouche de surface. À n'utiliser QUE si le contexte de production est perdu: l'utilisateur recolle le texte d'une pastille écrite dans une autre conversation ou session, et il n'y a en contexte ni brief, ni sources, ni périmètre, ni prompt image. Ce skill reconstitue ce dossier manquant, puis applique un diff minimal fidèle. N'utilise PAS ce skill quand la pastille est déjà dans la conversation courante (produite, retouchée ou travaillée ici): son dossier est intact, la retouche s'applique alors directement dans le fil, sans skill, selon la section « Faire évoluer une pastille » de la spec partagée. Ne l'utilise pas non plus quand il faut du matériau neuf sur toute la pastille, un changement d'axe (le sujet précis traité): cela se régénère avec generate. Les mots de la demande ne déclenchent rien: retoucher, corriger, reformuler, raccourcir, retitrer se disent pareil dans tous ces cas.
+description: Reprend une pastille LLM produite ailleurs, quand le contexte de la conversation d'origine est perdu. Entrée de référence: le fichier HTML de la pastille, qui porte son dossier complet en commentaire (texte, titre canonique, axe, prompt d'images, sources, notes) et ses visuels incorporés; le skill le relit avec dossier.py et n'a alors rien à reconstituer. À défaut d'artefact, il travaille sur le texte recollé et reconstitue ce qui manque. N'utilise PAS ce skill quand la pastille est déjà dans la conversation courante: son dossier est intact, la retouche s'applique directement dans le fil, sans skill, selon la section « Faire évoluer une pastille » de la spec partagée. Ne l'utilise pas non plus quand il faut du matériau neuf sur toute la pastille, un changement d'axe: cela se régénère avec generate.
 ---
 
-# Réhydratation puis retouche d'une pastille (Claude Code)
+# Reprise d'une pastille (Claude Code)
 
 ## Quand ce skill sert, et quand il ne sert pas
-Ce skill ne sert qu'à un cas: **la pastille existe, mais son dossier de production a disparu**. L'utilisateur recolle un texte produit ailleurs (autre conversation, session antérieure, courriel déjà diffusé) et demande une modification. Il n'y a en contexte ni brief de recherche, ni sources, ni périmètre, ni prompt image. Le travail utile est alors la réhydratation: reconstituer ce dossier avant de toucher au texte.
+Ce skill ne sert qu'à un cas: **la pastille existe, mais le contexte de sa production a disparu**. Autre conversation, session antérieure, courriel déjà diffusé. Le travail utile est de retrouver son dossier avant de toucher au texte.
 
-Il ne sert pas à retoucher une pastille dont le dossier est déjà là. Si la pastille a été produite, retouchée ou déjà travaillée dans la conversation courante, tu as le texte, les deux titres, le brief, les sources, le périmètre et le prompt image: il n'y a rien à réhydrater, et la retouche s'applique directement dans le fil, sans invoquer de skill.
+Il ne sert pas à retoucher une pastille dont le dossier est déjà dans la conversation courante: il n'y aurait rien à retrouver, et la retouche s'applique directement dans le fil, sans invoquer de skill. Il ne sert pas non plus quand la demande réclame du matériau neuf sur toute la pastille, un changement d'axe: cela se régénère avec `generate`. Entre les deux, le réagencement et la reprise d'un morceau délimité restent à ta portée.
 
-Le test qui décide, ses cas limites et les règles de retouche communes aux deux situations vivent dans la spec partagée, section « Faire évoluer une pastille ». C'est la référence: applique-la, ne la réinvente pas ici.
+Le test qui décide, ses cas limites et les règles communes vivent dans la spec partagée, section « Faire évoluer une pastille ». C'est la référence: applique-la, ne la réinvente pas ici.
 
-Il ne sert pas non plus quand la demande est structurelle: changement d'axe (le sujet précis traité) ou déplacement du thème, c'est-à-dire quand il faut du matériau que le texte fourni ne contient pas. Ne confonds pas avec un changement d'angle, qui ne demande qu'un autre traitement du même axe et reste à ta portée (voir « Axe et angle » dans la spec partagée). Un diff minimal appliqué à un axe qui change produit un texte à double charpente. Ce cas relève de `generate`, même quand le contexte est perdu: voir « Demande structurelle » ci-dessous. Entre les deux se trouvent deux cas intermédiaires que tu peux traiter: le réagencement, où l'architecture change mais pas le matériau, et la reprise ciblée, où un morceau délimité est à re-produire alors que le reste tient. Le premier se mène seul, sans sous-agents. Le second aussi, en une seule voix, en gardant le texte conservé comme cadre; si l'utilisateur veut plusieurs propositions pour ce morceau, c'est `generate` et son fan-out ciblé qui les produisent.
+## Deux entrées possibles, et elles ne demandent pas le même travail
+
+### Avec l'artefact HTML: rien à reconstituer
+Depuis que le skill `email` incorpore un dossier dans le fichier HTML de la pastille, **ce fichier est l'entrée de référence**. Il porte tout: le texte, le titre retenu et le titre canonique, l'axe, le prompt d'images, les sources, les notes d'échange, et les deux visuels en base64. Demande-le une fois, en ouverture: « avez-vous le fichier HTML de la pastille ? » vaut mieux que dix questions de reconstitution. Si la réponse est non, n'insiste pas et prends l'autre chemin, qui reste entier.
+
+```
+python3 ${CLAUDE_SKILL_DIR}/../email/scripts/dossier.py "pastille NN accroche.html" --dossier .
+```
+
+Le script écrit une `fiche.json` et les deux visuels, prêts pour `build.py`. Sans `--dossier`, il affiche le dossier en JSON, ce qui suffit pour lire un axe ou un prompt d'images.
+
+Ce que cela change, et il faut le mesurer: **pas de recherche pour reconstituer un brief**, les sources d'origine étant là; **pas de titre à deviner ni de prompt image à réinventer**; **pas de visuel à redemander**. Tu passes directement à la retouche, avec le vrai dossier plutôt qu'une approximation. Si des champs manquent (le script les liste), ne demande que ceux-là.
+
+Le formalisme, pour le connaitre sans avoir à le déduire: le dossier est un commentaire HTML `<!--pastille:dossier ... pastille:fin-->` contenant la fiche en JSON, à la fin du corps. Un commentaire, précisément pour qu'aucun rendu ni aucun import ne le fasse apparaitre. Ne le modifie jamais à la main: retouche la fiche, puis refabrique les deux fichiers avec `build.py`, qui réécrit le dossier à partir d'elle. Un dossier édité à la main et un texte affiché qui divergent, c'est une archive qui ment.
+
+### Sans artefact, avec le texte recollé: reconstitution
+**Chemin pleinement supporté, et il le restera.** Toutes les pastilles diffusées avant l'introduction du dossier n'ont pas d'artefact, et il n'y a aucune raison de les rendre intraitables: l'artefact est une commodité quand il existe, jamais une condition d'entrée. Ne demande donc pas le fichier HTML deux fois, et ne bloque jamais faute de l'avoir.
+
+L'utilisateur recolle un texte, parfois un prompt d'images, parfois des sources. Il faut alors reconstituer le dossier, et les étapes ci-dessous décrivent ce travail, inchangé. Dis simplement, en une ligne, que le dossier reconstitué sera moins fiable que celui d'origine, et que s'il retrouve le fichier HTML, tout devient plus simple et plus juste.
+
+Au terme d'une reprise sans artefact, produis l'artefact: c'est ce qui évitera la même reconstitution la fois suivante, et c'est ainsi que les anciennes pastilles rejoignent le formalisme, une par une, au fil des reprises.
+
+Cas voisin à traiter pareil: un artefact HTML **antérieur** au dossier, donc sans commentaire à relire. `dossier.py` le dit clairement plutôt que d'échouer obscurément. Le texte affiché dans ce fichier reste exploitable: reprends-le comme un texte recollé.
 
 Ce qu'il faut retenir de la frontière:
 - La demande de l'utilisateur ne dit rien du bon chemin. « corrige ce paragraphe » se formule à l'identique avec ou sans contexte.
-- Le déclencheur est l'absence de dossier, jamais l'intention de modifier.
+- Le déclencheur est l'absence de contexte, jamais l'intention de modifier.
 - Un texte recollé qui avait été produit plus haut dans la même conversation n'est pas un contexte perdu.
 - Ce skill traite les retouches de surface, les réagencements, et la reprise d'un morceau délimité. Ce qui demande du matériau neuf sur toute la pastille se régénère, cela ne se raffine pas.
 
@@ -40,13 +62,16 @@ Toute retouche que tu appliques doit rester conforme à ces normes. Ne recopie p
 Le coeur du skill (édition et, au besoin, recherche web ciblée) ne requiert pas de sous-agents et fonctionne partout. Seule la revue critique optionnelle en lance trois, et elle est déléguée au skill `review`, qui gère aussi ses replis quand les sous-agents ne sont pas disponibles.
 
 ## Entrées
-L'entrée type est soit le texte seul, soit le texte plus le prompt image, recollés par l'utilisateur.
+Deux entrées possibles, et l'ordre de préférence n'est pas négociable:
 
-Requis pour travailler:
+1. **Le fichier HTML de la pastille**, si l'utilisateur l'a. Il porte le dossier complet et les visuels: c'est tout ce qu'il faut. Demande-le avant toute autre question.
+2. **Le texte recollé**, à défaut, avec la demande de retouche. Tout le reste est alors à reconstituer.
+
+Requis dans les deux cas:
 - La demande de retouche: quoi changer, et si possible pourquoi.
-- Le texte actuel de la pastille. C'est l'objet même du raffinement: sans lui, il n'y a rien à raffiner.
+- Le texte de la pastille, qu'il vienne du dossier ou d'un copier-coller. Sans lui, il n'y a rien à reprendre.
 
-Utiles (demande-les quand ils comptent, voir « Si des entrées manquent »):
+Utiles quand il n'y a pas d'artefact (demande-les quand ils comptent, voir « Si des entrées manquent »):
 - Le titre retenu actuel (celui affiché sur la pastille et rendu dans l'image).
 - Le titre canonique de la série, s'il diffère du titre retenu (ancre de périmètre).
 - Le prompt image actuel (le bloc collé dans Gemini), si l'utilisateur l'a.
@@ -60,19 +85,23 @@ Dans le cas texte plus prompt image, le prompt que tu produis en sortie doit res
   - Titre canonique (ancre de périmètre): infère-le en rapprochant le texte de la liste des 45 (spec partagée). C'est un jugement de périmètre, sans risque de rendu; ne demande confirmation que si la retouche risque de déplacer le sujet.
   - Titre retenu (la chaine exacte affichée et rendue dans l'image): ne le reconstruis pas en douce. Propose le libellé le plus probable et demande à l'utilisateur de le confirmer ou de coller l'exact. Exige l'exact avant de l'écrire dans un prompt image, et dès que la retouche touche au titre: à cet endroit le titre est reproduit au caractère près, une reconstruction approximative désynchroniserait l'image du vrai visuel. Pour une simple retouche de texte qui ne touche ni au titre ni à l'image, un libellé proposé et validé suffit; ne bloque pas.
 
-## Étape 1, réhydratation du contexte
-Reconstitue le cadre à partir de la spec partagée et des entrées:
+## Étape 1, retrouver le contexte
+Avec l'artefact HTML, cette étape se réduit à lire le dossier: le titre canonique, l'axe, le prompt d'images et les sources y sont, et les notes disent souvent pourquoi tel choix a été fait. Vérifie seulement que la pastille est bien celle que l'utilisateur croit, puis passe à l'étape 3.
+
+Sans artefact, reconstitue le cadre à partir de la spec partagée et des entrées:
 - Situe la pastille dans la liste des 45 (spec partagée). Si le titre canonique n'est pas fourni, déduis la pastille de la série la plus proche et prends-la comme ancre de périmètre; ne demande confirmation que si la retouche risque de déplacer le sujet.
 - Repère les 1 à 3 pastilles voisines et la liste "déjà traité ailleurs, à ne pas ré-expliquer". Demande les textes voisins seulement si la retouche touche à la frontière entre pastilles.
 - Note le titre retenu, le titre canonique, le texte, le prompt image (si fourni) et les sources (si fournies). Ce sont tes artefacts de départ.
 
 ## Étape 2, reconstituer la base factuelle (le brief)
-Le brief de recherche d'origine est perdu avec la conversation. Or il ne sert pas qu'à valider un chiffre isolé: il ancre la justesse de toute la pastille, il guide la qualité de n'importe quel ajustement (même stylistique: on reformule mieux en sachant précisément de quoi on parle), et il est indispensable à la revue (la grille "exactitude" n'a aucune référence sans lui et tourne à vide). Donc on ne raffine pas à l'aveugle: tu dois disposer d'un brief avant de toucher au texte.
+Étape sans objet quand l'artefact HTML est là: ses sources **sont** le brief d'origine, pas une approximation. Ne relance une recherche que si la retouche touche une donnée mouvante qu'elles ne couvrent pas (coûts, empreinte, modèles, réglementation), et dis-le.
+
+Sans artefact, le brief de recherche d'origine est perdu avec la conversation. Or il ne sert pas qu'à valider un chiffre isolé: il ancre la justesse de toute la pastille, il guide la qualité de n'importe quel ajustement (même stylistique: on reformule mieux en sachant précisément de quoi on parle), et il est indispensable à la revue (la grille "exactitude" n'a aucune référence sans lui et tourne à vide). Donc on ne raffine pas à l'aveugle: tu dois disposer d'un brief avant de toucher au texte.
 
 - Sources fournies par l'utilisateur: elles tiennent lieu de brief. Appuie-toi dessus. Ne relance une recherche que si elles ne couvrent pas le point touché, ou si une donnée est mouvante et risque d'être périmée (coûts, empreinte, modèles, réglementation).
 - Sources manquantes ou insuffisantes: relance une recherche web ciblée pour reconstituer un brief compact (faits clés, chiffres utiles, 2 à 4 sources), ancrée sur la date du jour (champ currentDate), en priorité sur des sources officielles ou originales. Fais-le dès que les sources manquent, sans attendre que la retouche porte explicitement sur un fait: le brief sécurise la reformulation et rend la revue exploitable. Garde la recherche proportionnée (une petite passe suffit pour une simple retouche), mais ne l'escamote pas.
 
-Cette étape est le coeur du skill, et la raison pour laquelle il n'a pas de sens quand le contexte est intact: reconstituer un brief que l'on a déjà, c'est le remplacer par une approximation.
+Reconstituer un brief que l'on a déjà, sous une forme ou une autre, c'est le remplacer par une approximation: c'est pourquoi cette étape tombe dès que le dossier est disponible, en contexte ou dans l'artefact.
 
 Seule exception: si l'utilisateur demande explicitement de ne pas rechercher, respecte-le, mais signale que la justesse et la revue en pâtiront. Dans tous les cas, n'invente jamais un chiffre: si tu ne peux vérifier ni par une source fournie ni par une recherche, dis-le et demande la donnée à l'utilisateur plutôt que d'affirmer.
 
@@ -91,8 +120,15 @@ Si l'utilisateur accepte: invoque le skill `review` via l'outil Skill, et passe-
 
 Puis applique: la revue rend des constats déjà dédoublonnés et arbitrés selon la spec partagée, section « Arbitrage des constats ». Réécris en une seule voix, une seule passe, sans boucler. Si un constat contredit une norme de la spec, écarte-le en le disant.
 
+## Refabriquer les fichiers
+Une reprise ne s'arrête pas au texte affiché en conversation. Si tu es parti d'un artefact, ou si la pastille a déjà été diffusée, refabrique les deux fichiers avec le skill `email`: le `.msg` et l'artefact HTML, depuis la fiche retouchée. C'est ce qui garde le dossier, le texte et les visuels d'accord entre eux, et c'est ce qui fera de la prochaine reprise une lecture au lieu d'une reconstitution.
+
+Deux cas à signaler franchement à l'utilisateur au moment de refabriquer:
+- **Le prompt d'images a changé**: les visuels du dossier sont périmés, il faut les régénérer dans Gemini avant de refabriquer, sinon l'artefact porterait un texte neuf et une image ancienne.
+- **Le titre retenu a changé**: l'illustration affiche l'ancien, et le nom du fichier ne correspond plus à l'accroche. Les deux se règlent, mais pas en silence.
+
 ## Format de sortie
-Ce format vaut pour le cas de ce skill, le contexte perdu: l'utilisateur n'a rien d'autre sous les yeux que ce que tu affiches, donc le livrable est complet. (Pour une retouche menée dans le fil avec le contexte intact, la sortie est réduite à ce qui change, voir la spec partagée.)
+Ce format vaut pour le cas de ce skill, le contexte perdu: l'utilisateur n'a rien d'autre sous les yeux que ce que tu affiches, donc le livrable est complet. Quand tu as refabriqué les fichiers, ajoute une ligne disant lesquels et où. (Pour une retouche menée dans le fil avec le contexte intact, la sortie est réduite à ce qui change, voir la spec partagée.)
 
 N'affiche que le livrable, dans cet ordre:
 - Si une revue a eu lieu: un court résumé "Ce que la revue a corrigé" (2 à 4 lignes), avant le reste. Sinon, pas de résumé.
@@ -104,4 +140,4 @@ N'affiche que le livrable, dans cet ordre:
 Termine toujours par cette question exacte:
 "Comment trouvez-vous le titre, le texte, l'image titre et le diagramme (si généré) ? Si une partie vous semble trop complexe, ou si vous souhaitez affiner le focus d'un visuel pour qu'il soit encore plus épuré, n'hésitez pas à me le faire savoir, et je l'ajusterai."
 
-Les retouches suivantes, elles, se font dans le fil: à partir de maintenant le dossier est en contexte, donc plus aucune réhydratation et plus aucun appel à ce skill.
+Les retouches suivantes, elles, se font dans le fil: à partir de maintenant le dossier est en contexte, donc plus aucune reprise et plus aucun appel à ce skill.

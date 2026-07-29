@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """Fabrique le courriel d'une pastille à partir d'une fiche JSON.
 
-    python3 build.py fiche.json --msg pastille-13.msg [--apercu apercu.html]
+    python3 build.py fiche.json --msg "pastille 13 les tokens.msg" \
+                     --html "pastille 13 les tokens.html"
     python3 build.py --gabarit plugins/pastille-ia/shared/template-pastille.html
 
 Le gabarit de diffusion est produit par le même code que le courriel réel, avec
 un contenu de remplacement: il ne peut donc pas prendre du retard sur lui.
 """
 import argparse
+import base64
 import json
 import os
 import sys
@@ -142,7 +144,7 @@ def preparer_image(chemin, base, rognage=True):
 
     Outlook ne sait pas afficher le webp, et une transparence peut ressortir en
     noir selon le client. Le fichier produit est celui que porte le courriel:
-    c'est donc lui que l'aperçu doit afficher et que la vérification compare."""
+    c'est donc lui que les artefacts affichent et que la vérification compare."""
     etiquette = os.path.basename(chemin)
     try:
         from PIL import Image
@@ -183,7 +185,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("fiche", nargs="?", help="fiche JSON de la pastille")
     ap.add_argument("--msg", help="chemin du .msg à écrire")
-    ap.add_argument("--apercu", help="chemin d'un HTML autonome pour contrôle visuel")
+    ap.add_argument("--html", help="chemin de l'artefact conservé: HTML sémantique "
+                                   "aux teintes de la série, visuels incorporés, "
+                                   "importable dans Notion tel quel")
     ap.add_argument("--gabarit", help="régénère le gabarit de diffusion à ce chemin")
     ap.add_argument("--sans-rognage", action="store_true",
                     help="conserve les bandes de fond des visuels, au lieu de les "
@@ -200,7 +204,8 @@ def main():
         return
 
     if not args.fiche or not args.msg:
-        raise SystemExit("usage: build.py fiche.json --msg sortie.msg [--apercu a.html]")
+        raise SystemExit('usage: build.py fiche.json --msg "pastille NN accroche.msg" '
+                         '[--html "pastille NN accroche.html"]')
 
     fiche = charger(args.fiche)
     dossier = os.path.dirname(os.path.abspath(args.fiche))
@@ -222,17 +227,71 @@ def main():
                        "type_mime": "image/png", "fichier": produit,
                        "donnees": open(produit, "rb").read()})
 
-    msgfile.ecrire(args.msg, render.sujet(fiche), document, texte, images)
+    objet = render.sujet(fiche)
+    msgfile.ecrire(args.msg, objet, document, texte, images)
     print("msg écrit:", args.msg, os.path.getsize(args.msg), "octets")
-    print("sujet:", render.sujet(fiche))
+    print("sujet:", objet)
 
-    if args.apercu:
-        apercu = corps
-        for img in images:
-            apercu = apercu.replace(f'cid:{img["cid"]}', img["fichier"])
-        with open(args.apercu, "w", encoding="utf-8") as f:
-            f.write(render.document_html(fiche, apercu))
-        print("aperçu écrit:", args.apercu)
+    # Un objet entièrement décodable dans un codage sur deux octets sera affiché
+    # de travers: on le signale ici, à la fabrication, plutôt que de le découvrir
+    # dans la boîte de réception. C'est au préfixe de série de porter la rupture
+    # qui l'évite, puisqu'il est sur tous les courriels.
+    ambigus = dict(render.objet_ambigu(objet))
+    if render.CODAGE_CONSTATE in ambigus:
+        print(f"  ALERTE objet ambigu ({render.CODAGE_CONSTATE}): Outlook (new) "
+              "affichera")
+        print("   ", ambigus[render.CODAGE_CONSTATE])
+        print("    la rupture d'encodage entre le préfixe et le numéro a sauté")
+    hors = render.hors_cp1252(objet)
+    if hors:
+        print("  ALERTE l'objet porte",
+              ", ".join(f"U+{ord(c):04X}" for c in hors),
+              "hors cp1252: un client qui rabat l'objet en octets les remplacera "
+              "par des « ? » visibles")
+
+    # Les deux fichiers portent le même nom, à l'extension près: l'accroche les
+    # rend reconnaissables dans un dossier, et côté HTML c'est le nom du fichier
+    # qui nomme la page importée, Notion ne lisant pas le h1 du document.
+    def rappeler_nom(chemin, extension):
+        attendu = render.limace(fiche["titre"], fiche["numero"]) + extension
+        if chemin and os.path.basename(chemin) != attendu:
+            print(f'  à renommer en "{attendu}"'
+                  + (": c'est le nom du fichier qui nomme la page importée"
+                     if extension == ".html" else ""))
+
+    rappeler_nom(args.msg, ".msg")
+
+    def sources_data(images):
+        return [f'data:{img["type_mime"]};base64,'
+                f'{base64.b64encode(img["donnees"]).decode("ascii")}' for img in images]
+
+    def alerter_taille(chemin):
+        # Notion plafonne l'import à 5 Mo sur le plan gratuit, 50 Mo sinon, et le
+        # base64 gonfle les visuels d'un tiers: un fichier autonome peut donc
+        # passer la limite sans que personne ne l'ait vu venir.
+        mo = os.path.getsize(chemin) / 1_048_576
+        if mo > 4.5:
+            print(f"attention: {chemin} pèse {mo:.1f} Mo, au-delà de la limite "
+                  "d'import de 5 Mo du plan gratuit de Notion")
+
+    if args.html:
+        sources = sources_data(images)
+        with open(args.html, "w", encoding="utf-8") as f:
+            f.write(render.html_plat_pastille(fiche, sources[0], sources[1]))
+        print("html écrit:", args.html, os.path.getsize(args.html), "octets")
+        rappeler_nom(args.html, ".html")
+        alerter_taille(args.html)
+        # Le dossier incorporé est ce qui fait de cet artefact la référence pour
+        # reprendre la pastille: on vérifie tout de suite qu'il se relit.
+        try:
+            render.lire_dossier(open(args.html, encoding="utf-8").read())
+        except ValueError as erreur:
+            raise SystemExit(f"dossier incorporé illisible: {erreur}")
+        absents = [c for c in ("titre_canonique", "axe", "prompt_image", "sources")
+                   if not fiche.get(c)]
+        if absents:
+            print("  dossier incomplet, champs absents:", ", ".join(absents),
+                  "\n  (une reprise ultérieure devra les redemander)")
 
 
 if __name__ == "__main__":

@@ -16,7 +16,9 @@ texte qu'il contient, il applique celle du thème de rédaction. Toute couleur e
 donc portée par l'élément qui porte réellement le texte.
 """
 import html as _html
+import json as _json
 import re as _re
+import unicodedata as _unicodedata
 
 FONT = "Aptos, Calibri, Segoe UI, Helvetica, Arial, sans-serif"
 FACE = "Aptos, Calibri, Segoe UI, Helvetica, Arial"
@@ -208,9 +210,80 @@ def image(cid, alt, largeur):
 def sujet(c):
     """[Prefixe] #NN : Titre. Typographie appliquée au préfixe comme au titre,
     mais en espaces ordinaires: les insécables et la recherche des messageries
-    font mauvais ménage."""
-    brut = f'{c["prefixe_sujet"]} #{c["numero"]} : {c["titre"]}'
-    return sans_balises(brut).replace(" ", " ")
+    font mauvais ménage.
+
+    Une exception, une seule: l'espace qui sépare le préfixe du numéro reste
+    insécable. Ce n'est pas de la typographie, c'est la rupture d'encodage du
+    sujet: son octet 0xA0 suivi du 0x23 du dièse fait échouer le décodage sur
+    deux octets, et le sujet entier retombe alors sur cp1252 (voir
+    objet_ambigu). Elle est invisible, elle ne touche ni le préfixe ni le
+    titre, et personne ne cherche « ] # » dans sa boite.
+    """
+    def ordinaire(texte):
+        return sans_balises(texte).replace("\u00a0", " ")
+
+    return (ordinaire(c["prefixe_sujet"]) + "\u00a0"
+            + ordinaire(f'#{c["numero"]} : {c["titre"]}'))
+
+
+# Codages sur deux octets. Ce sont eux qui avalent les caractères deux par deux
+# quand ils sont appliqués à des octets cp1252. Le premier est celui constaté
+# dans Outlook (new): c'est sur lui seul qu'on bloque. Les autres sont informatifs,
+# et pour une raison de fond: en cp932, l'insécable et le trait conditionnel sont
+# des octets simples, pas des octets de tête, donc aucun caractère invisible ne
+# peut en protéger. Bloquer dessus interdirait tout sujet accentué.
+CODAGE_CONSTATE = "cp936"
+CODAGES_DEUX_OCTETS = (CODAGE_CONSTATE, "cp932", "cp949", "cp950")
+
+
+def hors_cp1252(sujet):
+    """Caractères de l'objet absents de cp1252, dans leur ordre d'apparition.
+
+    Ils sont un risque à part: là où Outlook (new) rabat l'objet en octets
+    cp1252, un caractère absent de cette table devient un « ? » bien visible.
+    Une espace fine ou insécable Unicode, un tiret cadratin, un emoji tombent
+    dans ce cas.
+    """
+    manquants = []
+    for c in sujet:
+        try:
+            c.encode("cp1252")
+        except UnicodeEncodeError:
+            if c not in manquants:
+                manquants.append(c)
+    return manquants
+
+
+def objet_ambigu(sujet):
+    """Rendus erronés possibles de l'objet, chez un client qui rabat l'objet
+    Unicode en octets 8 bits avant de le relire.
+
+    Outlook (new) reconvertit le .msg en MIME: l'objet redevient de l'octet
+    cp1252, puis est relu dans un codage sur deux octets, avec repli sur cp1252
+    quand ce décodage échoue. Or il n'échoue que si la chaîne s'y prête mal: un
+    seul accent suivi d'un espace ou d'une ponctuation (octet < 0x40) suffit à
+    le faire échouer, et le repli protège alors l'objet entier. D'où le
+    contrôle: un objet qui se décode de bout en bout dans un de ces codages
+    sera affiché de travers, un objet qui les fait échouer est sain.
+
+    Les caractères hors cp1252 sont remplacés par « ? » comme le ferait le
+    client, plutôt qu'ignorés: c'est ce « ? » qui casse alors le décodage sur
+    deux octets, et il faut le voir venir. Utiliser hors_cp1252 en plus, pour
+    ne pas guérir un objet illisible par un objet ponctué de « ? ».
+
+    Rend la liste des (codage, rendu erroné). Vide quand l'objet ne risque
+    rien, ce qui est notamment le cas dès qu'il est en ASCII pur.
+    """
+    octets = sujet.encode("cp1252", errors="replace")
+    ambigus = []
+    for codage in CODAGES_DEUX_OCTETS:
+        try:
+            rendu = octets.decode(codage)
+        except UnicodeDecodeError:
+            continue
+        if rendu != sujet:
+            ambigus.append((codage, rendu))
+    return ambigus
 
 
 def html_pastille(c):
@@ -267,8 +340,23 @@ def html_pastille(c):
                        'font-size:0; line-height:0;">\n'
                        + image("IMAGE_SCHEMA", c["alt_schema"], W_SCHEMA)
                        + "\n</td>\n</tr>\n")
-            out.append(ligne(para(c["legende_schema"], GRIS, 13, 20, align=None),
-                             "8px 20px 0 20px"))
+            # La légende se cale sur la largeur du schéma, pas sur celle de la
+            # colonne: une phrase qui dépasse l'image qu'elle décrit ne se
+            # rattache plus visuellement à elle. Même plafond que l'image, donné
+            # en plus à Word par commentaire conditionnel, puisqu'il ignore
+            # max-width; la largeur reste fluide en dessous.
+            legende = (
+                f'<!--[if mso]><table role="presentation" cellpadding="0" '
+                f'cellspacing="0" border="0" width="{W_SCHEMA}" align="center" '
+                f'style="width:{W_SCHEMA}px;"><tr><td style="padding:0;">'
+                f'<![endif]-->\n'
+                + table(extra=f" max-width:{W_SCHEMA}px;")
+                + '<td style="padding:0;">\n'
+                + para(c["legende_schema"], GRIS, 13, 20, align=None)
+                + "\n</td>\n</tr>\n</table>\n"
+                + "<!--[if mso]></td></tr></table><![endif]-->")
+            out.append('<tr>\n<td align="center" style="padding:8px 20px 0 20px;">\n'
+                       + legende + "\n</td>\n</tr>\n")
 
     if c.get("annexe"):
         a = c["annexe"]
@@ -313,6 +401,257 @@ def document_html(c, corps):
         f'<div style="color:{NOIR}; font-family:{FONT}; font-size:16px;">\n'
         + corps + "\n</div>\n</body></html>\n"
     )
+
+
+MARQUE_DOSSIER = "pastille:dossier"
+FIN_DOSSIER = "pastille:fin"
+FORMAT_DOSSIER = 1
+
+
+def dossier_incorpore(c):
+    """Le dossier de la pastille, en JSON, dans un commentaire HTML.
+
+    L'artefact conservé est la référence pour reprendre une pastille des mois
+    plus tard: il doit donc porter de quoi la reconstruire, et pas seulement de
+    quoi la lire. Tout ce que la fiche contient part avec lui, prompt d'images,
+    titre canonique, axe, sources et notes d'échange compris.
+
+    Un commentaire plutôt qu'un `<script>` ou des `<meta>`: un analyseur HTML
+    supprime les commentaires par définition, alors qu'un importeur naïf peut
+    recracher le contenu d'un script au milieu de la page, comme il le ferait
+    d'une feuille de style. Les visuels, eux, sont déjà dans le fichier en
+    base64: l'artefact suffit donc à tout refabriquer, courriel compris.
+    """
+    dossier = {"_format": FORMAT_DOSSIER, **{k: v for k, v in c.items()
+                                             if not k.startswith("_")}}
+    texte = _json.dumps(dossier, ensure_ascii=False, indent=1, sort_keys=False)
+    # Un `--` fermerait le commentaire par accident. Le second tiret part en
+    # échappement JSON, que json.loads rend à l'identique: aller-retour exact.
+    texte = texte.replace("--", "-\\u002d")
+    return f"<!--{MARQUE_DOSSIER}\n{texte}\n{FIN_DOSSIER}-->"
+
+
+def lire_dossier(html):
+    """Inverse de dossier_incorpore: rend la fiche telle qu'elle a été écrite."""
+    debut = html.find(f"<!--{MARQUE_DOSSIER}")
+    fin = html.find(f"{FIN_DOSSIER}-->", debut + 1)
+    if debut < 0 or fin < 0:
+        raise ValueError("aucun dossier de pastille dans ce fichier")
+    brut = html[debut + len(MARQUE_DOSSIER) + 4:fin]
+    return _json.loads(brut)
+
+
+def limace(titre, numero=None):
+    """Nom de fichier lisible tiré du titre.
+
+    Notion nomme une page importée d'après le nom du fichier, pas d'après le h1
+    qu'il contient: le nom de l'artefact est donc le titre de la page, et il
+    mérite d'être choisi.
+    """
+    texte = sans_balises(titre)
+    # Les titres de la série sont en « accroche : glose »: l'accroche suffit à
+    # nommer la page, et elle est autrement plus lisible que le titre entier
+    # tronqué au milieu d'une subordonnée.
+    accroche = _re.split(r"\s*[:?]\s*", texte, maxsplit=1)[0]
+    if len(accroche.split()) >= 2:
+        texte = accroche
+    base = _unicodedata.normalize("NFKD", texte)
+    base = base.encode("ascii", "ignore").decode("ascii").lower()
+    # Séparateur: l'espace. Les tirets ne survivent pas à toutes les chaînes de
+    # téléchargement, qui les suppriment et recollent les mots; l'espace, lui,
+    # passe, et il donne un titre de page lisible côté Notion.
+    base = _re.sub(r"[^a-z0-9]+", " ", base).strip()
+    while len(base) > 48 and " " in base:
+        base = base.rsplit(" ", 1)[0]
+    return " ".join(([f"pastille {numero}"] if numero is not None else []) + [base])
+
+
+def fr_texte(texte):
+    """Typographie française en caractères réels, pas en entités: pour tout ce
+    qui n'est pas du HTML de courriel (version texte, Markdown)."""
+    return _html.unescape(fr(texte))
+
+
+def emphases_simples(texte):
+    """**gras** et *italique* en balises nues, sans style: le HTML aplati n'a
+    pas à porter les contournements de Word."""
+    texte = _re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", texte)
+    return _re.sub(r"(?<!\*)\*([^*]+?)\*(?!\*)", r"<em>\1</em>", texte)
+
+
+def _inline(texte):
+    """Typographie, puis échappement, puis emphases: dans cet ordre, sinon
+    l'échappement se fait défaire par l'unescape de la typographie."""
+    return emphases_simples(_html.escape(fr_texte(texte), quote=False))
+
+
+def html_plat_pastille(c, source_image_titre, source_image_schema):
+    """HTML sémantique, sans table de mise en page, habillé aux teintes de la série.
+
+    Le courriel est bâti en tables imbriquées parce que Word ne sait rien faire
+    d'autre; c'est précisément ce qu'un importeur aplatit mal. Ici chaque bloc
+    est la balise qui le décrit: un titre est un h1, une synthèse est une
+    citation à puces, une légende est une figcaption. Un import garde donc la
+    structure, et un navigateur retrouve l'allure du courriel.
+
+    Deux choix expliquent la forme du code:
+
+    1. Les styles sont en ligne, pas dans une feuille `<style>`. Un importeur
+       qui ne lit pas le CSS ignore une feuille sans dommage, mais un importeur
+       naïf peut aussi en recracher le contenu au milieu de la page. En ligne,
+       ce risque n'existe pas, et c'est accessoirement la seule chose que le
+       courriel sait faire, donc le même vocabulaire sert deux fois.
+    2. Le titre ouvre le fichier, avant le bandeau, parce qu'à l'import il ouvre
+       alors la page. Il reste masqué visuellement, l'illustration le portant
+       déjà comme dans le courriel, et le masquage est visuel plutôt qu'un
+       `display:none` qui l'aurait aussi retiré aux lecteurs d'écran.
+    3. Le bandeau est la seule table de cet artefact, et c'est délibéré: une
+       table simple s'importe comme une table, donc la rubrique et le temps de
+       lecture ne se retrouvent pas collés en une seule ligne de texte.
+    4. Les couleurs sont dérivées de la palette de la série, jamais réécrites:
+       le bandeau, l'encadré et les blocs annexes reprennent exactement les
+       teintes du courriel, y compris les versions assombries des petits
+       libellés, qui existent pour le contraste.
+
+    Les deux sources d'images sont des chemins tels quels: l'appelant passe soit
+    un nom de fichier voisin (l'artefact voyage dans un dossier ou une archive),
+    soit une URL `data:` (l'artefact se suffit à lui-même). Le balisage ne change
+    pas, seule la portabilité du fichier change.
+    """
+    def st(couleur, taille, interligne, extra=""):
+        return (f"color:{couleur}; font-size:{taille}px; line-height:{interligne}px; "
+                f"{extra}font-family:{FONT};")
+
+    p_corps = (f'margin:0 0 16px 0; {st(NOIR, 16, 26, "text-align:justify; ")}')
+    out = [
+        # Titre en tête, avant le bandeau: à l'import il ouvre la page, ce qui se
+        # lit mieux qu'un titre glissé après le bandeau. Il reste masqué au rendu,
+        # l'illustration le portant déjà comme dans le courriel. Le masquage est
+        # visuel et non un display:none, qui l'aurait aussi retiré aux lecteurs
+        # d'écran. Il ne nomme pas la page importée pour autant: Notion la nomme
+        # d'après le nom du fichier, d'où la convention de nommage de l'artefact.
+        f'<h1 style="position:absolute; width:1px; height:1px; margin:-1px; '
+        f'padding:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; '
+        f'border:0;">{_inline(c["titre"])}</h1>',
+
+        # Bandeau de série: une table d'une ligne et deux cellules, seule table de
+        # cet artefact et seule exception assumée à son balisage sans tables. La
+        # raison est l'import: une table simple arrive dans Notion comme une
+        # table, donc la rubrique et le temps de lecture restent dans deux
+        # cellules distinctes au lieu d'être collés en une seule ligne de texte.
+        # Le repli est prévu si l'importeur l'aplatit quand même: la cellule de
+        # droite commence par une espace insécable, invisible en cellule alignée
+        # à droite, mais qui évite le mot-valise si la table tombe.
+        f'<table style="width:100%; border-collapse:collapse; margin:0 0 24px 0; '
+        f'background-color:{MARQUE_BLEU};">'
+        f'<tr>'
+        # Les cellules extérieures se réduisent à leur contenu (width:1%), la
+        # cellule du milieu prend le reste: sans cela les trois colonnes se
+        # partagent la largeur et le numéro s'éloigne de la rubrique, alors que
+        # le courriel les garde côte à côte.
+        f'<td style="width:1%; padding:14px 4px 14px 20px; white-space:nowrap; '
+        f'{st(BLANC, 13, 24)}">'
+        f'<strong style="{st(MARQUE_ORANGE, 22, 24, "font-weight:700; ")}">'
+        f'{c["numero"]}</strong>'
+        f'<span style="{st(BLEU_PALE, 12, 24)}">&nbsp;/&nbsp;{c["total"]}</span>'
+        f'</td>'
+        f'<td style="width:98%; padding:14px 20px; {st(BLANC, 13, 24)}">'
+        f'PASTILLE IA&nbsp;&nbsp;&middot;&nbsp;&nbsp;'
+        f'{_html.escape(fr_texte(c["rubrique"])).upper()}</td>'
+        f'<td align="right" style="width:1%; padding:14px 20px; '
+        f'white-space:nowrap; {st(BLEU_PALE, 12, 24, "text-align:right; ")}">'
+        f'&nbsp;{c["temps_lecture"]} de lecture</td>'
+        f'</tr></table>',
+
+        f'<p style="margin:0 0 24px 0;">'
+        f'<img src="{source_image_titre}" '
+        f'alt="{_html.escape(sans_balises(c["titre"]))}" '
+        f'style="max-width:{W_TITRE}px; width:100%; height:auto; display:block; '
+        f'margin:0 auto;"></p>',
+
+        f'<blockquote style="margin:0 0 24px 0; padding:16px 18px; '
+        f'background-color:{FOND_ESSENTIEL}; border:{BORDURE_ESSENTIEL};">',
+        f'<p style="margin:0; {st(ORANGE_TEXTE, 12, 16, "font-weight:700; letter-spacing:0.6px; ")}">'
+        f'<strong>L’ESSENTIEL</strong></p>',
+        f'<ul style="margin:10px 0 0 0; padding:0 0 0 20px; '
+        f'{st(MARQUE_BLEU, 16, 25, "font-weight:700; ")}">',
+    ]
+    out += [f'<li style="margin:0 0 6px 0; {st(MARQUE_BLEU, 16, 25, "font-weight:700; ")}">'
+            f'<strong>{_inline(p)}</strong></li>' for p in c["essentiel"]]
+    out += ["</ul>", "</blockquote>"]
+
+    apres = c.get("schema_apres", len(c["paragraphes"]) - 1)
+    for i, para_texte in enumerate(c["paragraphes"], start=1):
+        out.append(f'<p style="{p_corps}">{_inline(para_texte)}</p>')
+        if i == apres:
+            out += [
+                # La figure porte le plafond de largeur, et non l'image seule:
+                # la légende se cale ainsi sur la largeur du schéma au lieu de
+                # s'étaler sur toute la colonne.
+                f'<figure style="max-width:{W_SCHEMA}px; margin:0 auto 16px auto;">',
+                f'<img src="{source_image_schema}" '
+                f'alt="{_html.escape(fr_texte(c["alt_schema"]))}" '
+                f'style="width:100%; height:auto; display:block;">',
+                f'<figcaption style="margin:8px 0 0 0; {st(GRIS, 13, 20)}">'
+                f'{_inline(c["legende_schema"])}</figcaption>',
+                "</figure>"]
+
+    if c.get("annexe"):
+        a = c["annexe"]
+        teintes = ANNEXES[a.get("style", "essayer")]
+        out += [
+            f'<blockquote style="margin:8px 0 24px 0; padding:16px 18px; '
+            f'background-color:{teintes["fond"]}; '
+            f'border-left:4px solid {teintes["barre"]};">',
+            f'<p style="margin:0; '
+            f'{st(teintes["etiquette"], 12, 16, "font-weight:700; letter-spacing:0.4px; ")}">'
+            f'<strong>{_inline(a["etiquette"]).upper()}</strong></p>',
+            f'<p style="margin:8px 0 0 0; {st(teintes["texte"], 15, 24)}">'
+            f'{_inline(a["texte"])}</p>',
+            "</blockquote>"]
+
+    out += [
+        f'<hr style="border:0; border-top:1px solid {eclaircir(GRIS, 0.70)}; '
+        f'margin:24px 0 16px 0;">',
+        f'<p style="margin:0 0 8px 0; {st(GRIS, 13, 20, "font-style:italic; ")}">'
+        f'<em>{_inline(c["mention_ia"])}</em></p>',
+        f'<p style="margin:0; {st(MARQUE_BLEU, 15, 24, "font-weight:700; ")}">'
+        f'<strong>{_inline(c["signature"])}</strong></p>']
+
+    # Sources: dans l'archive, pas dans le courriel. La norme les réserve à la
+    # vérification et ne les publie pas, mais un artefact conservé sans ses
+    # références perd ce qui permet de le rejuger plus tard.
+    #
+    # Elles vivent dans un <details>, replié. Ce choix règle la question de leur
+    # visibilité sans recourir au CSS, qu'un importeur ignore: un navigateur
+    # replie nativement l'élément, et Notion exporte ses blocs dépliants sous
+    # cette forme, donc il devrait les relire comme tels. Si un importeur ne
+    # connaissait pas <details>, le repli est bénin: les sources s'afficheraient
+    # simplement en liste, ce qui reste correct pour une archive.
+    if c.get("sources"):
+        out += [f'<details style="margin:24px 0 0 0;">',
+                f'<summary style="{st(GRIS, 12, 18, "font-weight:700; letter-spacing:0.6px; cursor:pointer; ")}">'
+                f'SOURCES</summary>',
+                f'<ul style="margin:8px 0 0 0; padding:0 0 0 20px; {st(GRIS, 13, 20)}">']
+        for source in c["sources"]:
+            if isinstance(source, str):
+                libelle, url = source, None
+            else:
+                libelle, url = source.get("titre", source.get("url", "")), source.get("url")
+            corps_source = _inline(libelle)
+            if url and url != libelle:
+                corps_source += (f' &ndash; <a href="{_html.escape(url, quote=True)}" '
+                                 f'style="{st(GRIS, 13, 20)}">{_html.escape(url)}</a>')
+            out.append(f'<li style="margin:0 0 4px 0; {st(GRIS, 13, 20)}">'
+                       f'{corps_source}</li>')
+        out += ["</ul>", "</details>"]
+
+    corps = "\n".join(out)
+    return ('<html><head><meta charset="utf-8">'
+            f"<title>{_html.escape(sans_balises(c['titre']))}</title></head>\n"
+            f'<body style="margin:0 auto; padding:24px 20px; max-width:{MAX_W}px; '
+            f'background-color:{BLANC}; {st(NOIR, 16, 26)}">\n'
+            f"{corps}\n{dossier_incorpore(c)}\n</body></html>\n")
 
 
 def texte_pastille(c):
