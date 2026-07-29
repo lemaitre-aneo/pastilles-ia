@@ -2,7 +2,7 @@
 
 Ce fichier est la source unique des normes de la série. Les skills `generate` (création), `refine` (réhydratation d'une pastille venue d'ailleurs), `review` (revue critique) et `email` (mise en courriel) le lisent tous les quatre via `${CLAUDE_SKILL_DIR}/references/regles-pastille.md`. Ne duplique pas ces règles dans un SKILL.md: modifie-les ici.
 
-Il contient: la liste des 45 pastilles et les consignes de périmètre, le vocabulaire de l'axe et de l'angle, les Règles du texte, les Règles du titre, les Règles d'écriture pour la pastille finale, la spec du prompt de génération d'images (avec gabarits), la charte graphique, la doctrine d'évolution d'une pastille (retoucher, réagencer ou régénérer, et avec quel contexte), le gabarit de diffusion, et la boite à outils de revue (grilles + gabarit de relecteur).
+Il contient: la liste des 45 pastilles et les consignes de périmètre, le vocabulaire de l'axe et de l'angle avec la bibliothèque d'angles et la règle de composition, les Règles du texte, les Règles du titre, les Règles d'écriture pour la pastille finale, la spec du prompt de génération d'images (avec gabarits), la charte graphique, la doctrine d'évolution d'une pastille (retoucher, réagencer ou régénérer, et avec quel contexte), le gabarit de diffusion, et la boite à outils de revue (grilles + gabarit de relecteur).
 
 ## Liste des 45 pastilles (pour la continuité)
 1. Au fait, c'est quoi un LLM ?
@@ -68,8 +68,45 @@ Ces deux mots reviennent partout et désignent deux choses de nature différente
 - **Axe**: le sujet précis retenu à l'intérieur du thème, ce dont la pastille parle vraiment quand plusieurs facettes sont possibles. Il se choisit en amont, avec l'utilisateur, avant de rédiger. Changer d'axe change **ce que la pastille dit**, et demande donc du matériau neuf, parfois de nouvelles sources.
 - **Angle**: la manière d'aborder cet axe. Analogie, cas d'usage, idée reçue, mécanique, enjeu. C'est un traitement, une porte d'entrée, un ton, pas un sujet. Changer d'angle change **la façon de le dire**, sur le même axe.
 
+### Bibliothèque d'angles
+Les angles ne sont pas un jeu figé de cinq. Ce sont des portes d'entrée, et certaines conviennent mieux que d'autres selon l'axe. Voici celles qui ont fait la preuve de leur utilité; la liste n'est pas fermée, un angle inventé pour un axe particulier est légitime s'il tient en une phrase claire.
+
+Noyau, deux angles qui ne se remplacent pas:
+- **Mécanique**: le fonctionnement, précis mais accessible. Sans lui, aucun brouillon ne porte la justesse technique et la fusion devient une jolie coquille.
+- **Enjeu**: ce que le sujet change concrètement pour le lecteur. Le dernier paragraphe de la pastille est toujours l'enjeu, donc ce matériau est requis à tous les coups.
+
+Bibliothèque, pour les autres slots:
+- **Analogie**: une métaphore concrète du quotidien.
+- **Cas d'usage**: une situation de travail réelle et vécue.
+- **Idée reçue**: un malentendu courant, puis la rectification.
+- **Contre-exemple**: ce qui se passe quand on s'y prend mal, et ce que l'échec enseigne.
+- **Avant/après**: la même tâche sans puis avec, pour rendre l'écart tangible.
+- **Ordre de grandeur**: partir d'un chiffre frappant et le rendre parlant. Exige un brief solide, sinon c'est l'angle qui invente.
+- **Frontière**: ce que le sujet ne fait pas, ne couvre pas, ne remplace pas. Précieux quand le voisinage dans les 45 est chargé.
+- **Filiation**: d'où ça vient, ce que ça remplace, pourquoi cela apparait maintenant.
+- **Scène**: un court échange, un dialogue, un moment de bureau.
+- **Garde-fou**: le risque, puis la parade, dans cet ordre.
+
+Affinités indicatives par rubrique (voir « Numéro et rubrique »), à ne pas suivre mécaniquement:
+- Comprendre: analogie, mécanique, filiation.
+- Limites: idée reçue, contre-exemple, ordre de grandeur.
+- Prompting: cas d'usage, avant/après, scène, contre-exemple.
+- Au travail: cas d'usage, avant/après, scène.
+- Agents et outils: mécanique, frontière, contre-exemple.
+- Risques et cadre: garde-fou, idée reçue, ordre de grandeur, frontière.
+
+### Composer le jeu d'angles
+Cinq rédacteurs, toujours: le coût ne change pas, seule leur répartition s'adapte.
+- **Deux slots de noyau**, mécanique et enjeu, dans tous les cas.
+- **Trois slots libres**, choisis dans la bibliothèque ou inventés, selon l'axe et la rubrique.
+- **Jeu par défaut**, à garder en l'absence de raison de faire autrement: analogie, cas d'usage, idée reçue, mécanique, enjeu. Il est éprouvé sur la série; s'en écarter demande une raison, pas une envie.
+- **Contrainte de diversité**, qui est la raison d'être du fan-out: les trois slots libres doivent ouvrir sur des portes réellement différentes. Deux angles qui démarrent sur la même scène ou la même métaphore n'en font qu'un, et on a payé deux fois.
+- **Ne choisis pas les angles d'après ce que tu écrirais toi-même.** C'est le piège du choix libre: cinq déclinaisons de ton intuition ne valent pas mieux qu'un seul brouillon, et tu perds ce que le fan-out est censé t'apporter. En cas d'hésitation, retiens l'angle qui te parait le moins naturel: c'est précisément celui que tu n'aurais pas écrit seul.
+- **Annonce les angles retenus en une ligne** dès que tu t'écartes du jeu par défaut, avec la raison en quelques mots. L'utilisateur doit pouvoir dire « non, garde l'analogie » avant que cinq sous-agents ne partent.
+- **Garde la trace des angles employés.** Si l'utilisateur demande plus tard un traitement particulier, il faut savoir si cet angle a été couvert: c'est ce qui décide entre reprendre le brouillon correspondant et relancer un fan-out (voir « Faire évoluer une pastille »).
+
 Conséquence directe pour le fan-out de `generate`: les cinq rédacteurs partagent le même axe et se répartissent les angles. Donc:
-- Un changement d'axe ne touche pas à la répartition des angles. On relance les cinq mêmes angles sur le nouvel axe, avec un brief mis à jour si besoin.
+- Un changement d'axe ne touche pas à la répartition des angles. On relance les mêmes angles sur le nouvel axe, avec un brief mis à jour si besoin.
 - Un changement d'angle ne touche pas au sujet. Il ne réclame pas forcément de nouvelle production: le brouillon écrit sous cet angle existe peut-être déjà, et il vaut mieux repartir de lui que de relancer cinq rédacteurs.
 
 ## Règles du texte
@@ -152,7 +189,7 @@ Cinq réponses possibles, de la plus légère à la plus coûteuse:
 - **Retouche**: l'axe et le fond restent, la surface bouge. Ton, longueur, un paragraphe, une puce, le titre, un chiffre, un exemple à remplacer, l'enjeu à remettre en clôture, un libellé de schéma. C'est le cas ordinaire: passe au test du contexte.
 - **Réagencement**: l'axe tient et le matériau est bon, mais l'architecture ne va pas. L'ordre des paragraphes est à revoir, un point secondaire doit devenir le coeur, le mécanisme et l'exemple doivent échanger leurs places, l'encadré est à refaire sur un autre découpage, le schéma doit illustrer autre chose du même texte. C'est plus qu'un diff minimal, et pourtant il n'y a aucun matériau neuf à produire: celui qui tient le dossier réorganise lui-même, dans le fil, en s'appuyant sur le texte courant et, s'ils sont là, sur les brouillons déjà reçus. Pas de fan-out: relancer cinq rédacteurs pour réarranger ce qu'on a déjà, c'est payer cinq fois pour du matériau qu'on ne cherche pas.
 - **Reprise ciblée**: une partie délimitée doit être re-produite, le reste tient. Un paragraphe qui n'explique rien, une analogie qui tombe à plat, un encadré à refaire, un titre à retrouver. Il faut du matériau neuf, mais pour ce morceau seulement: le diff minimal ne suffit pas (on ne retouche pas, on remplace), et la régénération complète jetterait ce qui marche. Le bon geste est un fan-out ciblé, quelques rédacteurs sur ce seul morceau, avec le texte conservé transmis comme cadre à respecter.
-- **Changement d'angle**: l'axe reste, le traitement change. L'utilisateur veut partir d'un cas d'usage, d'une idée reçue, du mécanisme, plutôt que de la porte d'entrée retenue. Ce n'est pas un changement de sujet, donc pas une régénération: le brouillon écrit sous cet angle existe presque toujours, les cinq angles ayant été rédigés. Reprends-le comme base et réécris en une seule voix, en réappliquant les normes. Zéro sous-agent.
+- **Changement d'angle**: l'axe reste, le traitement change. L'utilisateur veut partir d'un cas d'usage, d'une idée reçue, du mécanisme, plutôt que de la porte d'entrée retenue. Ce n'est pas un changement de sujet, donc pas une régénération: si cet angle faisait partie du jeu retenu, son brouillon existe déjà. Reprends-le comme base et réécris en une seule voix, en réappliquant les normes. Zéro sous-agent. Regarde la trace des angles employés (voir « Composer le jeu d'angles ») avant de conclure qu'il manque.
 - **Structurel (changement d'axe)**: il faut du matériau neuf partout. L'axe change, le thème se déplace, ou le brouillon retenu est à jeter. Le diff minimal n'y arrive pas: appliqué à un axe qui change, il garde la charpente de l'ancien sujet sous le vocabulaire du nouveau, exactement le patchwork que la règle de la voix unique veut éviter. Il faut régénérer, voir « Régénération » ci-dessous.
 
 Deux questions ordonnent ces cinq réponses:
@@ -165,7 +202,7 @@ Signaux structurels (matériau neuf nécessaire):
 - **Changement d'axe**, demandé explicitement ou en substance: « parle plutôt de ce qui arrive quand la fenêtre se remplit », « recentre sur les données qu'on saisit, pas sur celles qui sortent », « ce n'est pas cette facette du sujet qui m'intéresse ». La pastille doit dire autre chose du même thème: le matériau manque, et le brief aussi parfois.
 - Déplacement du thème ou du périmètre: la pastille doit traiter un autre sujet, empiéter volontairement sur une voisine, ou son titre canonique change.
 
-Un **changement d'angle** n'est pas dans cette liste, et c'est volontaire: « pars d'une situation de travail », « plutôt sous l'angle de l'idée reçue », « explique le mécanisme au lieu de filer la métaphore » demandent un autre traitement du même axe, pas un autre sujet. Ne relance un fan-out (sous angle imposé) que si le brouillon correspondant n'est plus disponible, contexte perdu, ou si l'angle demandé ne figurait pas parmi les cinq.
+Un **changement d'angle** n'est pas dans cette liste, et c'est volontaire: « pars d'une situation de travail », « plutôt sous l'angle de l'idée reçue », « explique le mécanisme au lieu de filer la métaphore » demandent un autre traitement du même axe, pas un autre sujet. Ne relance un fan-out (sous angle imposé) que si le brouillon correspondant n'est plus disponible, contexte perdu, ou si l'angle demandé ne figurait pas dans le jeu retenu.
 - Insatisfaction qui se répète: après deux ou trois retouches sur le même point, si rien ne convainc, ce n'est plus la formulation qui est en cause mais le brouillon retenu. Dis-le et propose la régénération plutôt que d'enchainer une quatrième retouche.
 - Revue qui rend des constats de fond massifs (le texte n'explique pas son sujet, le titre ne tient pas sa promesse, le mécanisme illustré est mal choisi): le défaut est dans le brouillon, pas dans les phrases. Nuance utile: si ce qui échoue est le traitement et non le sujet, un autre angle suffit peut-être, et le brouillon correspondant est peut-être déjà écrit.
 

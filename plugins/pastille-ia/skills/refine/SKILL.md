@@ -30,7 +30,7 @@ Frontière avec les autres skills: `generate` crée une pastille à partir d'un 
 Après une retouche, si la pastille a déjà été mise en courriel, le skill `email` régénère le `.msg` sans rien relancer d'autre.
 
 ## Spec partagée (à lire en premier)
-Les normes de la série vivent dans un fichier partagé, source unique commune à ce skill et aux skills `generate`, `review` et `email`: liste des 45 pastilles et périmètre, vocabulaire de l'axe et de l'angle, Règles du texte, Règles du titre, Règles d'écriture pour la pastille finale, spec du prompt image et gabarits, charte graphique, doctrine d'évolution (retoucher, réagencer ou régénérer), boite à outils de revue. Lis-le avant de commencer:
+Les normes de la série vivent dans un fichier partagé, source unique commune à ce skill et aux skills `generate`, `review` et `email`: liste des 45 pastilles et périmètre, vocabulaire de l'axe et de l'angle avec la bibliothèque d'angles, Règles du texte, Règles du titre, Règles d'écriture pour la pastille finale, spec du prompt image et gabarits, charte graphique, doctrine d'évolution (retoucher, réagencer ou régénérer), boite à outils de revue. Lis-le avant de commencer:
 
 `${CLAUDE_SKILL_DIR}/references/regles-pastille.md` (c'est le fichier `references/regles-pastille.md` situé dans le dossier de ce skill).
 

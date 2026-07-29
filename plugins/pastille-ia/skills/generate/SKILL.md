@@ -8,7 +8,7 @@ description: Générateur de pastilles LLM en vrais sous-agents parallèles (var
 Produit une pastille pédagogique complète à partir d'un titre. À la différence de la version chat, il lance de vrais sous-agents parallèles: une passe de recherche, puis cinq sous-agents indépendants qui rédigent chacun un brouillon (titre compris) sous un angle différent, puis une fusion par l'orchestrateur qui retient les meilleures formulations (titre compris), et enfin une revue critique déléguée au skill `review` suivie d'une correction. Livrable: le titre, le texte de la pastille et un prompt unique de génération d'images à coller dans le chat Gemini. Ensuite, une fois les deux visuels générés et collés dans la conversation, le skill `email` fabrique le courriel de diffusion; ce skill ne s'en occupe pas.
 
 ## Spec partagée (à lire en premier)
-Les normes de la série vivent dans un fichier partagé, source unique commune à ce skill et aux skills `refine`, `review` et `email`: liste des 45 pastilles et périmètre, vocabulaire de l'axe et de l'angle, Règles du texte, Règles du titre, Règles d'écriture pour la pastille finale, spec du prompt image et gabarits, charte graphique, doctrine d'évolution (retoucher, réagencer ou régénérer), boite à outils de revue. Lis-le avant de commencer:
+Les normes de la série vivent dans un fichier partagé, source unique commune à ce skill et aux skills `refine`, `review` et `email`: liste des 45 pastilles et périmètre, vocabulaire de l'axe et de l'angle avec la bibliothèque d'angles, Règles du texte, Règles du titre, Règles d'écriture pour la pastille finale, spec du prompt image et gabarits, charte graphique, doctrine d'évolution (retoucher, réagencer ou régénérer), boite à outils de revue. Lis-le avant de commencer:
 
 `${CLAUDE_SKILL_DIR}/references/regles-pastille.md` (c'est le fichier `references/regles-pastille.md` situé dans le dossier de ce skill).
 
@@ -44,26 +44,26 @@ L'axe retenu est le sujet précis que traiteront les cinq rédacteurs: il devien
 Note aussi ce que ce dialogue produit d'exploitable: préférences, exclusions, exemples à privilégier ou à fuir, public visé plus précis. Tu le transmettras aux sous-agents à l'étape 3 (voir « Ce que tu transmets en plus »), car ils n'en sauront rien autrement.
 
 ### Étape 3, fan-out (cinq sous-agents en parallèle)
-Lance cinq sous-agents via l'outil Task, dans le même tour, pour qu'ils s'exécutent en parallèle. Sois explicite sur le parallélisme: par défaut Claude Code reste séquentiel, il ne parallélise que si tu le demandes clairement. Un sous-agent par angle:
-1. Analogie: expliquer le concept via une métaphore concrète du quotidien.
-2. Cas d'usage: partir d'une situation de travail réelle et vécue.
-3. Idée reçue: démarrer d'un malentendu courant, puis rectifier.
-4. Mécanique: aller au coeur du fonctionnement, précis mais accessible.
-5. Enjeu: pourquoi ça compte, ce que ça change concrètement pour l'utilisateur.
+Lance cinq sous-agents via l'outil Task, dans le même tour, pour qu'ils s'exécutent en parallèle. Sois explicite sur le parallélisme: par défaut Claude Code reste séquentiel, il ne parallélise que si tu le demandes clairement. Un sous-agent par angle.
 
-Ces cinq angles sont des traitements, pas des sujets. Le sujet, lui, est l'axe: il est le même pour les cinq. Ne confonds pas les deux, la spec partagée y consacre une section (« Axe et angle »), et la confusion coûte cher au moment de relancer.
+**Choisis les angles avant de lancer**, selon la spec partagée, sections « Bibliothèque d'angles » et « Composer le jeu d'angles »: deux slots de noyau (mécanique, enjeu) et trois slots libres adaptés à l'axe et à la rubrique, avec le jeu par défaut (analogie, cas d'usage, idée reçue, mécanique, enjeu) comme choix de repli. Trois points s'appliquent ici et méritent d'être rappelés:
+- La contrainte de diversité est la raison d'être du fan-out. Trois slots libres qui ouvrent sur la même porte ne valent qu'un seul brouillon payé trois fois.
+- Ne choisis pas les angles d'après ce que tu écrirais toi-même: ce serait remplacer cinq points de vue par cinq versions du tien. L'angle qui te parait le moins naturel est souvent celui qui rapportera le plus.
+- Annonce les angles retenus en une ligne quand tu t'écartes du jeu par défaut, et garde-en la trace: elle servira si l'utilisateur demande plus tard un autre traitement.
+
+Ces angles sont des traitements, pas des sujets. Le sujet, lui, est l'axe: il est le même pour tous les rédacteurs. Ne confonds pas les deux, la spec partagée y consacre une section (« Axe et angle »), et la confusion coûte cher au moment de relancer.
 
 #### Fan-out relancé sur un nouvel axe (régénération)
-Quand la régénération vient d'un changement d'axe (voir étape 6), **les cinq angles ne changent pas**: c'est le sujet qui change, pas la manière de l'aborder. Tu relances les cinq mêmes angles sur le nouvel axe, avec le brief mis à jour si l'axe appelle des faits que l'ancien ne portait pas. Le champ « Angle imposé » du gabarit garde sa valeur habituelle, un angle par sous-agent, et c'est la formulation de l'axe (dans le titre canonique et le brief) qui porte le changement.
+Quand la régénération vient d'un changement d'axe (voir étape 6), **les angles ne changent pas**: c'est le sujet qui change, pas la manière de l'aborder. Tu relances le même jeu d'angles sur le nouvel axe, avec le brief mis à jour si l'axe appelle des faits que l'ancien ne portait pas. Une exception raisonnable: si le nouvel axe rend un slot libre manifestement inadapté (un angle « ordre de grandeur » sur un axe sans chiffres), remplace ce slot et dis-le, sans toucher au noyau ni aux autres. Le champ « Angle imposé » du gabarit garde sa valeur habituelle, un angle par sous-agent, et c'est la formulation de l'axe (dans le titre canonique et le brief) qui porte le changement.
 
-Si la régénération est demandée sans axe nouveau (« recommence », « je n'aime aucun des cinq »), garde tout tel quel: c'est le brouillon retenu qui était mauvais, ni l'axe ni la diversité des angles.
+Si la régénération est demandée sans axe nouveau (« recommence », « je n'aime aucun des cinq »), garde l'axe. Là, en revanche, rejouer exactement le même jeu d'angles a peu de chances de mieux tomber: change les trois slots libres pour d'autres portes d'entrée de la bibliothèque, et garde le noyau. C'est le fan-out qui n'a pas produit, autant l'ouvrir ailleurs.
 
 #### Angle imposé par l'utilisateur (cas plus rare)
-Il arrive que l'utilisateur impose non pas un sujet mais un traitement: « pars d'une situation de travail », « prends-le par l'idée reçue ». Alors seulement les cinq angles standard tombent, puisqu'il vient d'en choisir un.
+Il arrive que l'utilisateur impose non pas un sujet mais un traitement: « pars d'une situation de travail », « prends-le par l'idée reçue ». Alors seulement le jeu d'angles tombe, puisqu'il vient d'en choisir un.
 
-Premier réflexe, avant tout fan-out: **regarde si tu n'as pas déjà ce brouillon.** Les cinq angles ont été écrits, celui qu'il demande en fait partie. Repartir de ce brouillon et le réécrire en une seule voix coûte zéro sous-agent et donne exactement ce qu'il demande. C'est le cas le plus fréquent, et le plus économique.
+Premier réflexe, avant tout fan-out: **regarde si tu n'as pas déjà ce brouillon.** Consulte la trace des angles employés: si celui qu'il demande en faisait partie, son brouillon existe. Repartir de ce brouillon et le réécrire en une seule voix coûte zéro sous-agent et donne exactement ce qu'il demande. C'est le cas le plus fréquent, et le plus économique.
 
-Ne lance un fan-out que si ce brouillon n'est plus disponible (contexte perdu) ou si l'angle demandé ne figurait pas parmi les cinq. Dans ce cas, les cinq sous-agents partagent l'angle imposé et se distinguent par leur traitement à l'intérieur de cet angle: cinq situations de travail différentes, cinq malentendus différents, cinq entrées différentes dans le mécanisme. Le champ « Angle imposé » porte alors l'angle commun, suivi de la variante propre à chaque sous-agent.
+Ne lance un fan-out que si ce brouillon n'est plus disponible (contexte perdu) ou si l'angle demandé ne figurait pas dans le jeu retenu. Dans ce cas, les cinq sous-agents partagent l'angle imposé et se distinguent par leur traitement à l'intérieur de cet angle: cinq situations de travail différentes, cinq malentendus différents, cinq entrées différentes dans le mécanisme. Le champ « Angle imposé » porte alors l'angle commun, suivi de la variante propre à chaque sous-agent.
 
 #### Fan-out ciblé (reprise d'une partie seulement)
 Quand seul un morceau délimité est à re-produire et que le reste tient (voir étape 6), ne relance pas cinq brouillons de pastille entière: tu jetterais ce que l'utilisateur vient de valider, et tu aurais cinq textes complets à départager pour remplacer un paragraphe. Trois rédacteurs sur le seul morceau suffisent. Adapte le gabarit:
@@ -141,7 +141,7 @@ CONFLIT:
 
 ### Étape 4, fan-in et fusion (orchestrateur)
 Attends les cinq retours, puis fusionne en une seule pastille finale:
-- Retiens la structure la plus claire, la meilleure analogie, l'exemple le plus parlant, la correction la plus nette, la formulation la plus précise et le "pourquoi ça compte" le plus fort.
+- Retiens la structure la plus claire, la meilleure image, l'exemple le plus parlant, la correction la plus nette, la formulation la plus précise et le "pourquoi ça compte" le plus fort. Les apports attendus dépendent du jeu d'angles que tu as retenu: cherche dans chaque brouillon ce que son angle était seul à pouvoir produire.
 - Réécris en une seule voix cohérente. Pas d'effet patchwork.
 - Choisis le titre: une fois le texte fusionné, retiens le titre qui lui correspond le mieux parmi les cinq propositions, ou synthétise-en un. Même méthode pour les puces de l'encadré, qui arrivent elles aussi en cinq versions. Le titre canonique n'a qu'une préférence faible: retiens-le seulement à qualité vraiment égale, sinon préfère sans hésiter la variante qui sert mieux le texte final (même périmètre, style de série respecté). Le titre retenu remplace le canonique partout en aval, prompt image compris.
 - Respecte la longueur adaptée à la profondeur et le ton décontracté, précis et léger, sans name-dropping.
@@ -205,6 +205,7 @@ Ce format complet vaut pour la première livraison. Les retouches ultérieures (
 - La légende du schéma, une phrase, et les deux textes alternatifs à renseigner à la diffusion: le titre exact pour l'illustration-titre, une phrase décrivant le schéma pour le second visuel.
 - La rubrique de la pastille et le temps de lecture estimé, à reporter dans le bandeau du gabarit de diffusion (voir la spec partagée, section « Gabarit de diffusion »). La rubrique se déduit de la position du sujet dans la liste des 45. Le numéro affiché, lui, est le numéro de diffusion et appartient à l'utilisateur: s'il ne l'a pas donné, propose la position dans la liste et demande confirmation, sans la retenir en silence.
 - Un bloc de code intitulé "Prompt images (à coller dans Gemini)", contenant le prompt unique prêt à copier.
+- Quand tu t'es écarté du jeu d'angles par défaut, une ligne discrète disant lesquels tu as retenus et pourquoi. Elle sert de trace: sans elle, une demande ultérieure de traitement particulier ne peut plus être rapprochée des brouillons existants.
 - Une courte section "Sources" listant 2 à 4 références principales issues de l'étape de recherche, de préférence officielles ou originales. Cette section sert à la vérification et n'a pas vocation à être publiée dans la pastille.
 
 Termine toujours par cette question exacte:
