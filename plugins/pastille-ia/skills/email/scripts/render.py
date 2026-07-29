@@ -210,14 +210,30 @@ def image(cid, alt, largeur):
 def sujet(c):
     """[Prefixe] #NN : Titre. Typographie appliquée au préfixe comme au titre,
     mais en espaces ordinaires: les insécables et la recherche des messageries
-    font mauvais ménage."""
-    brut = f'{c["prefixe_sujet"]} #{c["numero"]} : {c["titre"]}'
-    return sans_balises(brut).replace(" ", " ")
+    font mauvais ménage.
+
+    Une exception, une seule: l'espace qui sépare le préfixe du numéro reste
+    insécable. Ce n'est pas de la typographie, c'est la rupture d'encodage du
+    sujet: son octet 0xA0 suivi du 0x23 du dièse fait échouer le décodage sur
+    deux octets, et le sujet entier retombe alors sur cp1252 (voir
+    objet_ambigu). Elle est invisible, elle ne touche ni le préfixe ni le
+    titre, et personne ne cherche « ] # » dans sa boite.
+    """
+    def ordinaire(texte):
+        return sans_balises(texte).replace("\u00a0", " ")
+
+    return (ordinaire(c["prefixe_sujet"]) + "\u00a0"
+            + ordinaire(f'#{c["numero"]} : {c["titre"]}'))
 
 
-# Codages sur deux octets. Ce sont eux qui font disparaître des caractères quand
-# un détecteur se trompe, et c'est sur l'un d'eux qu'Outlook (new) trébuche.
-CODAGES_DEUX_OCTETS = ("cp936", "cp932", "cp949", "cp950")
+# Codages sur deux octets. Ce sont eux qui avalent les caractères deux par deux
+# quand ils sont appliqués à des octets cp1252. Le premier est celui constaté
+# dans Outlook (new): c'est sur lui seul qu'on bloque. Les autres sont informatifs,
+# et pour une raison de fond: en cp932, l'insécable et le trait conditionnel sont
+# des octets simples, pas des octets de tête, donc aucun caractère invisible ne
+# peut en protéger. Bloquer dessus interdirait tout sujet accentué.
+CODAGE_CONSTATE = "cp936"
+CODAGES_DEUX_OCTETS = (CODAGE_CONSTATE, "cp932", "cp949", "cp950")
 
 
 def hors_cp1252(sujet):

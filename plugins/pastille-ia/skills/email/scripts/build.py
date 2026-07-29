@@ -236,11 +236,12 @@ def main():
     # de travers: on le signale ici, à la fabrication, plutôt que de le découvrir
     # dans la boîte de réception. C'est au préfixe de série de porter la rupture
     # qui l'évite, puisqu'il est sur tous les courriels.
-    for codage, rendu in render.objet_ambigu(objet)[:1]:
-        print(f"  ALERTE objet ambigu ({codage}): Outlook (new) affichera")
-        print("   ", rendu)
-        print("    il faut un accent suivi d'un espace ou d'une ponctuation, "
-              "de préférence dans le préfixe")
+    ambigus = dict(render.objet_ambigu(objet))
+    if render.CODAGE_CONSTATE in ambigus:
+        print(f"  ALERTE objet ambigu ({render.CODAGE_CONSTATE}): Outlook (new) "
+              "affichera")
+        print("   ", ambigus[render.CODAGE_CONSTATE])
+        print("    la rupture d'encodage entre le préfixe et le numéro a sauté")
     hors = render.hors_cp1252(objet)
     if hors:
         print("  ALERTE l'objet porte",

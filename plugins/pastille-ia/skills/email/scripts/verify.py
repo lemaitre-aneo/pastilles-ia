@@ -162,15 +162,16 @@ def main():
     # Le corps est en entités ASCII, donc insensible au codage; l'objet, lui,
     # est le seul texte accentué du fichier, et Outlook (new) le rabat en octets
     # avant de le relire. Voir render.objet_ambigu.
-    ambigus = render.objet_ambigu(sujet)
+    ambigus = dict(render.objet_ambigu(sujet))
     print("  objet lisible en deux octets:",
-          ", ".join(codage for codage, _ in ambigus) or "aucun codage")
-    if ambigus:
-        codage, rendu = ambigus[0]
-        problemes.append(f"objet entièrement décodable en {codage}: Outlook (new) "
-                         f"affichera « {rendu} »; il faut un accent suivi d'un "
-                         "espace ou d'une ponctuation, à porter de préférence par "
-                         "le préfixe de série, qui vaut pour tous les courriels")
+          ", ".join(ambigus) or "aucun codage",
+          f"(bloquant: {render.CODAGE_CONSTATE})")
+    if render.CODAGE_CONSTATE in ambigus:
+        problemes.append(
+            f"objet entièrement décodable en {render.CODAGE_CONSTATE}: Outlook "
+            f"(new) affichera « {ambigus[render.CODAGE_CONSTATE]} »; il manque la "
+            "rupture d'encodage que render.sujet place entre le préfixe et le "
+            "numéro")
     hors = render.hors_cp1252(sujet)
     if hors:
         problemes.append("l'objet porte " + ", ".join(f"U+{ord(c):04X}" for c in hors)
