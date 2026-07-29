@@ -11,7 +11,7 @@ l'artefact HTML et un navigateur.
 
 L'artefact se contrôle aussi seul, sans .msg: une pastille peut être archivée
 sans être rediffusée, et ses règles propres (se suffire à lui-même, pas de mise
-en page en tables, un dossier relisible) ne dépendent pas du courriel.
+en page en tables, un dossier qui se relit) ne dépendent pas du courriel.
 """
 import hashlib
 import os

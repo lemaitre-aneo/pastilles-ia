@@ -38,8 +38,8 @@ Toi, l'orchestrateur, fais d'abord une passe de recherche web ciblée sur le suj
 - Produis un brief de recherche compact: faits clés, chiffres utiles, et 2 à 4 sources. Tu l'injecteras tel quel dans chaque sous-agent, et tu listeras les sources dans le livrable final.
 
 ### Étape 2, affinement de la thématique (orchestrateur, une seule fois)
-Si plusieurs axes apparaissent pertinents après avoir enlever les axes adressés par d'autres pastilles prévues, dialogue avec l'utilisateur pour choisir l'axe de la pastille.
-Si l'axe choisi nécessite de nouvelles sources, refait en une recherche web selon les consignes précédentes.
+Si plusieurs axes apparaissent pertinents après avoir enlevé les axes adressés par d'autres pastilles prévues, dialogue avec l'utilisateur pour choisir l'axe de la pastille.
+Si l'axe choisi nécessite de nouvelles sources, refais une recherche web selon les consignes précédentes.
 L'axe retenu est le sujet précis que traiteront les six rédacteurs: il devient le champ « Axe de la pastille » du gabarit de l'étape 3, identique pour tous. Ne le confonds pas avec leurs angles, qui ne sont que des manières de l'aborder (voir « Axe et angle » dans la spec partagée). Si aucun affinement n'a été nécessaire, l'axe est simplement toute l'étendue du titre canonique.
 Note aussi ce que ce dialogue produit d'exploitable: préférences, exclusions, exemples à privilégier ou à fuir, public visé plus précis. Tu le transmettras aux sous-agents à l'étape 3 (voir « Ce que tu transmets en plus »), car ils n'en sauront rien autrement.
 
@@ -49,7 +49,7 @@ Lance six sous-agents via l'outil Task, dans le même tour, pour qu'ils s'exécu
 **Choisis les angles avant de lancer**, selon la spec partagée, sections « Bibliothèque d'angles » et « Composer le jeu d'angles »: trois slots de noyau (mécanique, enjeu, ancrage concret) et trois slots libres adaptés à l'axe et à la rubrique. Le slot d'ancrage a une fonction fixe mais un angle libre dans sa famille (analogie, cas d'usage, scène, avant/après): prends celui qui prend sur cet axe, la métaphore ne marche pas partout. Trois points s'appliquent ici et méritent d'être rappelés:
 - La contrainte de diversité est la raison d'être du fan-out. Trois slots libres qui ouvrent sur la même porte ne valent qu'un seul brouillon payé trois fois.
 - Ne choisis pas les angles d'après ce que tu écrirais toi-même: ce serait remplacer six points de vue par six versions du tien. L'angle qui te parait le moins naturel est souvent celui qui rapportera le plus.
-- Annonce les angles retenus en une ligne quand tu t'écartes du jeu par défaut, et garde-en la trace: elle servira si l'utilisateur demande plus tard un autre traitement.
+- Annonce les angles retenus en une ligne quand tu t'écartes du jeu par défaut, et gardes-en la trace: elle servira si l'utilisateur demande plus tard un autre traitement.
 
 Ces angles sont des traitements, pas des sujets. Le sujet, lui, est l'axe: il est le même pour tous les rédacteurs. Ne confonds pas les deux, la spec partagée y consacre une section (« Axe et angle »), et la confusion coûte cher au moment de relancer.
 
@@ -119,7 +119,7 @@ Règles:
 - Français. Ne mentionne aucune entreprise. Pas de tiret cadratin.
 - Contenu autonome, compréhensible seul.
 - Reste sur l'axe indiqué: c'est le sujet, tu ne le déplaces pas. Ton angle ne porte que sur la manière de l'aborder.
-- Encadré « L'essentiel »: une fois ton texte écrit, propose deux à trois puces, ou une seule phrase si ton angle n'a qu'une idée. Chaque puce tient en douze mots ou soixante-dix signes au maximum: au delà elle passe sur deux lignes à la diffusion et l'encadré cesse d'être un balayage. Elle dénoue ce que le titre annonce au lieu de le reformuler, et l'encadré ne doit pas pouvoir remplacer le texte.
+- Encadré « L'essentiel »: une fois ton texte écrit, propose deux à trois puces, ou une seule phrase si ton angle n'a qu'une idée. Chaque puce tient en douze mots ou soixante-dix signes au maximum: au-delà elle passe sur deux lignes à la diffusion et l'encadré cesse d'être un balayage. Elle dénoue ce que le titre annonce au lieu de le reformuler, et l'encadré ne doit pas pouvoir remplacer le texte.
 - Titre: rédige d'abord ton texte, puis propose le titre qui lui va le mieux. Le titre canonique ci-dessus est un point de départ, pas une contrainte: reprends-le tel quel, ajuste-le ou propose-en un nouveau, du moment qu'il reste dans le périmètre et le style de série (accroche courte et imagée, souvent deux-points puis glose en langage clair, ou question). N'hésite pas à t'en éloigner si ton angle appelle un meilleur titre; ne garde le canonique que s'il fait au moins aussi bien. Titre en français, sans tiret cadratin, sans nom d'entreprise, assez court pour un rendu image fiable.
 
 Réponds exactement dans ce format:

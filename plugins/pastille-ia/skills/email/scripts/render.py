@@ -57,7 +57,7 @@ def assombrir(couleur, part_noir):
 
 # Dérivés. L'orange de marque tombe à 3,2:1 sur blanc, insuffisant pour un texte
 # de 12 pixels: les petits libellés prennent une version assombrie, qui remonte
-# au delà de 5:1. Les fonds sont le même orange ou le même bleu, très éclaircis.
+# au-delà de 5:1. Les fonds sont le même orange ou le même bleu, très éclaircis.
 ORANGE_TEXTE = assombrir(MARQUE_ORANGE, 0.25)
 BLEU_PALE = eclaircir(MARQUE_BLEU, 0.60)
 

@@ -48,7 +48,7 @@ En mode humain, le rapport: les constats consolidés classés par gravité, chac
 
 En mode appelé, la liste consolidée, rendue au processus appelant, sans mise en scène ni verdict séparé.
 
-Dans les deux cas, dis ce que la revue n'a pas pu juger: pas de rendu d'image (le prompt et l'aperçu disent ce que les images devraient montrer, pas ce que Gemini en fera), brief reconstitué plutôt que d'origine, textes voisins absents. Une revue qui taît ses angles morts se fait passer pour plus complète qu'elle n'est.
+Dans les deux cas, dis ce que la revue n'a pas pu juger: pas de rendu d'image (le prompt et l'aperçu disent ce que les images devraient montrer, pas ce que Gemini en fera), brief reconstitué plutôt que d'origine, textes voisins absents. Une revue qui tait ses angles morts se fait passer pour plus complète qu'elle n'est.
 
 ## Frontière avec les autres skills
 `generate` crée la pastille, `email` la met en courriel, `review` la juge sans y toucher, et `refine` réhydrate une pastille recollée sans son contexte avant de la retoucher.

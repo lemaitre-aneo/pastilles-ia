@@ -101,7 +101,7 @@ def charger(chemin):
 TOLERANCE_BLANC = 6      # un pixel plus clair que ça compte comme fond
 MARGE_CONSERVEE = 16     # respiration gardée autour du contenu, en pixels source
 BANDE_MINIMALE = 0.02    # en deçà, la bande ne vaut pas un rognage
-ROGNAGE_MAXIMAL = 0.60   # au delà, on suspecte une fausse détection et on s'abstient
+ROGNAGE_MAXIMAL = 0.60   # au-delà, on suspecte une fausse détection et on s'abstient
 
 
 def mesurer_marges(im):
