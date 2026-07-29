@@ -1,5 +1,5 @@
 ---
-description: Fabrique le courriel de diffusion d'une pastille LLM déjà rédigée et déjà illustrée: un fichier .msg Outlook, prêt à compléter et à envoyer, contenant le corps HTML au gabarit de la série et les deux visuels en pièces jointes affichées dans le corps. Utilise ce skill dès qu'on te demande de générer, produire, fabriquer ou mettre en forme le mail, l'email, le courriel, le .msg ou la version diffusable d'une pastille, typiquement juste après avoir collé dans la conversation l'illustration-titre et le schéma générés par Gemini. Produit dans la même passe deux artefacts conservables: un HTML autonome (visuels incorporés) et un Markdown importable dans Notion. Utilise-le aussi pour régénérer un courriel après une retouche du texte. Pour écrire la pastille elle-même, utilise generate; pour retoucher son texte, applique la retouche directement quand son contexte est dans la conversation, et n'appelle refine que si elle a été recollée sans son contexte de production.
+description: Fabrique le courriel de diffusion d'une pastille LLM déjà rédigée et déjà illustrée: un fichier .msg Outlook, prêt à compléter et à envoyer, contenant le corps HTML au gabarit de la série et les deux visuels en pièces jointes affichées dans le corps. Utilise ce skill dès qu'on te demande de générer, produire, fabriquer ou mettre en forme le mail, l'email, le courriel, le .msg ou la version diffusable d'une pastille, typiquement juste après avoir collé dans la conversation l'illustration-titre et le schéma générés par Gemini. Produit aussi trois artefacts conservables: un HTML aplati aux couleurs de la série, importable dans Notion, une trace fidèle du courriel, un Markdown. Utilise-le aussi pour régénérer un courriel après une retouche du texte. Pour écrire la pastille elle-même, utilise generate; pour retoucher son texte, applique la retouche directement quand son contexte est dans la conversation, et n'appelle refine que si elle a été recollée sans son contexte de production.
 ---
 
 # Fabrique du courriel d'une pastille (.msg Outlook)
@@ -7,7 +7,7 @@ description: Fabrique le courriel de diffusion d'une pastille LLM déjà rédig�
 ## Ce que fait ce skill
 Prend une pastille dont le texte est validé et dont les deux visuels ont été générés, puis produit un `.msg`: brouillon non envoyé, sujet au format de la série, corps HTML au gabarit, illustration-titre et schéma attachés et affichés dans le corps par référence `cid:`. Le fichier s'ouvre dans Outlook, il ne reste qu'à renseigner les destinataires et à envoyer.
 
-La même passe écrit deux artefacts destinés à rester: `courriel.html`, autonome parce que ses visuels y sont incorporés, et `pastille.md`, pour archiver ailleurs et importer dans Notion. Voir « Les artefacts produits ».
+La même passe écrit trois artefacts destinés à rester: `pastille.html`, sans tables et habillé aux teintes de la série, qui s'importe dans Notion et se lit dans un navigateur; `courriel.html`, trace fidèle de ce qui a été envoyé; `pastille.md`, archive en texte. Tous trois portent leurs visuels incorporés, sauf le Markdown. Voir « Les artefacts produits ».
 
 Frontière avec les autres skills: `generate` écrit la pastille et produit le prompt d'images, `refine` réhydrate une pastille recollée sans son contexte avant de la retoucher, `review` la juge sans y toucher, et ce skill ne s'occupe que de la mise en courriel. Il ne réécrit jamais le texte: si une correction rédactionnelle apparaît en route, signale-la et propose de la traiter, ne la décide pas ici. Si l'utilisateur accepte, applique-la directement quand le dossier de la pastille est dans la conversation (voir la spec partagée, section « Faire évoluer une pastille »); `refine` ne sert que si le texte a été recollé sans son contexte. Si la correction est structurelle (changement d'axe, restructuration), c'est `generate` qui régénère, et les deux visuels sont alors à refaire dans Gemini avant de revenir ici. Dans tous les cas, le texte corrigé oblige à refabriquer le `.msg`, et à vérifier que les visuels n'ont pas été périmés par la correction.
 
@@ -71,15 +71,15 @@ Points de vigilance: `numero` est le numéro de diffusion donné par l'utilisate
 ### 4. Construire et contrôler
 ```
 python3 ${CLAUDE_SKILL_DIR}/scripts/build.py fiche.json --msg pastille-NN.msg \
-    --html courriel.html --markdown pastille.md
+    --html courriel.html --html-plat-autonome pastille.html --markdown pastille.md
 python3 ${CLAUDE_SKILL_DIR}/scripts/verify.py pastille-NN.msg \
     pastille-NN-illustration-titre.png pastille-NN-schema.png \
-    --html courriel.html --markdown pastille.md
+    --html courriel.html --html-plat-autonome pastille.html --markdown pastille.md
 ```
 
-Ajoute `--html-plat pastille-notion.html` ou `--html-plat-autonome pastille-plat-autonome.html` aux deux commandes si l'utilisateur veut aussi une variante HTML pour l'import (voir plus bas).
+`--html-plat pastille-notion.html` existe en plus, pour le seul cas où le fichier autonome dépasse la limite d'import (voir « Importer dans Notion »).
 
-Une même passe produit donc trois artefacts, tous depuis la même fiche et le même code de rendu: le `.msg` pour diffuser, le HTML pour conserver et relire, le Markdown pour archiver ailleurs et importer dans Notion. Voir « Les trois artefacts » plus bas pour ce que chacun garantit.
+Une même passe produit donc quatre artefacts, tous depuis la même fiche et le même code de rendu: le `.msg` pour diffuser, `courriel.html` comme trace fidèle de ce qui a été envoyé, `pastille.html` pour l'import et la lecture, `pastille.md` pour l'archive en texte. Voir « Les artefacts produits » plus bas pour ce que chacun garantit.
 
 `build.py` écrit à côté de la fiche les deux PNG qu'il attache réellement, `pastille-NN-illustration-titre.png` et `pastille-NN-schema.png`. Ce sont eux qu'il faut passer à `verify.py`, et non les images d'origine: celles-ci ont pu être converties depuis le webp, aplaties ou rognées, auquel cas elles ne correspondent plus. Ce sont eux, aussi, qu'on retrouve dans le HTML (incorporés) et à côté du Markdown (référencés par leur nom).
 
@@ -104,25 +104,27 @@ Livre le `.msg` en fichier joint. Dis en une ligne ce que contient le courriel (
 Un seul rendu, plusieurs sorties, pour des usages qui n'ont pas les mêmes contraintes. Elles viennent du même code: si le rendu change, les trois changent ensemble, sans risque de version divergente.
 
 - **`pastille-NN.msg`**, pour diffuser. Brouillon Outlook, images en pièces jointes référencées par `cid:`, corps optimisé pour le moteur de rendu de Word. C'est le seul artefact destiné à être envoyé.
-- **`courriel.html`**, pour conserver et relire. Même corps, mais les deux visuels sont incorporés en base64 plutôt que référencés: le fichier se suffit à lui-même. Un HTML qui pointe vers des PNG voisins est un aperçu, pas un artefact conservable, car il cesse d'afficher ses images dès qu'on le déplace ou qu'on le transmet seul. Celui-ci s'ouvre dans n'importe quel navigateur, des années plus tard, et sert aussi de source aux captures de contrôle.
+- **`pastille.html`** (`--html-plat-autonome`), pour importer et pour lire. HTML sémantique sans une seule table, habillé aux teintes de la série: bandeau bleu au numéro orange, encadré sur fond bleu très clair à puces bleues, bloc annexe à barre latérale, légende grise, texte justifié. Les visuels y sont incorporés, donc il s'importe seul, sans archive. C'est l'artefact validé pour Notion, et le plus commode puisqu'un seul fichier fait l'import et la lecture.
+- **`courriel.html`** (`--html`), comme trace fidèle du courriel. Exactement le corps envoyé, aux tables de Word près, avec les visuels incorporés en base64 plutôt que référencés: le fichier se suffit à lui-même. Un HTML qui pointe vers des PNG voisins est un aperçu, pas un artefact conservable, car il cesse d'afficher ses images dès qu'on le déplace. Celui-ci sert de preuve de ce qui a été diffusé et de source aux captures de contrôle. Ne l'importe pas dans Notion: ses sept tables imbriquées sont précisément ce qu'un importeur aplatit mal.
 - **`pastille.md`**, pour archiver ailleurs et importer dans Notion. Même contenu en Markdown, emphases conservées, typographie française appliquée, images citées par leur nom de fichier sans chemin. Le `.md` et les deux PNG vivent dans le même dossier, et c'est ce dossier qu'on zippe pour l'import.
 
-En option, deux variantes aplaties s'ajoutent, pour l'import: `--html-plat` écrit `pastille-notion.html` (images voisines) et `--html-plat-autonome` écrit `pastille-plat-autonome.html` (images incorporées, donc un seul fichier à importer, sans archive). Même balisage dans les deux cas, seule la portabilité change.
+Une variante existe en plus, `--html-plat`, qui écrit le même HTML aplati avec des images voisines au lieu d'incorporées: elle ne sert qu'au cas où le fichier autonome dépasse la limite d'import.
 
 ### Importer dans Notion: deux candidats, et pourquoi pas le courriel
 Notion importe les fichiers `.html` comme les `.md`, mais sa documentation prévient que les mises en page et les tables complexes sont aplaties ou demandent une reprise, et que les images ne suivent que si elles sont présentes et accessibles pendant l'import. Le corps du courriel est exactement ce cas limite: sept tables imbriquées, styles en ligne, balises `<font>`, tout cela imposé par le moteur de rendu de Word, plus des images en `data:` dont l'import n'est pas garanti. **N'importe donc pas `courriel.html` dans Notion**, c'est le seul des artefacts qui n'y est pas destiné.
 
-Deux axes indépendants décident de ce qu'on importe: la **structure** (tables du courriel, ou balisage aplati) et les **images** (voisines, donc à zipper, ou incorporées, donc un seul fichier). D'où les candidats:
+**Importe `pastille.html`, tel quel, sans archive.** Cette variante a été validée dans Notion: le balisage aplati passe, et le fichier se suffisant à lui-même, il n'y a ni zip à préparer ni image à retrouver.
 
-- **`pastille.md`**, à zipper avec les deux PNG. Markdown est le format que Notion importe le plus proprement, et il reste la référence de repli.
-- **`pastille-notion.html`** (`--html-plat`), à zipper aussi: HTML sémantique sans une seule table, `h1` pour le titre, `p` pour les paragraphes, `blockquote` plus `ul` pour l'encadré, `figure` et `figcaption` pour le schéma et sa légende.
-- **`pastille-plat-autonome.html`** (`--html-plat-autonome`): le même balisage aplati, mais images incorporées. C'est le candidat le plus commode s'il passe, puisqu'il s'importe seul, sans archive, et fait aussi office d'archive.
+Deux replis, dans cet ordre:
 
-Un import zippé retrouve ses images parce qu'elles sont citées par leur seul nom de fichier, sans chemin. Un import d'un seul fichier ne le peut pas: il faut alors que les images y soient incorporées. Les deux variantes aplaties existent donc pour cette seule raison, et `verify.py` refuse de les confondre.
+- Si le fichier dépasse la limite d'import (5 Mo sur le plan gratuit, 50 Mo sinon), le base64 gonflant les visuels d'un tiers: produis `--html-plat pastille-notion.html`, dont les images sont voisines, et zippe-le avec les deux PNG. `build.py` alerte au-delà de 4,5 Mo, tu n'as pas à mesurer toi-même.
+- Si l'import HTML échoue pour une autre raison: `pastille.md`, zippé de la même façon. Markdown et HTML s'importent aussi bien l'un que l'autre, celui-ci n'est donc pas un moindre mal, juste un autre chemin.
 
-Attention à la taille sur les variantes incorporées: le base64 gonfle les visuels d'un tiers, et l'import Notion est plafonné à 5 Mo sur le plan gratuit, 50 Mo sinon. `build.py` alerte au-delà de 4,5 Mo; dans ce cas, passe par le zip et les images voisines.
+Ce que Notion garde et ne garde pas: la structure des blocs, oui, et c'est le but. Les styles en ligne, probablement pas, un importeur lisant rarement le CSS; l'habillage aux couleurs de la série vaut donc pour la lecture du fichier dans un navigateur, pas nécessairement pour la page Notion. À noter d'ailleurs que la couleur de texte de Notion est une palette de noms (bleu, orange, gris), pas des valeurs hexadécimales: les teintes exactes de la charte n'y sont de toute façon pas reproductibles, même en construisant la page par l'API.
 
-Le choix définitif attend une validation dans Notion. Tant qu'elle n'a pas eu lieu, produis les candidats que l'utilisateur veut comparer et ne présente aucun comme le bon.
+Ne promets donc pas un rendu Notion identique au courriel. L'encadré « L'essentiel » et le bloc annexe arrivent en citations, à convertir en callout côté Notion si l'utilisateur le souhaite.
+
+Une différence assumée avec le courriel: `pastille.html` porte le titre en texte, dans un `h1`, alors que le courriel ne l'affiche que dans l'illustration. Une page importée a besoin d'un titre, et un artefact d'archive doit rester lisible même si l'image ne charge pas.
 
 Ne promets pas un rendu Notion identique au courriel: la mise en forme de diffusion appartient au courriel, Notion garde le contenu et la structure. L'encadré « L'essentiel » et le bloc annexe arrivent en citations, à convertir en callout côté Notion si l'utilisateur le souhaite. Et s'il veut un rendu fidèle au pixel, dis-lui que cela demande de construire la page par blocs via l'API ou un connecteur Notion, ce que ce skill ne fait pas.
 

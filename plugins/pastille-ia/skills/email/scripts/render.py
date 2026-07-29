@@ -334,47 +334,113 @@ def _inline(texte):
     return emphases_simples(_html.escape(fr_texte(texte), quote=False))
 
 
-def html_plat_pastille(c, nom_image_titre, nom_image_schema):
-    """HTML sémantique sans une seule table, pour un import qui garde la
-    structure (Notion) plutôt que la mise en page.
+def html_plat_pastille(c, source_image_titre, source_image_schema):
+    """HTML sémantique sans une seule table, habillé aux teintes de la série.
 
-    Le courriel, lui, est bâti en tables imbriquées parce que Word ne sait
-    rien faire d'autre; c'est précisément ce qu'un importeur aplatit mal. Ici
-    chaque bloc est la balise qui le décrit: un titre est un h1, une synthèse
-    est une citation à puces, une légende est une figcaption.
+    Le courriel est bâti en tables imbriquées parce que Word ne sait rien faire
+    d'autre; c'est précisément ce qu'un importeur aplatit mal. Ici chaque bloc
+    est la balise qui le décrit: un titre est un h1, une synthèse est une
+    citation à puces, une légende est une figcaption. Un import garde donc la
+    structure, et un navigateur retrouve l'allure du courriel.
 
-    Les deux sources d'images sont des chemins tels quels: l'appelant passe
-    soit un nom de fichier voisin (l'artefact voyage alors dans un dossier ou
-    une archive), soit une URL `data:` (l'artefact se suffit à lui-même). Le
-    balisage ne change pas, seule la portabilité du fichier change.
+    Deux choix expliquent la forme du code:
+
+    1. Les styles sont en ligne, pas dans une feuille `<style>`. Un importeur
+       qui ne lit pas le CSS ignore une feuille sans dommage, mais un importeur
+       naïf peut aussi en recracher le contenu au milieu de la page. En ligne,
+       ce risque n'existe pas, et c'est accessoirement la seule chose que le
+       courriel sait faire, donc le même vocabulaire sert deux fois.
+    2. Les couleurs sont dérivées de la palette de la série, jamais réécrites:
+       le bandeau, l'encadré et les blocs annexes reprennent exactement les
+       teintes du courriel, y compris les versions assombries des petits
+       libellés, qui existent pour le contraste.
+
+    Les deux sources d'images sont des chemins tels quels: l'appelant passe soit
+    un nom de fichier voisin (l'artefact voyage dans un dossier ou une archive),
+    soit une URL `data:` (l'artefact se suffit à lui-même). Le balisage ne change
+    pas, seule la portabilité du fichier change.
     """
-    out = [f"<h1>{_inline(c['titre'])}</h1>",
-           f"<p><em>Pastille IA {c['numero']} / {c['total']} . "
-           f"{_inline(c['rubrique'])} . {c['temps_lecture']} de lecture</em></p>",
-           f'<p><img src="{nom_image_titre}" '
-           f'alt="{_html.escape(sans_balises(c["titre"]))}"></p>',
-           "<blockquote>", "<p><strong>L’essentiel</strong></p>", "<ul>"]
-    out += [f"<li>{_inline(p)}</li>" for p in c["essentiel"]]
+    def st(couleur, taille, interligne, extra=""):
+        return (f"color:{couleur}; font-size:{taille}px; line-height:{interligne}px; "
+                f"{extra}font-family:{FONT};")
+
+    p_corps = (f'margin:0 0 16px 0; {st(NOIR, 16, 26, "text-align:justify; ")}')
+    out = [
+        # Bandeau de série: un seul paragraphe, comme dans le courriel, avec le
+        # numéro en orange sur le bleu de marque.
+        f'<p style="margin:0 0 24px 0; padding:14px 20px; '
+        f'background-color:{MARQUE_BLEU}; {st(BLANC, 13, 24)}">'
+        f'<strong style="{st(MARQUE_ORANGE, 22, 24, "font-weight:700; ")}">'
+        f'{c["numero"]}</strong>'
+        f'<span style="{st(BLEU_PALE, 12, 24)}">&nbsp;/&nbsp;{c["total"]}</span>'
+        f'<span style="{st(BLANC, 13, 24)}">&nbsp;&nbsp;&nbsp;PASTILLE IA'
+        f'&nbsp;&nbsp;&middot;&nbsp;&nbsp;{_html.escape(fr_texte(c["rubrique"])).upper()}'
+        f'</span>'
+        f'<span style="{st(BLEU_PALE, 12, 24)}">&nbsp;&nbsp;&middot;&nbsp;&nbsp;'
+        f'{c["temps_lecture"]} de lecture</span></p>',
+
+        f'<h1 style="margin:0 0 20px 0; {st(MARQUE_BLEU, 26, 34, "font-weight:700; ")}">'
+        f'{_inline(c["titre"])}</h1>',
+
+        f'<p style="margin:0 0 24px 0;">'
+        f'<img src="{source_image_titre}" '
+        f'alt="{_html.escape(sans_balises(c["titre"]))}" '
+        f'style="max-width:{W_TITRE}px; width:100%; height:auto; display:block; '
+        f'margin:0 auto;"></p>',
+
+        f'<blockquote style="margin:0 0 24px 0; padding:16px 18px; '
+        f'background-color:{FOND_ESSENTIEL}; border:{BORDURE_ESSENTIEL};">',
+        f'<p style="margin:0; {st(ORANGE_TEXTE, 12, 16, "font-weight:700; letter-spacing:0.6px; ")}">'
+        f'<strong>L’ESSENTIEL</strong></p>',
+        f'<ul style="margin:10px 0 0 0; padding:0 0 0 20px; '
+        f'{st(MARQUE_BLEU, 16, 25, "font-weight:700; ")}">',
+    ]
+    out += [f'<li style="margin:0 0 6px 0; {st(MARQUE_BLEU, 16, 25, "font-weight:700; ")}">'
+            f'<strong>{_inline(p)}</strong></li>' for p in c["essentiel"]]
     out += ["</ul>", "</blockquote>"]
+
     apres = c.get("schema_apres", len(c["paragraphes"]) - 1)
     for i, para_texte in enumerate(c["paragraphes"], start=1):
-        out.append(f"<p>{_inline(para_texte)}</p>")
+        out.append(f'<p style="{p_corps}">{_inline(para_texte)}</p>')
         if i == apres:
-            out += ["<figure>",
-                    f'<img src="{nom_image_schema}" '
-                    f'alt="{_html.escape(fr_texte(c["alt_schema"]))}">',
-                    f"<figcaption>{_inline(c['legende_schema'])}</figcaption>",
-                    "</figure>"]
+            out += [
+                '<figure style="margin:0 0 16px 0;">',
+                f'<img src="{source_image_schema}" '
+                f'alt="{_html.escape(fr_texte(c["alt_schema"]))}" '
+                f'style="max-width:{W_SCHEMA}px; width:100%; height:auto; '
+                f'display:block; margin:0 auto;">',
+                f'<figcaption style="margin:8px 0 0 0; {st(GRIS, 13, 20)}">'
+                f'{_inline(c["legende_schema"])}</figcaption>',
+                "</figure>"]
+
     if c.get("annexe"):
-        out += ["<blockquote>",
-                f"<p><strong>{_inline(c['annexe']['etiquette'])}</strong></p>",
-                f"<p>{_inline(c['annexe']['texte'])}</p>", "</blockquote>"]
-    out += ["<hr>", f"<p><em>{_inline(c['mention_ia'])}</em></p>",
-            f"<p>{_inline(c['signature'])}</p>"]
+        a = c["annexe"]
+        teintes = ANNEXES[a.get("style", "essayer")]
+        out += [
+            f'<blockquote style="margin:8px 0 24px 0; padding:16px 18px; '
+            f'background-color:{teintes["fond"]}; '
+            f'border-left:4px solid {teintes["barre"]};">',
+            f'<p style="margin:0; '
+            f'{st(teintes["etiquette"], 12, 16, "font-weight:700; letter-spacing:0.4px; ")}">'
+            f'<strong>{_inline(a["etiquette"]).upper()}</strong></p>',
+            f'<p style="margin:8px 0 0 0; {st(teintes["texte"], 15, 24)}">'
+            f'{_inline(a["texte"])}</p>',
+            "</blockquote>"]
+
+    out += [
+        f'<hr style="border:0; border-top:1px solid {eclaircir(GRIS, 0.70)}; '
+        f'margin:24px 0 16px 0;">',
+        f'<p style="margin:0 0 8px 0; {st(GRIS, 13, 20, "font-style:italic; ")}">'
+        f'<em>{_inline(c["mention_ia"])}</em></p>',
+        f'<p style="margin:0; {st(MARQUE_BLEU, 15, 24, "font-weight:700; ")}">'
+        f'<strong>{_inline(c["signature"])}</strong></p>']
+
     corps = "\n".join(out)
     return ('<html><head><meta charset="utf-8">'
             f"<title>{_html.escape(sans_balises(c['titre']))}</title></head>\n"
-            f"<body>\n{corps}\n</body></html>\n")
+            f'<body style="margin:0 auto; padding:24px 20px; max-width:{MAX_W}px; '
+            f'background-color:{BLANC}; {st(NOIR, 16, 26)}">\n'
+            f"{corps}\n</body></html>\n")
 
 
 def markdown_pastille(c, nom_image_titre, nom_image_schema):
