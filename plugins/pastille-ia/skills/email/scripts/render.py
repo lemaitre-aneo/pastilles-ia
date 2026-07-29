@@ -407,6 +407,13 @@ MARQUE_DOSSIER = "pastille:dossier"
 FIN_DOSSIER = "pastille:fin"
 FORMAT_DOSSIER = 1
 
+# Marque des emplacements de visuels non encore générés, dans l'archive seule,
+# reprise telle quelle dans le rendu. Elle est ici, et non écrite en clair là-bas,
+# parce que `verify.py` la cherche au caractère près: une archive qui déclare un
+# visuel manquant doit le dire dans le document, sans quoi il ne resterait rien
+# du visuel absent.
+MARQUE_ATTENTE = "À GÉNÉRER"
+
 
 def dossier_incorpore(c):
     """Le dossier de la pastille, en JSON, dans un commentaire HTML.
@@ -518,10 +525,29 @@ def html_plat_pastille(c, source_image_titre, source_image_schema):
     un nom de fichier voisin (l'artefact voyage dans un dossier ou une archive),
     soit une URL `data:` (l'artefact se suffit à lui-même). Le balisage ne change
     pas, seule la portabilité du fichier change.
+
+    Une source vide (None) est admise, et seulement ici: l'archive se produit
+    parfois avant que les visuels existent, ou une reprise ancienne les a perdus.
+    Le visuel absent laisse alors un emplacement qui dit ce qu'il devait montrer.
+    Le courriel, lui, n'a pas ce mode: le schéma y est systématique.
     """
     def st(couleur, taille, interligne, extra=""):
         return (f"color:{couleur}; font-size:{taille}px; line-height:{interligne}px; "
                 f"{extra}font-family:{FONT};")
+
+    # Un trou muet à la place d'une image ferait croire à un défaut de rendu,
+    # alors qu'il ne manque qu'un fichier. L'emplacement nomme donc le visuel
+    # attendu et décrit ce qu'il doit montrer, c'est-à-dire ce que porterait son
+    # texte alternatif: dans une archive sans visuels, c'est leur seule trace, et
+    # elle suffit à les régénérer plus tard. Pas de table ici, le bandeau doit
+    # rester la seule de l'artefact.
+    def attente(libelle, description, largeur):
+        return (f'<p style="max-width:{largeur}px; margin:0 auto 24px auto; '
+                f'padding:14px 16px; border:1px dashed {eclaircir(GRIS, 0.45)}; '
+                f'{st(GRIS, 13, 20)}">'
+                f'<strong style="{st(ORANGE_TEXTE, 12, 18, "font-weight:700; letter-spacing:0.6px; ")}">'
+                f'{_html.escape(libelle.upper())} {MARQUE_ATTENTE}</strong>'
+                f'<br>{_inline(description)}</p>')
 
     p_corps = (f'margin:0 0 16px 0; {st(NOIR, 16, 26, "text-align:justify; ")}')
     out = [
@@ -564,11 +590,13 @@ def html_plat_pastille(c, source_image_titre, source_image_schema):
         f'&nbsp;{c["temps_lecture"]} de lecture</td>'
         f'</tr></table>',
 
-        f'<p style="margin:0 0 24px 0;">'
-        f'<img src="{source_image_titre}" '
-        f'alt="{_html.escape(sans_balises(c["titre"]))}" '
-        f'style="max-width:{W_TITRE}px; width:100%; height:auto; display:block; '
-        f'margin:0 auto;"></p>',
+        (f'<p style="margin:0 0 24px 0;">'
+         f'<img src="{source_image_titre}" '
+         f'alt="{_html.escape(sans_balises(c["titre"]))}" '
+         f'style="max-width:{W_TITRE}px; width:100%; height:auto; display:block; '
+         f'margin:0 auto;"></p>'
+         if source_image_titre else
+         attente("Illustration-titre", sans_balises(c["titre"]), W_TITRE)),
 
         f'<blockquote style="margin:0 0 24px 0; padding:16px 18px; '
         f'background-color:{FOND_ESSENTIEL}; border:{BORDURE_ESSENTIEL};">',
@@ -590,9 +618,11 @@ def html_plat_pastille(c, source_image_titre, source_image_schema):
                 # la légende se cale ainsi sur la largeur du schéma au lieu de
                 # s'étaler sur toute la colonne.
                 f'<figure style="max-width:{W_SCHEMA}px; margin:0 auto 16px auto;">',
-                f'<img src="{source_image_schema}" '
-                f'alt="{_html.escape(fr_texte(c["alt_schema"]))}" '
-                f'style="width:100%; height:auto; display:block;">',
+                (f'<img src="{source_image_schema}" '
+                 f'alt="{_html.escape(fr_texte(c["alt_schema"]))}" '
+                 f'style="width:100%; height:auto; display:block;">'
+                 if source_image_schema else
+                 attente("Schéma", c["alt_schema"], W_SCHEMA)),
                 f'<figcaption style="margin:8px 0 0 0; {st(GRIS, 13, 20)}">'
                 f'{_inline(c["legende_schema"])}</figcaption>',
                 "</figure>"]

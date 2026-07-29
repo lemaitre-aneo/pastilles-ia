@@ -20,8 +20,13 @@ import msg as msgfile          # noqa: E402
 import render                  # noqa: E402
 
 OBLIGATOIRES = ("numero", "total", "titre", "prefixe_sujet", "essentiel",
-                "paragraphes", "legende_schema", "alt_schema", "image_titre",
-                "image_schema")
+                "paragraphes", "legende_schema", "alt_schema")
+
+# Les visuels ne sont obligatoires que pour le courriel. L'archive s'écrit sans
+# eux, avec un emplacement décrit à leur place: une pastille peut être conservée
+# avant d'être illustrée, et une reprise ancienne les a parfois perdus. Le
+# courriel n'a pas cette latitude, le schéma étant systématique dans la série.
+VISUELS = ("image_titre", "image_schema")
 
 DEFAUTS = {
     "mention_ia": "Cette pastille peut contenir des traces d'IA. En cas de doute, "
@@ -224,13 +229,26 @@ def main():
     fiche = charger(args.fiche)
     dossier = os.path.dirname(os.path.abspath(args.fiche))
 
+    # Un courriel sans schéma n'est pas conforme à la série, et l'illustration
+    # porte le titre: on refuse donc de le fabriquer plutôt que de livrer un
+    # visuel manquant à des destinataires. L'archive, elle, sait attendre.
+    absents = [c for c in VISUELS if not fiche.get(c)]
+    if args.msg and absents:
+        raise SystemExit(
+            "le courriel exige les deux visuels, or " + ", ".join(absents)
+            + " manque(nt) à la fiche: le schéma est systématique dans la série. "
+            "Générez les visuels, ou produisez l'archive seule en attendant, avec "
+            "--html et sans --msg.")
+
     images = []
     for cid, cle, base, court in (
             ("IMAGE_TITRE", "image_titre", f'pastille-{fiche["numero"]}-illustration-titre',
              f'P{fiche["numero"]}TITRE.PNG'),
             ("IMAGE_SCHEMA", "image_schema", f'pastille-{fiche["numero"]}-schema',
              f'P{fiche["numero"]}SCHEMA.PNG')):
-        chemin = fiche[cle]
+        chemin = fiche.get(cle)
+        if not chemin:
+            continue
         if not os.path.isabs(chemin):
             chemin = os.path.join(dossier, chemin)
         produit = preparer_image(chemin, base, rognage=not args.sans_rognage)
@@ -290,10 +308,18 @@ def main():
                   "d'import de 5 Mo du plan gratuit de Notion")
 
     if args.html:
-        sources = sources_data(images)
+        # Par cid et non par position: un visuel peut manquer, et c'est alors le
+        # second qui glisserait à la place du premier.
+        sources = dict(zip((img["cid"] for img in images), sources_data(images)))
         with open(args.html, "w", encoding="utf-8") as f:
-            f.write(render.html_plat_pastille(fiche, sources[0], sources[1]))
+            f.write(render.html_plat_pastille(fiche, sources.get("IMAGE_TITRE"),
+                                              sources.get("IMAGE_SCHEMA")))
         print("html écrit:", args.html, os.path.getsize(args.html), "octets")
+        if absents:
+            print("  archive provisoire:", ", ".join(absents), "absent(s) de la "
+                  "fiche, l'artefact porte à leur place un emplacement décrit")
+            print("  (refabriquez-la une fois les visuels générés; le courriel, "
+                  "lui, ne peut pas être produit d'ici là)")
         rappeler_nom(args.html, ".html")
         alerter_taille(args.html)
         # Le dossier incorporé est ce qui fait de cet artefact la référence pour
@@ -302,11 +328,11 @@ def main():
             render.lire_dossier(open(args.html, encoding="utf-8").read())
         except ValueError as erreur:
             raise SystemExit(f"dossier incorporé illisible: {erreur}")
-        absents = [c for c in ("titre_canonique", "axe", "prompt_image",
-                               "apercu_visuels", "sources")
-                   if not fiche.get(c)]
-        if absents:
-            print("  dossier incomplet, champs absents:", ", ".join(absents),
+        absents_reprise = [c for c in ("titre_canonique", "axe", "prompt_image",
+                                       "apercu_visuels", "sources")
+                           if not fiche.get(c)]
+        if absents_reprise:
+            print("  dossier incomplet, champs absents:", ", ".join(absents_reprise),
                   "\n  (une reprise ultérieure devra les redemander)")
 
 

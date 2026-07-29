@@ -25,7 +25,9 @@ Ce skill est autonome: il ne suppose pas qu'un autre skill vient de tourner. Le 
 
 Deux champs ne sont pas à réclamer, le script les déduit: la rubrique, à partir de la position du sujet dans la liste des 45 (champ `position_liste`), et le temps de lecture, à partir du nombre de mots. Les valeurs déduites sont affichées à la construction, vérifie-les.
 
-Si une seule image est disponible, arrête-toi et demande la seconde: le schéma est systématique dans la série, un courriel sans schéma n'est pas conforme.
+Si une seule image est disponible, ou aucune, ne fabrique pas le courriel: le schéma est systématique dans la série et l'illustration porte le titre, donc un courriel amputé n'est pas conforme, et `build.py` le refuse. Demande le visuel manquant. Deux nuances utiles avant de bloquer l'utilisateur:
+- **L'archive, elle, n'attend pas.** Si le texte est validé et que les visuels ne sont pas encore générés, propose de produire l'artefact seul (voir « Construire et contrôler »): il portera à la place de chaque image manquante un encadré qui la nomme et dit ce qu'elle doit montrer. C'est le bon geste pour une reprise ancienne dont les visuels sont perdus, ou pour conserver une pastille avant de l'illustrer.
+- **Ce n'est alors pas la fin du travail**: dis clairement que l'archive est provisoire, qu'elle se refabrique une fois les visuels générés, et que la diffusion reste impossible d'ici là.
 
 ## Processus
 
@@ -88,6 +90,8 @@ python3 ${CLAUDE_SKILL_DIR}/scripts/verify.py --html "pastille NN accroche.html"
 ```
 
 Le contrôle porte alors sur les règles propres de l'artefact, qui ne dépendent pas du courriel: visuels incorporés, aucune référence `cid:` restante, une seule table, dossier relisible. Si une diffusion suit, refabrique les deux ensemble: un `.msg` sans artefact laisse la pastille sans archive.
+
+**Les visuels ne sont obligatoires que pour le courriel.** Cette même commande accepte une fiche sans `image_titre` ni `image_schema`: à l'emplacement exact de chaque visuel manquant, l'artefact porte un encadré qui le nomme et reprend son texte alternatif, donc l'archive dit ce que les images devaient montrer. `build.py` annonce l'archive comme provisoire et rappelle que le courriel n'est pas fabricable, `verify.py` compte les visuels déclarés dans le dossier au lieu d'en exiger deux, et `dossier.py` ressort une fiche sans le champ absent. Une fois les visuels générés, complète la fiche et refabrique. Ne construis jamais le `.msg` dans cet état: `build.py` s'y refuse, et c'est voulu.
 
 `build.py` écrit à côté de la fiche les deux PNG qu'il attache réellement, `pastille-NN-illustration-titre.png` et `pastille-NN-schema.png`. Ce sont eux qu'il faut passer à `verify.py`, et non les images d'origine: celles-ci ont pu être converties depuis le webp, aplaties ou rognées, auquel cas elles ne correspondent plus. Ce sont eux, aussi, qui sont incorporés dans le HTML.
 

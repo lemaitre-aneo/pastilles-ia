@@ -63,6 +63,8 @@ Le second fait quatre métiers à la fois, lire, importer, conserver et reprendr
 
 **Les deux sorties ne sont pas solidaires**: `build.py fiche.json --html "..."`, sans `--msg`, produit l'archive seule, et `verify.py --html "..."` la contrôle seule. Diffuser et conserver sont deux décisions distinctes, et une pastille reprise des mois plus tard, ou tirée d'un texte qui ne repartira pas, n'a pas à fabriquer un `.msg` que personne n'enverra. L'inverse ne vaut pas: un `.msg` sans artefact laisse la pastille sans archive.
 
+**L'archive n'attend pas les visuels, le courriel les exige.** Une fiche sans `image_titre` ni `image_schema` produit un artefact provisoire: à l'emplacement exact de chaque visuel manquant, un encadré le nomme et reprend son texte alternatif, donc l'archive dit ce que l'image devait montrer et suffit à la régénérer. C'est le bon geste pour une pastille conservée avant d'être illustrée, ou pour une reprise ancienne dont les images sont perdues: elle rejoint le formalisme tout de suite. Le `.msg`, lui, est refusé tant qu'un visuel manque, et pas par prudence de code: le schéma est systématique dans la série et l'illustration porte le titre.
+
 **Les deux fichiers portent le même nom**, à l'extension près, avec des espaces. Notion nomme la page importée d'après le nom du fichier, pas d'après le `h1` du document; et les tirets ne survivent pas à toutes les chaînes de téléchargement, qui les suppriment et recollent les mots. `build.py` calcule le nom depuis le titre, en gardant l'accroche jusqu'au deux-points, et le rappelle si celui reçu diffère: `pastille 7 les tokens.html`, `pastille 45 la chaine de pensee.html`.
 
 Quatre détails de cet artefact, dont trois viennent de l'import, et aucun n'est cosmétique:

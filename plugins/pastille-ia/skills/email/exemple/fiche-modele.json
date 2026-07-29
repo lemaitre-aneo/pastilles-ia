@@ -26,6 +26,7 @@
   },
   "image_titre": "illustration-titre.png",
   "image_schema": "schema.png",
+  "_visuels": "Ces deux champs sont obligatoires pour le courriel, facultatifs pour l'archive seule: sans eux, build.py --html écrit un artefact provisoire qui porte à leur place un encadré nommant le visuel attendu et reprenant son texte alternatif, et refuse de fabriquer le .msg.",
   "sources": [
     {
       "titre": "Titre de la source, de préférence officielle",

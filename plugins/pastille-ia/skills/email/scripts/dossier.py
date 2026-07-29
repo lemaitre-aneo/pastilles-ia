@@ -6,9 +6,12 @@
 Sans `--dossier`, affiche le dossier en JSON sur la sortie standard, ce qui
 suffit pour lire un prompt d'images, un axe ou des sources.
 
-Avec `--dossier`, écrit dans ce répertoire une fiche `fiche.json` et les deux
-visuels extraits du fichier: de quoi refabriquer le courriel et l'artefact avec
-`build.py`, sans rien redemander ni reconstituer.
+Avec `--dossier`, écrit dans ce répertoire une fiche `fiche.json` et les visuels
+extraits du fichier: de quoi refabriquer le courriel et l'artefact avec
+`build.py`, sans rien redemander ni reconstituer. Une archive provisoire, faite
+avant que les visuels existent, en porte moins de deux: la fiche ressort alors
+sans le champ correspondant, ce qui suffit à refabriquer l'archive mais pas le
+courriel.
 
 C'est ce qui fait de l'artefact HTML la référence pour reprendre une pastille:
 il porte à la fois ce qui se lit (le texte mis en forme), ce qui se voit (les
@@ -27,13 +30,22 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import render                     # noqa: E402
 
 
-def visuels(html):
-    """Les deux images incorporées, dans l'ordre du document."""
+def visuels(html, declares):
+    """Les images incorporées, appariées aux visuels que le dossier déclare.
+
+    Une archive peut être provisoire et n'en porter qu'une, ou aucune, quand la
+    pastille a été conservée avant d'être illustrée. On apparie donc les images
+    trouvées aux champs déclarés dans le dossier, dans l'ordre du document
+    (illustration puis schéma), et jamais à une position supposée: sur une
+    archive sans illustration, la première image du document est le schéma.
+    """
     trouves = re.findall(r'<img src="data:image/([a-z]+);base64,([^"]+)"', html)
-    if len(trouves) != 2:
-        raise SystemExit(f"{len(trouves)} image(s) incorporée(s) au lieu de 2: "
-                         "cet artefact n'est pas complet")
-    return [(ext, base64.b64decode(donnees)) for ext, donnees in trouves]
+    if len(trouves) != len(declares):
+        raise SystemExit(f"{len(trouves)} image(s) incorporée(s) pour "
+                         f"{len(declares)} déclarée(s) dans le dossier: cet "
+                         "artefact est incohérent")
+    return [(cle, ext, base64.b64decode(donnees))
+            for cle, (ext, donnees) in zip(declares, trouves)]
 
 
 def main():
@@ -57,17 +69,25 @@ def main():
         return
 
     os.makedirs(args.dossier, exist_ok=True)
-    images = visuels(html)
-    noms = []
-    for (ext, donnees), cle in zip(images, ("image_titre", "image_schema")):
+    declares = [c for c in ("image_titre", "image_schema") if fiche.get(c)]
+    for cle, ext, donnees in visuels(html, declares):
         base = "illustration-titre" if cle == "image_titre" else "schema"
         nom = f'pastille-{fiche.get("numero", "NN")}-{base}.{ext}'
         with open(os.path.join(args.dossier, nom), "wb") as f:
             f.write(donnees)
-        noms.append(nom)
+        fiche[cle] = nom
         print("visuel écrit:", nom, len(donnees), "octets")
 
-    fiche["image_titre"], fiche["image_schema"] = noms
+    # Une archive provisoire ne porte pas tous ses visuels: la fiche ressort donc
+    # sans le champ correspondant, ce qui suffit à refabriquer l'archive mais pas
+    # le courriel. Il vaut mieux le dire ici que de le découvrir dans build.py.
+    if len(declares) < 2:
+        print("archive provisoire:",
+              ", ".join(c for c in ("image_titre", "image_schema")
+                        if c not in declares),
+              "absent(s) de l'artefact",
+              "\n  (générez le ou les visuels avant toute diffusion, le courriel "
+              "exige les deux)")
     fiche.pop("_format", None)
     chemin = os.path.join(args.dossier, "fiche.json")
     with open(chemin, "w", encoding="utf-8") as f:

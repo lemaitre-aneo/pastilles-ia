@@ -50,12 +50,35 @@ def controler_artefact(chemin, problemes):
     sources = re.findall(r'<img src="([^"]+)"', corps)
     incorporees = sum(s.startswith("data:image/") for s in sources)
     tables = len(re.findall(r"<table", corps, re.I))
-    print("  images incorporées         :", incorporees)
+    # Le dossier dit combien de visuels la pastille déclare, et c'est lui qui fait
+    # référence: une archive peut légitimement n'en porter aucun, quand elle est
+    # conservée avant que les images existent. Ce qui reste faux, c'est un visuel
+    # déclaré et non incorporé, ou un visuel absent dont rien ne dit ce qu'il
+    # devait montrer.
+    try:
+        dossier = render.lire_dossier(corps)
+    except ValueError as erreur:
+        dossier = None
+        problemes.append(f"{chemin}: {erreur}; l'artefact ne pourra pas servir de "
+                         "référence pour reprendre la pastille")
+    attendues = (sum(bool(dossier.get(c)) for c in ("image_titre", "image_schema"))
+                 if dossier else 2)
+    print("  images incorporées         :", incorporees,
+          f"({attendues} déclarée(s) dans le dossier)")
     print("  tables                     :", tables, "(1 attendue: le bandeau)")
-    if incorporees != len(sources) or incorporees != 2:
+    if incorporees != len(sources):
         problemes.append(f"{chemin}: {incorporees} image(s) incorporée(s) sur "
-                         f"{len(sources)} au lieu de 2; le fichier doit se suffire "
-                         "à lui-même")
+                         f"{len(sources)}; le fichier doit se suffire à lui-même")
+    elif incorporees != attendues:
+        problemes.append(f"{chemin}: {incorporees} image(s) incorporée(s) pour "
+                         f"{attendues} déclarée(s) dans le dossier")
+    if attendues < 2:
+        print(f"  archive provisoire         : {2 - attendues} visuel(s) non encore "
+              "généré(s)")
+        if render.MARQUE_ATTENTE not in corps:
+            problemes.append(f"{chemin}: un visuel manque sans que le document ne "
+                             "porte son emplacement décrit; il ne resterait alors "
+                             "aucune trace de ce qu'il devait montrer")
     if "cid:" in corps:
         problemes.append(f"{chemin}: références cid: restantes, elles ne "
                          "s'affichent que dans un client de messagerie")
@@ -70,9 +93,10 @@ def controler_artefact(chemin, problemes):
         problemes.append(f"{chemin}: table imbriquée; le bandeau doit rester une "
                          "table simple, une ligne et trois cellules")
     # Sans son dossier, l'artefact se lit encore mais ne se reprend plus: il
-    # cesse d'être la référence pour retravailler la pastille.
-    try:
-        dossier = render.lire_dossier(corps)
+    # cesse d'être la référence pour retravailler la pastille. Il a déjà été relu
+    # plus haut, pour savoir combien de visuels la pastille déclare; son absence y
+    # a déjà été signalée.
+    if dossier:
         champs = [c for c in ("titre", "paragraphes", "essentiel") if c in dossier]
         print("  dossier incorporé          : relu,", len(dossier), "champs")
         if len(champs) < 3:
@@ -83,9 +107,6 @@ def controler_artefact(chemin, problemes):
                    if not dossier.get(c)]
         if absents:
             print("    champs de reprise absents :", ", ".join(absents))
-    except ValueError as erreur:
-        problemes.append(f"{chemin}: {erreur}; l'artefact ne pourra pas servir de "
-                         "référence pour reprendre la pastille")
 
 
 def conclure(problemes):
