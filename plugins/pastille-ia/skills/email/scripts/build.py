@@ -287,7 +287,8 @@ def main():
             render.lire_dossier(open(args.html, encoding="utf-8").read())
         except ValueError as erreur:
             raise SystemExit(f"dossier incorporé illisible: {erreur}")
-        absents = [c for c in ("titre_canonique", "axe", "prompt_image", "sources")
+        absents = [c for c in ("titre_canonique", "axe", "prompt_image",
+                               "apercu_visuels", "sources")
                    if not fiche.get(c)]
         if absents:
             print("  dossier incomplet, champs absents:", ", ".join(absents),

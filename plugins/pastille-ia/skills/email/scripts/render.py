@@ -413,8 +413,9 @@ def dossier_incorpore(c):
 
     L'artefact conservé est la référence pour reprendre une pastille des mois
     plus tard: il doit donc porter de quoi la reconstruire, et pas seulement de
-    quoi la lire. Tout ce que la fiche contient part avec lui, prompt d'images,
-    titre canonique, axe, sources et notes d'échange compris.
+    quoi la lire. Tout ce que la fiche contient part avec lui, prompt d'images
+    et aperçu de ce qu'ils montrent, titre canonique, axe, sources et notes
+    d'échange compris.
 
     Un commentaire plutôt qu'un `<script>` ou des `<meta>`: un analyseur HTML
     supprime les commentaires par définition, alors qu'un importeur naïf peut

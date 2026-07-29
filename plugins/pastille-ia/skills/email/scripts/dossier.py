@@ -12,8 +12,9 @@ visuels extraits du fichier: de quoi refabriquer le courriel et l'artefact avec
 
 C'est ce qui fait de l'artefact HTML la référence pour reprendre une pastille:
 il porte à la fois ce qui se lit (le texte mis en forme), ce qui se voit (les
-visuels en base64) et ce qui se retravaille (la fiche, le prompt d'images, le
-titre canonique, l'axe, les sources, les notes d'échange).
+visuels en base64) et ce qui se retravaille (la fiche, le prompt d'images et
+l'aperçu de ce qu'ils montrent, le titre canonique, l'axe, les sources, les
+notes d'échange).
 """
 import argparse
 import base64
@@ -73,7 +74,8 @@ def main():
         json.dump(fiche, f, ensure_ascii=False, indent=1)
         f.write("\n")
     print("fiche écrite:", chemin)
-    manquants = [c for c in ("titre_canonique", "axe", "prompt_image", "sources")
+    manquants = [c for c in ("titre_canonique", "axe", "prompt_image",
+                             "apercu_visuels", "sources")
                  if not fiche.get(c)]
     if manquants:
         print("absents du dossier:", ", ".join(manquants),

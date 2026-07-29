@@ -73,7 +73,8 @@ def controler_artefact(chemin, problemes):
         if len(champs) < 3:
             problemes.append(f"{chemin}: dossier incomplet, il manque le texte même "
                              "de la pastille")
-        absents = [c for c in ("titre_canonique", "axe", "prompt_image", "sources")
+        absents = [c for c in ("titre_canonique", "axe", "prompt_image",
+                               "apercu_visuels", "sources")
                    if not dossier.get(c)]
         if absents:
             print("    champs de reprise absents :", ", ".join(absents))
