@@ -27,14 +27,14 @@ DEFAUTS = {
     "mention_ia": "Cette pastille peut contenir des traces d'IA. En cas de doute, "
                   "demandez à un humain.",
     "signature": "L'Alliance IA",
-    "prefixe_sujet": "[Pastille IA de l'été]",
+    "prefixe_sujet": "[Pastille IA de l'été 2026]",
     "total": 45,
 }
 
 GABARIT = {
     "numero": "NN", "total": 45, "rubrique": "Rubrique", "temps_lecture": "X min",
     "titre": "Titre exact de la pastille",
-    "prefixe_sujet": "[Pastille IA de l'été]",
+    "prefixe_sujet": "[Pastille IA de l'été 2026]",
     "essentiel": ["Puce 1. Une ligne, pas deux.", "Puce 2.",
                   "Puce 3. Trois puces au maximum."],
     "paragraphes": ["Paragraphe 1. 45 à 60 mots, 2 à 3 phrases, **gras** et "
@@ -227,9 +227,20 @@ def main():
                        "type_mime": "image/png", "fichier": produit,
                        "donnees": open(produit, "rb").read()})
 
-    msgfile.ecrire(args.msg, render.sujet(fiche), document, texte, images)
+    objet = render.sujet(fiche)
+    msgfile.ecrire(args.msg, objet, document, texte, images)
     print("msg écrit:", args.msg, os.path.getsize(args.msg), "octets")
-    print("sujet:", render.sujet(fiche))
+    print("sujet:", objet)
+
+    # Un objet entièrement décodable dans un codage sur deux octets sera
+    # affiché de travers: on le signale ici, à la fabrication, plutôt que de
+    # le découvrir dans la boîte de réception. Normalement le préfixe de série
+    # l'empêche, donc l'alerte veut d'abord dire que ce préfixe a changé.
+    for codage, rendu in render.objet_ambigu(objet)[:1]:
+        print(f"  ALERTE objet ambigu ({codage}): Outlook (new) affichera")
+        print("   ", rendu)
+        print("    le préfixe de série doit laisser un accent suivi d'un espace "
+              "ou d'une ponctuation")
 
     # Les deux fichiers portent le même nom, à l'extension près: l'accroche les
     # rend reconnaissables dans un dossier, et côté HTML c'est le nom du fichier

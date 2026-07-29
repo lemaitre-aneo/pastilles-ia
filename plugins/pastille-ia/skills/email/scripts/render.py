@@ -215,6 +215,47 @@ def sujet(c):
     return sans_balises(brut).replace(" ", " ")
 
 
+# Codages sur deux octets. Ce sont eux qui font disparaître des caractères quand
+# un détecteur se trompe, et c'est sur l'un d'eux qu'Outlook (new) trébuche.
+CODAGES_DEUX_OCTETS = ("cp936", "cp932", "cp949", "cp950")
+
+
+def objet_ambigu(sujet):
+    """Rendus erronés possibles de l'objet, chez un client qui rabat l'objet
+    Unicode en octets 8 bits avant de le relire.
+
+    Outlook (new) reconvertit le .msg en MIME: l'objet redevient de l'octet
+    cp1252, puis est relu dans un codage sur deux octets, avec repli sur cp1252
+    quand ce décodage échoue. Or il n'échoue que si la chaîne s'y prête mal: un
+    seul accent suivi d'un espace ou d'une ponctuation (octet < 0x40) suffit à
+    le faire échouer, et le repli protège alors l'objet entier. D'où le
+    contrôle: un objet qui se décode de bout en bout dans un de ces codages
+    sera affiché de travers, un objet qui les fait échouer est sain.
+
+    C'est le préfixe de série qui porte cette immunité pour toute la série,
+    l'année qu'il contient plaçant une espace après un accent. Le contrôle
+    reste utile pour le jour où ce préfixe change.
+
+    Rend la liste des (codage, rendu erroné). Vide quand l'objet ne risque
+    rien, ce qui est notamment le cas dès qu'il est en ASCII pur.
+    """
+    try:
+        octets = sujet.encode("cp1252")
+    except UnicodeEncodeError:
+        # Pas de repli 8 bits possible en cp1252: le client prendra un autre
+        # chemin (utf-8 déclaré, ou substitution), hors du champ de ce contrôle.
+        return []
+    ambigus = []
+    for codage in CODAGES_DEUX_OCTETS:
+        try:
+            rendu = octets.decode(codage)
+        except UnicodeDecodeError:
+            continue
+        if rendu != sujet:
+            ambigus.append((codage, rendu))
+    return ambigus
+
+
 def html_pastille(c):
     out = [table(fond="#FFFFFF")]
     out.append('<td align="center" valign="top" style="padding:0;">\n')

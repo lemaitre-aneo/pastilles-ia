@@ -147,6 +147,7 @@ Le titre est généré comme le reste, mais sous contrainte forte, car il porte 
 - Cohérence: le titre tient sa promesse. Le texte délivre ce que le titre annonce, sans sur-promesse ni effet clickbait.
 - Rendu image: assez court pour un rendu fiable par le générateur d'images. Un titre long est un compromis à signaler (suggérer Nano Banana Pro).
 - Contraintes dures: français, aucun tiret cadratin ni caractère non standard, aucun nom d'entreprise.
+- Rien à surveiller côté encodage: le sujet du courriel a un piège qui avale les accents, mais c'est le préfixe de série qui en protège tous les titres (voir « Gabarit de diffusion »). Choisis le titre sur ses mérites; `build.py` alerte dans le cas résiduel.
 
 ## Règles d'écriture pour la pastille finale
 - Longueur selon la profondeur du sujet: 3 paragraphes si le sujet est léger, jusqu'à 4 s'il est dense. Chaque paragraphe fait 45 à 60 mots, 2 à 3 phrases. La pastille fait donc 135 à 240 mots au total: c'est volontairement court, et cela oblige à choisir. Ce qui relève d'une pastille voisine est laissé à cette voisine. Corps explicatif en prose continue, sans listes ni puces; voir Règles du texte pour les blocs structurés autorisés en complément. Le dernier paragraphe porte l'enjeu.
@@ -306,7 +307,11 @@ Ordre des blocs, de haut en bas:
 7. Bloc annexe facultatif, un seul: "À essayer" ou "Le piège".
 8. Mention de relecture IA, puis signature.
 
-Sujet du courriel: `[Prefixe] #NN : Titre retenu`, par exemple `[Pastille IA de l'été] #4 : Les tokens : la monnaie d'échange (et la manière de penser) des LLM`. Le préfixe suit la saison de diffusion. Un titre qui contient déjà un deux-points en produit deux dans le sujet, c'est accepté. Le sujet reste en espaces ordinaires, sans insécables: la recherche des messageries les gère mal.
+Sujet du courriel: `[Prefixe] #NN : Titre retenu`, par exemple `[Pastille IA de l'été 2026] #4 : Les tokens : la monnaie d'échange (et la manière de penser) des LLM`. Le préfixe suit la saison de diffusion. Un titre qui contient déjà un deux-points en produit deux dans le sujet, c'est accepté. Le sujet reste en espaces ordinaires, sans insécables: la recherche des messageries les gère mal.
+
+**Le préfixe porte l'immunité d'encodage de toute la série**, et c'est la raison de l'année qui s'y trouve. Le sujet est le seul texte accentué du courriel, le corps partant en entités ASCII: Outlook (new) reconvertit le `.msg` en MIME, rabat ce sujet Unicode en octets cp1252, puis tente de les relire dans un codage sur deux octets avant de se replier sur cp1252 si le décodage échoue. Or ce décodage ne réussit que si **toute** la chaîne s'y prête: il suffit d'un seul accent suivi d'un espace ou d'une ponctuation, un octet inférieur à 0x40, pour le faire échouer et forcer le repli correct. Sans année, `[Pastille IA de l'été]` se décode entièrement (`é t`, `é]`), et le sujet s'affiche `[Pastille IA de l掗t閉 #7 : Les tokens : la monnaie d掗change`. Avec l'année, le `é` suivi d'une espace casse le décodage et protège le sujet entier, titre compris, quel qu'il soit: mesuré sur les 45 titres de la série, 29 sont corrompus sans l'année, aucun avec.
+
+Toute autre formulation de préfixe convient, à une condition: qu'elle laisse un accent suivi d'un espace ou d'une ponctuation. `build.py` alerte à la fabrication en affichant le rendu erroné, `verify.py` refuse le fichier. Si l'alerte tombe malgré un préfixe sain — préfixe changé, ou titre exotique —, reformule le titre plutôt que de lui retirer ses accents: un titre français désaccentué se remarque tout de suite, et la faute n'est pas dans la série mais dans le client.
 
 Contraintes de mise en page:
 - Tables et styles en ligne uniquement, colonne unique. Une feuille de style ne survit pas au collage dans un client de messagerie, et le moteur de rendu d'Outlook pour Windows ne gère ni les grilles ni les boîtes flexibles.

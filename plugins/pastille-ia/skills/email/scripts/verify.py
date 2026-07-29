@@ -159,6 +159,18 @@ def main():
     if droites:
         problemes.append(f"{droites} apostrophes droites dans le texte visible")
     print("  espaces insécables         :", len(re.findall(r"&(?:nbsp|#160);[;:!?]", html)))
+    # Le corps est en entités ASCII, donc insensible au codage; l'objet, lui,
+    # est le seul texte accentué du fichier, et Outlook (new) le rabat en octets
+    # avant de le relire. Voir render.objet_ambigu.
+    ambigus = render.objet_ambigu(sujet)
+    print("  objet lisible en deux octets:",
+          ", ".join(codage for codage, _ in ambigus) or "aucun codage")
+    if ambigus:
+        codage, rendu = ambigus[0]
+        problemes.append(f"objet entièrement décodable en {codage}: Outlook (new) "
+                         f"affichera « {rendu} »; le préfixe de série doit laisser "
+                         "un accent suivi d'un espace ou d'une ponctuation, "
+                         "ce que fait son année")
 
     print("\npièces jointes")
     empreintes = {hashlib.sha256(open(s, "rb").read()).hexdigest(): s for s in sources}
