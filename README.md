@@ -5,7 +5,7 @@ Outils multi-agents pour les **pastilles** pédagogiques internes sur les LLM: u
 - **`generate`**: crée une pastille à partir d'un titre. Lance de vrais sous-agents en parallèle (six rédacteurs sous des angles différents, fusion pondérée, puis revue critique par trois relecteurs et correction). C'est aussi lui qui régénère une pastille existante quand la demande réclame du matériau neuf, un changement d'axe par exemple; le nouvel axe est alors partagé par les six brouillons, qui gardent leur jeu d'angles. Pour un seul morceau à reprendre, il sait aussi lancer un fan-out ciblé, trois rédacteurs sur ce fragment.
 - **`refine`**: réhydrate une pastille venue d'ailleurs, puis lui applique une retouche de surface. Réservé au cas où le contexte de production est perdu: on recolle le texte (et selon le cas le titre, le prompt image, les sources) plus la retouche voulue; le skill reconstitue le dossier manquant (périmètre, brief, sources) et applique un diff minimal, sans relancer la génération complète. **Une retouche demandée alors que la pastille est déjà dans la conversation ne passe pas par ce skill**, et une demande qui réclame du matériau neuf non plus (voir « Faire évoluer une pastille »).
 - **`review`**: fait relire une pastille par trois relecteurs indépendants et parallèles (fond et exactitude, forme et pédagogie, conformité et visuel), qui rendent des constats localisés, consolidés et arbitrés, sans rien réécrire. Invocable seul pour un diagnostic, et déclenché par `generate` (d'office), par `refine` (sur accord) ou depuis une retouche dans le fil (sur accord).
-- **`email`**: fabrique le courriel de diffusion, un `.msg` Outlook prêt à compléter et à envoyer, à partir du texte validé et des deux visuels collés dans la conversation. Corps HTML au gabarit, images affichées dans le corps, typographie française appliquée. La même passe écrit deux artefacts conservables: un HTML autonome et un Markdown importable dans Notion (voir « Les trois artefacts »).
+- **`email`**: fabrique le courriel de diffusion, un `.msg` Outlook prêt à compléter et à envoyer, à partir du texte validé et des deux visuels collés dans la conversation. Corps HTML au gabarit, images affichées dans le corps, typographie française appliquée. La même passe écrit deux artefacts conservables: un HTML autonome et un Markdown importable dans Notion (voir « Les artefacts produits »).
 
 Les quatre skills partagent **une seule source de vérité pour les normes de la série** (`plugins/pastille-ia/shared/regles-pastille.md`): liste des 45 pastilles et périmètre, vocabulaire de l'axe et de l'angle avec la bibliothèque d'angles, Règles du texte et du titre, spec du prompt image, charte graphique, doctrine d'évolution (retoucher, réagencer ou régénérer), gabarit de diffusion, boite à outils de revue. Le gabarit HTML de diffusion vit à côté, dans `plugins/pastille-ia/shared/template-pastille.html`. Chaque skill n'y ajoute que son propre processus.
 
@@ -34,19 +34,22 @@ Six angles à parts égales donnent un texte sans porte d'entrée. L'orchestrate
 
 Dominant n'est pas exclusif. Ce n'est pas un copier-coller du brouillon concerné: les autres angles continuent d'alimenter ce qui reste pertinent, un chiffre juste venu de la mécanique, une clôture mieux tournée venue de l'enjeu, un exemple frappant venu d'ailleurs, dès lors que cela se coule dans le registre dominant. Les deux dérives sont symétriques: diluer l'angle demandé jusqu'à ce que l'utilisateur ne le reconnaisse plus, ou réduire la fusion à un seul brouillon et jeter les cinq autres.
 
-## Les trois artefacts
+## Les artefacts produits
 
-Une seule fiche, un seul code de rendu, trois sorties pour trois usages:
+Une seule fiche, un seul code de rendu, plusieurs sorties pour des usages qui n'ont pas les mêmes contraintes:
 
 | Fichier | Usage | Particularité |
 | --- | --- | --- |
 | `pastille-NN.msg` | diffuser | brouillon Outlook, visuels en pièces jointes `cid:`, corps optimisé pour le moteur de rendu de Word |
 | `courriel.html` | conserver, relire, contrôler | visuels **incorporés en base64**: le fichier se suffit à lui-même et s'ouvre n'importe où, des années plus tard |
 | `pastille.md` | archiver ailleurs, importer dans Notion | Markdown, emphases et typographie conservées, images citées par leur nom de fichier |
+| `pastille-notion.html` (option `--html-plat`) | tenter l'import HTML dans Notion | HTML sémantique **sans aucune table**: `h1`, `p`, `blockquote`, `figure`; images voisines |
 
 Un HTML qui pointe vers des PNG voisins est un aperçu, pas une archive: il cesse d'afficher ses images dès qu'on le déplace. D'où l'incorporation en base64.
 
-**Pour Notion, c'est le Markdown, pas le HTML.** Notion importe bien les `.html`, mais sa documentation prévient que les mises en page et tables complexes sont aplaties ou demandent une reprise, et que les images ne suivent que si elles sont accessibles pendant l'import. Or le corps du courriel est exactement ce cas: tables imbriquées et styles en ligne imposés par Word. Le Markdown, lui, s'importe proprement, et les images se retrouvent quand elles sont dans la même archive: on zippe le dossier de la pastille et on importe le zip. Notion garde alors le contenu et la structure, pas la mise en forme de diffusion, qui reste l'affaire du courriel.
+**Pour Notion, pas `courriel.html`.** Notion importe les `.html` comme les `.md`, mais sa documentation prévient que les mises en page et tables complexes sont aplaties ou demandent une reprise, et que les images ne suivent que si elles sont accessibles pendant l'import. Or le corps du courriel cumule les deux problèmes: sept tables imbriquées imposées par Word, et des images en `data:`.
+
+Deux candidats pour Notion, à zipper avec les deux PNG: `pastille.md`, le plus sûr, et `pastille-notion.html` (`--html-plat`), qui tente l'import HTML avec un balisage sémantique sans une seule table. Ce que Notion aplatit mal, ce sont les tables de mise en page; un HTML qui n'en a aucune n'a plus grand-chose à aplatir. Cette variante reste à valider dans Notion. Dans les deux cas, Notion garde le contenu et la structure, pas la mise en forme de diffusion, qui reste l'affaire du courriel.
 
 Les artefacts vivent dans un dossier par pastille, `sorties/pastille-NN-slug/`, avec la fiche et les visuels. Ce dossier n'est pas suivi par git: ce dépôt porte l'outillage, pas les pastilles diffusées. En session cloud, récupérez donc les fichiers avant la fin de la session.
 

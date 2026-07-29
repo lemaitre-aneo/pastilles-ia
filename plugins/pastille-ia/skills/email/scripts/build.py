@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Fabrique le courriel d'une pastille à partir d'une fiche JSON.
 
-    python3 build.py fiche.json --msg pastille-13.msg [--html courriel.html] [--markdown pastille.md]
+    python3 build.py fiche.json --msg pastille-13.msg [--html courriel.html]
+                     [--markdown pastille.md] [--html-plat pastille-notion.html]
     python3 build.py --gabarit plugins/pastille-ia/shared/template-pastille.html
 
 Le gabarit de diffusion est produit par le même code que le courriel réel, avec
@@ -189,6 +190,9 @@ def main():
                          "à archiver et à ouvrir dans un navigateur")
     ap.add_argument("--markdown", help="chemin d'un Markdown à archiver et à "
                                        "importer dans Notion (images voisines)")
+    ap.add_argument("--html-plat", dest="html_plat",
+                    help="chemin d'un HTML sans tables, pour tenter un import "
+                         "qui garde la structure (Notion); images voisines")
     ap.add_argument("--gabarit", help="régénère le gabarit de diffusion à ce chemin")
     ap.add_argument("--sans-rognage", action="store_true",
                     help="conserve les bandes de fond des visuels, au lieu de les "
@@ -246,11 +250,18 @@ def main():
             f.write(render.document_html(fiche, autonome))
         print("html écrit:", args.html, os.path.getsize(args.html), "octets")
 
+    noms = [os.path.basename(img["fichier"]) for img in images]
+
     if args.markdown:
-        noms = [os.path.basename(img["fichier"]) for img in images]
         with open(args.markdown, "w", encoding="utf-8") as f:
             f.write(render.markdown_pastille(fiche, noms[0], noms[1]))
         print("markdown écrit:", args.markdown, "(images voisines:", ", ".join(noms) + ")")
+
+    if args.html_plat:
+        with open(args.html_plat, "w", encoding="utf-8") as f:
+            f.write(render.html_plat_pastille(fiche, noms[0], noms[1]))
+        print("html aplati écrit:", args.html_plat,
+              "(images voisines:", ", ".join(noms) + ")")
 
 
 if __name__ == "__main__":

@@ -3,6 +3,7 @@
 
     python3 verify.py pastille-13.msg [image-titre.png image-schema.png]
                       [--html courriel.html] [--markdown pastille.md]
+                      [--html-plat pastille-notion.html]
 
 Un parseur indépendant (olefile) rouvre le fichier: c'est le seul moyen de
 vérifier le conteneur sans Outlook. Le rendu visuel, lui, se contrôle avec
@@ -33,7 +34,23 @@ def proprietes(ole, chemin, taille_entete):
     return table
 
 
-def controler_artefacts(html_archive, markdown, problemes):
+def images_voisines(chemin, cites, problemes, quoi):
+    """Un artefact d'import ne trouve ses images que si elles sont à côté de lui,
+    citées par leur seul nom: c'est la condition que Notion documente."""
+    voisin = os.path.dirname(os.path.abspath(chemin))
+    courts = [n if len(n) <= 60 else n[:57] + "..." for n in cites]
+    print("  images citées              :", ", ".join(courts) or "aucune")
+    if len(cites) != 2:
+        problemes.append(f"{chemin}: {len(cites)} image(s) citée(s) au lieu de 2")
+    for nom, court in zip(cites, courts):
+        if os.path.dirname(nom):
+            problemes.append(f"{chemin}: {court} porte un chemin; {quoi} importe "
+                             "les images voisines, pas celles d'un autre dossier")
+        elif not os.path.exists(os.path.join(voisin, nom)):
+            problemes.append(f"{chemin}: {court} est cité mais absent du dossier")
+
+
+def controler_artefacts(html_archive, markdown, html_plat, problemes):
     """Les artefacts conservés ne passent pas par Outlook, mais ils ont leurs
     propres règles: le HTML doit se suffire à lui-même (sinon il n'est pas
     archivable) et le Markdown doit trouver ses images à côté de lui (sinon
@@ -55,23 +72,29 @@ def controler_artefacts(html_archive, markdown, problemes):
     if markdown:
         print("\nMarkdown d'archive")
         corps = open(markdown, encoding="utf-8").read()
-        voisin = os.path.dirname(os.path.abspath(markdown))
-        cites = re.findall(r"!\[[^\]]*\]\(([^)]+)\)", corps)
-        print("  images citées              :", ", ".join(cites) or "aucune")
-        if len(cites) != 2:
-            problemes.append(f"{markdown}: {len(cites)} image(s) citée(s) au lieu de 2")
-        for nom in cites:
-            if os.path.dirname(nom):
-                problemes.append(f"{markdown}: {nom} porte un chemin; Notion importe "
-                                 "les images voisines, pas celles d'un autre dossier")
-            elif not os.path.exists(os.path.join(voisin, nom)):
-                problemes.append(f"{markdown}: {nom} est cité mais absent du dossier")
+        images_voisines(markdown, re.findall(r"!\[[^\]]*\]\(([^)]+)\)", corps),
+                        problemes, "Notion")
+
+    if html_plat:
+        print("\nHTML aplati (import)")
+        corps = open(html_plat, encoding="utf-8").read()
+        tables = len(re.findall(r"<table", corps, re.I))
+        print("  tables                     :", tables)
+        if tables:
+            problemes.append(f"{html_plat}: {tables} table(s); c'est exactement ce "
+                             "qu'un importeur aplatit mal, cet artefact doit rester "
+                             "sémantique")
+        if "data:image" in corps:
+            problemes.append(f"{html_plat}: images incorporées en data:; pour un "
+                             "import elles doivent être des fichiers voisins")
+        images_voisines(html_plat, re.findall(r'<img src="([^"]+)"', corps),
+                        problemes, "Notion")
 
 
 def main():
     argv = sys.argv[1:]
-    html_archive = markdown = None
-    for drapeau in ("--html", "--markdown"):
+    html_archive = markdown = html_plat = None
+    for drapeau in ("--html", "--markdown", "--html-plat"):
         if drapeau in argv:
             i = argv.index(drapeau)
             valeur = argv[i + 1] if i + 1 < len(argv) else None
@@ -79,8 +102,10 @@ def main():
                 raise SystemExit(f"{drapeau} attend un chemin")
             if drapeau == "--html":
                 html_archive = valeur
-            else:
+            elif drapeau == "--markdown":
                 markdown = valeur
+            else:
+                html_plat = valeur
             del argv[i:i + 2]
     if not argv:
         raise SystemExit("usage: verify.py fichier.msg [sources d'images...] "
@@ -174,7 +199,7 @@ def main():
             problemes.append(f"{nom}: AttachFlags devrait valoir 4 (ATT_MHTML_REF)")
     ole.close()
 
-    controler_artefacts(html_archive, markdown, problemes)
+    controler_artefacts(html_archive, markdown, html_plat, problemes)
 
     print()
     if problemes:

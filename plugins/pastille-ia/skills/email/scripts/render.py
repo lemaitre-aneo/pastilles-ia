@@ -321,6 +321,59 @@ def fr_texte(texte):
     return _html.unescape(fr(texte))
 
 
+def emphases_simples(texte):
+    """**gras** et *italique* en balises nues, sans style: le HTML aplati n'a
+    pas à porter les contournements de Word."""
+    texte = _re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", texte)
+    return _re.sub(r"(?<!\*)\*([^*]+?)\*(?!\*)", r"<em>\1</em>", texte)
+
+
+def _inline(texte):
+    """Typographie, puis échappement, puis emphases: dans cet ordre, sinon
+    l'échappement se fait défaire par l'unescape de la typographie."""
+    return emphases_simples(_html.escape(fr_texte(texte), quote=False))
+
+
+def html_plat_pastille(c, nom_image_titre, nom_image_schema):
+    """HTML sémantique sans une seule table, pour un import qui garde la
+    structure (Notion) plutôt que la mise en page.
+
+    Le courriel, lui, est bâti en tables imbriquées parce que Word ne sait
+    rien faire d'autre; c'est précisément ce qu'un importeur aplatit mal. Ici
+    chaque bloc est la balise qui le décrit: un titre est un h1, une synthèse
+    est une citation à puces, une légende est une figcaption. Les images sont
+    référencées par leur nom de fichier, comme dans le Markdown: elles
+    voyagent dans le même dossier ou la même archive.
+    """
+    out = [f"<h1>{_inline(c['titre'])}</h1>",
+           f"<p><em>Pastille IA {c['numero']} / {c['total']} . "
+           f"{_inline(c['rubrique'])} . {c['temps_lecture']} de lecture</em></p>",
+           f'<p><img src="{nom_image_titre}" '
+           f'alt="{_html.escape(sans_balises(c["titre"]))}"></p>',
+           "<blockquote>", "<p><strong>L’essentiel</strong></p>", "<ul>"]
+    out += [f"<li>{_inline(p)}</li>" for p in c["essentiel"]]
+    out += ["</ul>", "</blockquote>"]
+    apres = c.get("schema_apres", len(c["paragraphes"]) - 1)
+    for i, para_texte in enumerate(c["paragraphes"], start=1):
+        out.append(f"<p>{_inline(para_texte)}</p>")
+        if i == apres:
+            out += ["<figure>",
+                    f'<img src="{nom_image_schema}" '
+                    f'alt="{_html.escape(fr_texte(c["alt_schema"]))}">',
+                    f"<figcaption>{_inline(c['legende_schema'])}</figcaption>",
+                    "</figure>"]
+    if c.get("annexe"):
+        out += ["<blockquote>",
+                f"<p><strong>{_inline(c['annexe']['etiquette'])}</strong></p>",
+                f"<p>{_inline(c['annexe']['texte'])}</p>", "</blockquote>"]
+    out += ["<hr>", f"<p><em>{_inline(c['mention_ia'])}</em></p>",
+            f"<p>{_inline(c['signature'])}</p>"]
+    corps = "\n".join(out)
+    return ('<html><head><meta charset="utf-8">'
+            f"<title>{_html.escape(sans_balises(c['titre']))}</title></head>\n"
+            f"<body>\n{corps}\n</body></html>\n")
+
+
 def markdown_pastille(c, nom_image_titre, nom_image_schema):
     """Version Markdown du même contenu, pour archivage et import Notion.
 
