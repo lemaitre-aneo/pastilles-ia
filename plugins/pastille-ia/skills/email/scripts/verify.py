@@ -84,11 +84,17 @@ def controler_artefacts(html_archive, markdown, html_plat, html_plat_autonome,
         corps = open(chemin, encoding="utf-8").read()
         tables = len(re.findall(r"<table", corps, re.I))
         sources = re.findall(r'<img src="([^"]+)"', corps)
-        print("  tables                     :", tables)
-        if tables:
-            problemes.append(f"{chemin}: {tables} table(s); c'est exactement ce "
-                             "qu'un importeur aplatit mal, cet artefact doit rester "
-                             "sémantique")
+        print("  tables                     :", tables, "(1 attendue: le bandeau)")
+        # Une table simple s'importe comme une table, ce qui est voulu pour le
+        # bandeau. Ce qu'un importeur aplatit mal, ce sont les tables de mise en
+        # page, imbriquées: c'est cela qu'on refuse, pas la table en soi.
+        if tables > 1:
+            problemes.append(f"{chemin}: {tables} tables; seul le bandeau en justifie "
+                             "une, au-delà c'est de la mise en page, et c'est ce qu'un "
+                             "importeur aplatit mal")
+        if re.search(r"<table[^>]*>(?:(?!</table>).)*<table", corps, re.I | re.S):
+            problemes.append(f"{chemin}: table imbriquée; le bandeau doit rester une "
+                             "table simple, une ligne et deux cellules")
         if autonome:
             incorporees = sum(s.startswith("data:image/") for s in sources)
             print("  images incorporées         :", incorporees)

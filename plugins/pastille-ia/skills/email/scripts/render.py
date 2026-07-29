@@ -17,6 +17,7 @@ donc portée par l'élément qui porte réellement le texte.
 """
 import html as _html
 import re as _re
+import unicodedata as _unicodedata
 
 FONT = "Aptos, Calibri, Segoe UI, Helvetica, Arial, sans-serif"
 FACE = "Aptos, Calibri, Segoe UI, Helvetica, Arial"
@@ -315,6 +316,28 @@ def document_html(c, corps):
     )
 
 
+def limace(titre, numero=None):
+    """Nom de fichier lisible tiré du titre.
+
+    Notion nomme une page importée d'après le nom du fichier, pas d'après le h1
+    qu'il contient: le nom de l'artefact est donc le titre de la page, et il
+    mérite d'être choisi.
+    """
+    texte = sans_balises(titre)
+    # Les titres de la série sont en « accroche : glose »: l'accroche suffit à
+    # nommer la page, et elle est autrement plus lisible que le titre entier
+    # tronqué au milieu d'une subordonnée.
+    accroche = _re.split(r"\s*[:?]\s*", texte, maxsplit=1)[0]
+    if len(accroche.split()) >= 2:
+        texte = accroche
+    base = _unicodedata.normalize("NFKD", texte)
+    base = base.encode("ascii", "ignore").decode("ascii").lower()
+    base = _re.sub(r"[^a-z0-9]+", "-", base).strip("-")
+    while len(base) > 48 and "-" in base:
+        base = base.rsplit("-", 1)[0]
+    return "-".join(([f"pastille-{numero}"] if numero is not None else []) + [base])
+
+
 def fr_texte(texte):
     """Typographie française en caractères réels, pas en entités: pour tout ce
     qui n'est pas du HTML de courriel (version texte, Markdown)."""
@@ -335,7 +358,7 @@ def _inline(texte):
 
 
 def html_plat_pastille(c, source_image_titre, source_image_schema):
-    """HTML sémantique sans une seule table, habillé aux teintes de la série.
+    """HTML sémantique, sans table de mise en page, habillé aux teintes de la série.
 
     Le courriel est bâti en tables imbriquées parce que Word ne sait rien faire
     d'autre; c'est précisément ce qu'un importeur aplatit mal. Ici chaque bloc
@@ -350,10 +373,14 @@ def html_plat_pastille(c, source_image_titre, source_image_schema):
        naïf peut aussi en recracher le contenu au milieu de la page. En ligne,
        ce risque n'existe pas, et c'est accessoirement la seule chose que le
        courriel sait faire, donc le même vocabulaire sert deux fois.
-    2. Le titre est présent mais masqué visuellement, comme dans le courriel où
-       l'illustration le porte seule. Un import a besoin du h1, un lecteur
-       d'écran aussi; `display:none` les aurait privés des deux.
-    3. Les couleurs sont dérivées de la palette de la série, jamais réécrites:
+    2. Le titre ouvre le fichier, avant le bandeau, parce qu'à l'import il ouvre
+       alors la page. Il reste masqué visuellement, l'illustration le portant
+       déjà comme dans le courriel, et le masquage est visuel plutôt qu'un
+       `display:none` qui l'aurait aussi retiré aux lecteurs d'écran.
+    3. Le bandeau est la seule table de cet artefact, et c'est délibéré: une
+       table simple s'importe comme une table, donc la rubrique et le temps de
+       lecture ne se retrouvent pas collés en une seule ligne de texte.
+    4. Les couleurs sont dérivées de la palette de la série, jamais réécrites:
        le bandeau, l'encadré et les blocs annexes reprennent exactement les
        teintes du courriel, y compris les versions assombries des petits
        libellés, qui existent pour le contraste.
@@ -369,32 +396,38 @@ def html_plat_pastille(c, source_image_titre, source_image_schema):
 
     p_corps = (f'margin:0 0 16px 0; {st(NOIR, 16, 26, "text-align:justify; ")}')
     out = [
-        # Bandeau de série: un seul paragraphe, comme dans le courriel, avec le
-        # numéro en orange sur le bleu de marque. Le temps de lecture est poussé
-        # à droite par un flex à deux groupes, faute de la table qui s'en charge
-        # dans le courriel; l'ordre de lecture reste celui de la source, ce qui
-        # importe pour un importeur qui ignore la mise en page.
-        f'<p style="margin:0 0 24px 0; padding:14px 20px; '
-        f'background-color:{MARQUE_BLEU}; display:flex; align-items:baseline; '
-        f'justify-content:space-between; gap:12px; {st(BLANC, 13, 24)}">'
-        f'<span style="{st(BLANC, 13, 24)}">'
+        # Titre en tête, avant le bandeau: à l'import il ouvre la page, ce qui se
+        # lit mieux qu'un titre glissé après le bandeau. Il reste masqué au rendu,
+        # l'illustration le portant déjà comme dans le courriel. Le masquage est
+        # visuel et non un display:none, qui l'aurait aussi retiré aux lecteurs
+        # d'écran. Il ne nomme pas la page importée pour autant: Notion la nomme
+        # d'après le nom du fichier, d'où la convention de nommage de l'artefact.
+        f'<h1 style="position:absolute; width:1px; height:1px; margin:-1px; '
+        f'padding:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; '
+        f'border:0;">{_inline(c["titre"])}</h1>',
+
+        # Bandeau de série: une table d'une ligne et deux cellules, seule table de
+        # cet artefact et seule exception assumée à son balisage sans tables. La
+        # raison est l'import: une table simple arrive dans Notion comme une
+        # table, donc la rubrique et le temps de lecture restent dans deux
+        # cellules distinctes au lieu d'être collés en une seule ligne de texte.
+        # Le repli est prévu si l'importeur l'aplatit quand même: la cellule de
+        # droite commence par une espace insécable, invisible en cellule alignée
+        # à droite, mais qui évite le mot-valise si la table tombe.
+        f'<table style="width:100%; border-collapse:collapse; margin:0 0 24px 0; '
+        f'background-color:{MARQUE_BLEU};">'
+        f'<tr>'
+        f'<td style="padding:14px 20px; {st(BLANC, 13, 24)}">'
         f'<strong style="{st(MARQUE_ORANGE, 22, 24, "font-weight:700; ")}">'
         f'{c["numero"]}</strong>'
         f'<span style="{st(BLEU_PALE, 12, 24)}">&nbsp;/&nbsp;{c["total"]}</span>'
         f'<span style="{st(BLANC, 13, 24)}">&nbsp;&nbsp;&nbsp;PASTILLE IA'
         f'&nbsp;&nbsp;&middot;&nbsp;&nbsp;{_html.escape(fr_texte(c["rubrique"])).upper()}'
-        f'</span></span>'
-        f'<span style="{st(BLEU_PALE, 12, 24, "white-space:nowrap; ")}">'
-        f'{c["temps_lecture"]} de lecture</span></p>',
-
-        # Titre: présent dans le fichier, invisible au rendu. Le courriel ne
-        # l'affiche pas non plus, l'illustration le porte déjà; mais un import
-        # a besoin du h1 pour nommer sa page, et un lecteur d'écran pour
-        # annoncer le document. D'où la technique du masquage visuel plutôt
-        # qu'un display:none, qui l'aurait retiré aux deux.
-        f'<h1 style="position:absolute; width:1px; height:1px; margin:-1px; '
-        f'padding:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; '
-        f'border:0;">{_inline(c["titre"])}</h1>',
+        f'</span></td>'
+        f'<td align="right" style="padding:14px 20px; white-space:nowrap; '
+        f'{st(BLEU_PALE, 12, 24, "text-align:right; ")}">'
+        f'&nbsp;{c["temps_lecture"]} de lecture</td>'
+        f'</tr></table>',
 
         f'<p style="margin:0 0 24px 0;">'
         f'<img src="{source_image_titre}" '

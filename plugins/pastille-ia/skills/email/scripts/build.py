@@ -286,6 +286,12 @@ def main():
         print("html aplati autonome écrit:", args.html_plat_autonome,
               os.path.getsize(args.html_plat_autonome), "octets")
         alerter_taille(args.html_plat_autonome)
+        # Notion nomme la page importée d'après le nom du fichier, pas d'après le
+        # h1: un artefact appelé pastille.html donne une page appelée "pastille".
+        attendu = render.limace(fiche["titre"], fiche["numero"]) + ".html"
+        if os.path.basename(args.html_plat_autonome) != attendu:
+            print(f"  à renommer en {attendu} avant un import: c'est le nom du "
+                  "fichier qui nomme la page Notion")
 
 
 if __name__ == "__main__":
