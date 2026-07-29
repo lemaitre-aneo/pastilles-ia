@@ -1,5 +1,5 @@
 ---
-description: Fabrique le courriel de diffusion d'une pastille LLM déjà rédigée et déjà illustrée: un fichier .msg Outlook, prêt à compléter et à envoyer, contenant le corps HTML au gabarit de la série et les deux visuels en pièces jointes affichées dans le corps. Utilise ce skill dès qu'on te demande de générer, produire, fabriquer ou mettre en forme le mail, l'email, le courriel, le .msg ou la version diffusable d'une pastille, typiquement juste après avoir collé dans la conversation l'illustration-titre et le schéma générés par Gemini. Produit aussi un HTML conservable aux couleurs de la série, visuels incorporés, importable dans Notion tel quel et lisible dans un navigateur. Utilise-le aussi pour régénérer un courriel après une retouche du texte. Pour écrire la pastille elle-même, utilise generate; pour retoucher son texte, applique la retouche directement quand son contexte est dans la conversation, et n'appelle refine que si elle a été recollée sans son contexte de production.
+description: Fabrique le courriel de diffusion d'une pastille LLM déjà rédigée et déjà illustrée: un fichier .msg Outlook, prêt à compléter et à envoyer, contenant le corps HTML au gabarit de la série et les deux visuels en pièces jointes affichées dans le corps. Utilise ce skill dès qu'on te demande de générer, produire, fabriquer ou mettre en forme le mail, l'email, le courriel, le .msg ou la version diffusable d'une pastille, typiquement juste après avoir collé dans la conversation l'illustration-titre et le schéma générés par Gemini. Produit aussi un HTML conservable aux couleurs de la série, visuels incorporés, importable dans Notion tel quel, portant en commentaire le dossier complet de la pastille pour permettre de la reprendre. Utilise-le aussi pour régénérer un courriel après une retouche du texte. Pour écrire la pastille elle-même, utilise generate; pour retoucher son texte, applique la retouche directement quand son contexte est dans la conversation, et n'appelle refine que si elle a été recollée sans son contexte de production.
 ---
 
 # Fabrique du courriel d'une pastille (.msg Outlook)
@@ -9,7 +9,7 @@ Prend une pastille dont le texte est validé et dont les deux visuels ont été 
 
 La même passe écrit un second fichier, destiné à rester: un HTML sémantique habillé aux teintes de la série, nommé d'après le titre, visuels incorporés. Il s'importe dans Notion tel quel, se lit dans un navigateur et tient lieu d'archive. Voir « Les deux artefacts ».
 
-Frontière avec les autres skills: `generate` écrit la pastille et produit le prompt d'images, `refine` réhydrate une pastille recollée sans son contexte avant de la retoucher, `review` la juge sans y toucher, et ce skill ne s'occupe que de la mise en courriel. Il ne réécrit jamais le texte: si une correction rédactionnelle apparaît en route, signale-la et propose de la traiter, ne la décide pas ici. Si l'utilisateur accepte, applique-la directement quand le dossier de la pastille est dans la conversation (voir la spec partagée, section « Faire évoluer une pastille »); `refine` ne sert que si le texte a été recollé sans son contexte. Si la correction est structurelle (changement d'axe, restructuration), c'est `generate` qui régénère, et les deux visuels sont alors à refaire dans Gemini avant de revenir ici. Dans tous les cas, le texte corrigé oblige à refabriquer le `.msg`, et à vérifier que les visuels n'ont pas été périmés par la correction.
+Frontière avec les autres skills: `generate` écrit la pastille et produit le prompt d'images, `refine` reprend une pastille dont le contexte est perdu, en relisant son artefact HTML quand il existe, `review` la juge sans y toucher, et ce skill ne s'occupe que de la mise en courriel. Il ne réécrit jamais le texte: si une correction rédactionnelle apparaît en route, signale-la et propose de la traiter, ne la décide pas ici. Si l'utilisateur accepte, applique-la directement quand le dossier de la pastille est dans la conversation (voir la spec partagée, section « Faire évoluer une pastille »); `refine` ne sert que si le texte a été recollé sans son contexte. Si la correction est structurelle (changement d'axe, restructuration), c'est `generate` qui régénère, et les deux visuels sont alors à refaire dans Gemini avant de revenir ici. Dans tous les cas, le texte corrigé oblige à refabriquer le `.msg`, et à vérifier que les visuels n'ont pas été périmés par la correction.
 
 ## Spec partagée (à lire en premier)
 Les normes de la série vivent dans un fichier partagé, source unique commune aux quatre skills. La section qui te concerne au premier chef est « Gabarit de diffusion », mais lis aussi les Règles du texte: c'est ce qui te dit combien de puces et de paragraphes sont admissibles, et ce que le courriel doit refuser.
@@ -71,9 +71,9 @@ Points de vigilance: `numero` est le numéro de diffusion donné par l'utilisate
 
 ### 4. Construire et contrôler
 ```
-python3 ${CLAUDE_SKILL_DIR}/scripts/build.py fiche.json --msg pastille-NN.msg \
-    --html "pastille NN accroche.html"
-python3 ${CLAUDE_SKILL_DIR}/scripts/verify.py pastille-NN.msg \
+python3 ${CLAUDE_SKILL_DIR}/scripts/build.py fiche.json \
+    --msg "pastille NN accroche.msg" --html "pastille NN accroche.html"
+python3 ${CLAUDE_SKILL_DIR}/scripts/verify.py "pastille NN accroche.msg" \
     pastille-NN-illustration-titre.png pastille-NN-schema.png \
     --html "pastille NN accroche.html"
 ```
@@ -103,18 +103,18 @@ Livre les deux fichiers. Dis en une ligne ce que contient le courriel (brouillon
 ## Les deux artefacts
 Un seul rendu, deux sorties, et rien de plus: tout ce qui n'était ni diffusable ni conservable a été retiré.
 
-- **`pastille-NN.msg`**, pour diffuser. Brouillon Outlook, images en pièces jointes référencées par `cid:`, corps optimisé pour le moteur de rendu de Word. C'est le seul artefact destiné à être envoyé.
+- **`pastille NN accroche.msg`**, pour diffuser. Brouillon Outlook, images en pièces jointes référencées par `cid:`, corps optimisé pour le moteur de rendu de Word. C'est le seul artefact destiné à être envoyé.
 - **`pastille NN accroche.html`**, pour importer, lire et conserver. HTML sémantique aux teintes de la série, visuels incorporés en base64, donc un seul fichier qui se suffit à lui-même. Il s'importe dans Notion tel quel, s'ouvre dans n'importe quel navigateur des années plus tard, et sert de source aux captures de contrôle.
 
 Ce second fichier fait donc les trois métiers à la fois, ce qui a permis d'abandonner les variantes qui les séparaient: le Markdown, la copie fidèle du courriel, et la version aux images voisines. L'archive de la pastille, ce sont ce fichier et le dossier qui le contient, avec la fiche et les PNG d'origine.
 
 ### Nommer le fichier: c'est lui qui nomme la page
-**`pastille NN accroche.html`, avec des espaces.** Deux raisons, l'une et l'autre constatées à l'usage:
+**Les deux fichiers portent le même nom, `pastille NN accroche`, à l'extension près, et avec des espaces.** L'accroche les rend reconnaissables dans un dossier, et côté HTML elle décide du titre de la page importée. Deux raisons pour les espaces, l'une et l'autre constatées à l'usage:
 
 - Notion nomme la page importée d'après le **nom du fichier**, et non d'après le `h1` du document. Un artefact appelé `pastille.html` donne une page appelée « pastille ».
 - Les **tirets ne survivent pas** à toutes les chaînes de téléchargement, qui les suppriment et recollent les mots en un bloc illisible. L'espace, lui, passe, et il donne un titre de page correct.
 
-`build.py` calcule le nom attendu depuis le titre, en gardant l'accroche jusqu'au deux-points, et le rappelle si celui que tu as donné diffère: reprends-le tel quel. Pense aux guillemets dans les commandes, le nom contenant des espaces.
+`build.py` calcule le nom attendu depuis le titre, en gardant l'accroche jusqu'au deux-points, et le rappelle pour chacun des deux fichiers si celui que tu as donné diffère: reprends-le tel quel. Pense aux guillemets dans les commandes, le nom contenant des espaces.
 
 ### Ce que l'artefact garantit, et pourquoi
 - **Visuels incorporés.** Un HTML qui pointe vers des PNG voisins cesse d'afficher ses images dès qu'on le déplace: c'est un aperçu, pas un artefact. Ici tout est dans le fichier. Revers à connaître: le base64 gonfle les visuels d'un tiers et l'import Notion est plafonné à 5 Mo sur le plan gratuit, 50 Mo sinon. `build.py` alerte au-delà de 4,5 Mo; dans ce cas, régénère des visuels plus légers avant de refabriquer.
@@ -129,7 +129,7 @@ La structure des blocs, oui, et c'est le but. Les couleurs, non: seule la légen
 Ne promets donc pas un rendu Notion identique au courriel. L'encadré « L'essentiel » et le bloc annexe arrivent en citations, à convertir en callout côté Notion si l'utilisateur le souhaite.
 
 ### Où écrire ces fichiers
-Un dossier par pastille, pour que le dossier soit l'archive: `sorties/pastille-NN-accroche/`, contenant la fiche JSON, les visuels d'origine, les deux PNG produits, le `.msg` et le HTML. Le dossier `sorties/` n'est pas suivi par git (voir `.gitignore`): ce dépôt porte l'outillage, pas les pastilles diffusées. En session cloud, pense donc à récupérer les fichiers avant la fin de la session, ou dis à l'utilisateur qu'ils disparaitront avec le conteneur.
+Un dossier par pastille, pour que le dossier soit l'archive: `sorties/pastille-NN-accroche/`, contenant la fiche JSON, les visuels d'origine, les deux PNG produits, le `.msg` et le HTML. Le HTML seul suffirait d'ailleurs à tout reconstruire; le dossier existe pour repartir d'une fiche lisible. Le dossier `sorties/` n'est pas suivi par git (voir `.gitignore`): ce dépôt porte l'outillage, pas les pastilles diffusées. En session cloud, pense donc à récupérer les fichiers avant la fin de la session, ou dis à l'utilisateur qu'ils disparaitront avec le conteneur.
 
 ## Ce que le courriel garantit, et pourquoi
 Ces choix sont des corrections de défauts constatés dans Outlook, pas des préférences. Ne les défais pas sans raison, et si tu les modifies, reporte-les dans le gabarit partagé.

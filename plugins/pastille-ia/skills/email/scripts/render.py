@@ -16,6 +16,7 @@ texte qu'il contient, il applique celle du thème de rédaction. Toute couleur e
 donc portée par l'élément qui porte réellement le texte.
 """
 import html as _html
+import json as _json
 import re as _re
 import unicodedata as _unicodedata
 
@@ -316,6 +317,44 @@ def document_html(c, corps):
     )
 
 
+MARQUE_DOSSIER = "pastille:dossier"
+FIN_DOSSIER = "pastille:fin"
+FORMAT_DOSSIER = 1
+
+
+def dossier_incorpore(c):
+    """Le dossier de la pastille, en JSON, dans un commentaire HTML.
+
+    L'artefact conservé est la référence pour reprendre une pastille des mois
+    plus tard: il doit donc porter de quoi la reconstruire, et pas seulement de
+    quoi la lire. Tout ce que la fiche contient part avec lui, prompt d'images,
+    titre canonique, axe, sources et notes d'échange compris.
+
+    Un commentaire plutôt qu'un `<script>` ou des `<meta>`: un analyseur HTML
+    supprime les commentaires par définition, alors qu'un importeur naïf peut
+    recracher le contenu d'un script au milieu de la page, comme il le ferait
+    d'une feuille de style. Les visuels, eux, sont déjà dans le fichier en
+    base64: l'artefact suffit donc à tout refabriquer, courriel compris.
+    """
+    dossier = {"_format": FORMAT_DOSSIER, **{k: v for k, v in c.items()
+                                             if not k.startswith("_")}}
+    texte = _json.dumps(dossier, ensure_ascii=False, indent=1, sort_keys=False)
+    # Un `--` fermerait le commentaire par accident. Le second tiret part en
+    # échappement JSON, que json.loads rend à l'identique: aller-retour exact.
+    texte = texte.replace("--", "-\\u002d")
+    return f"<!--{MARQUE_DOSSIER}\n{texte}\n{FIN_DOSSIER}-->"
+
+
+def lire_dossier(html):
+    """Inverse de dossier_incorpore: rend la fiche telle qu'elle a été écrite."""
+    debut = html.find(f"<!--{MARQUE_DOSSIER}")
+    fin = html.find(f"{FIN_DOSSIER}-->", debut + 1)
+    if debut < 0 or fin < 0:
+        raise ValueError("aucun dossier de pastille dans ce fichier")
+    brut = html[debut + len(MARQUE_DOSSIER) + 4:fin]
+    return _json.loads(brut)
+
+
 def limace(titre, numero=None):
     """Nom de fichier lisible tiré du titre.
 
@@ -524,7 +563,7 @@ def html_plat_pastille(c, source_image_titre, source_image_schema):
             f"<title>{_html.escape(sans_balises(c['titre']))}</title></head>\n"
             f'<body style="margin:0 auto; padding:24px 20px; max-width:{MAX_W}px; '
             f'background-color:{BLANC}; {st(NOIR, 16, 26)}">\n'
-            f"{corps}\n</body></html>\n")
+            f"{corps}\n{dossier_incorpore(c)}\n</body></html>\n")
 
 
 def texte_pastille(c):

@@ -1,6 +1,6 @@
 # Spec partagée des pastilles LLM
 
-Ce fichier est la source unique des normes de la série. Les skills `generate` (création), `refine` (réhydratation d'une pastille venue d'ailleurs), `review` (revue critique) et `email` (mise en courriel) le lisent tous les quatre via `${CLAUDE_SKILL_DIR}/references/regles-pastille.md`. Ne duplique pas ces règles dans un SKILL.md: modifie-les ici.
+Ce fichier est la source unique des normes de la série. Les skills `generate` (création), `refine` (reprise d'une pastille venue d'ailleurs), `review` (revue critique) et `email` (mise en courriel) le lisent tous les quatre via `${CLAUDE_SKILL_DIR}/references/regles-pastille.md`. Ne duplique pas ces règles dans un SKILL.md: modifie-les ici.
 
 Il contient: la liste des 45 pastilles et les consignes de périmètre, le vocabulaire de l'axe et de l'angle avec la bibliothèque d'angles et la règle de composition, les Règles du texte, les Règles du titre, les Règles d'écriture pour la pastille finale, la spec du prompt de génération d'images (avec gabarits), la charte graphique, la doctrine d'évolution d'une pastille (retoucher, réagencer ou régénérer, et avec quel contexte), le gabarit de diffusion, et la boite à outils de revue (grilles + gabarit de relecteur).
 
@@ -255,10 +255,10 @@ Si le contexte de production est perdu et que la demande est structurelle, le bo
 ### Test du contexte (dès que le texte existant est conservé)
 Deuxième question, une fois l'ampleur tranchée: le dossier de la pastille est-il dans la conversation courante ?
 
-Le dossier, c'est le texte et son titre retenu, le titre canonique, le brief et ses sources, le périmètre (voisines et liste "déjà traité ailleurs"), et le prompt image s'il existe.
+Le dossier, c'est le texte et son titre retenu, le titre canonique, l'axe, le brief et ses sources, le périmètre (voisines et liste "déjà traité ailleurs"), et le prompt image s'il existe. Il vit dans la conversation, ou dans le fichier HTML de la pastille, qui l'incorpore précisément pour qu'il survive à la conversation.
 
 - **Contexte présent**, cas le plus fréquent: la pastille a été produite, retouchée ou déjà travaillée dans cette conversation, ou l'utilisateur en a fourni les pièces au fil de l'échange. **Aucun skill à invoquer.** Applique la retouche directement, dans le fil, en suivant les règles ci-dessous. N'appelle pas `refine`: il ne ferait que redemander ou reconstituer un dossier que tu as déjà sous les yeux, avec le risque de repartir sur un brief reconstitué moins fiable que le vrai. N'appelle pas `generate` non plus: il repartirait de zéro.
-- **Contexte perdu**: l'utilisateur recolle une pastille produite ailleurs (autre conversation, session antérieure, courriel déjà diffusé) et demande une modification. Il n'y a en contexte ni brief, ni périmètre, ni prompt image, et le texte collé est tout ce qui existe. C'est le cas d'usage du skill `refine`, et le seul: sans réhydratation préalable, la retouche se ferait à l'aveugle et la revue tournerait à vide.
+- **Contexte perdu**: la pastille vient d'ailleurs (autre conversation, session antérieure, courriel déjà diffusé). C'est le cas d'usage du skill `refine`, et le seul. Demande d'abord **le fichier HTML de la pastille**: il porte son dossier complet en commentaire, texte, titres, axe, prompt d'images, sources et notes, plus les visuels incorporés, donc il n'y a rien à reconstituer. À défaut, il faut repartir du texte recollé et reconstituer, ce qui donne un dossier moins fiable; dans ce cas, produire l'artefact à la fin évite la même reconstitution la fois suivante.
 
 Le vocabulaire de la demande ne décide de rien. « retouche », « corrige », « raccourcis », « reformule », « change le titre », « relis et corrige » se disent exactement pareil dans les deux cas: seule la présence ou l'absence du dossier tranche. Un texte qui apparaît dans la conversation n'est pas pour autant un texte sans contexte: ce qui compte est de savoir si son dossier de production est là, pas si son texte est visible.
 

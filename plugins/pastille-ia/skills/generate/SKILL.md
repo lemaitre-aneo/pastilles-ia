@@ -216,5 +216,8 @@ Ce format complet vaut pour la première livraison. Les retouches ultérieures (
 - Quand tu t'es écarté du jeu d'angles par défaut, une ligne discrète disant lesquels tu as retenus et pourquoi. Elle sert de trace: sans elle, une demande ultérieure de traitement particulier ne peut plus être rapprochée des brouillons existants.
 - Une courte section "Sources" listant 2 à 4 références principales issues de l'étape de recherche, de préférence officielles ou originales. Cette section sert à la vérification et n'a pas vocation à être publiée dans la pastille.
 
+## Ce qui part vers le courriel
+Le livrable affiché n'est pas tout: le skill `email` fabrique un artefact HTML qui porte le dossier de la pastille, et c'est lui qui permettra de la reprendre dans six mois sans rien reconstituer. Quand tu passes la main, fournis donc, en plus du texte et du prompt d'images, les champs de reprise de la fiche: le titre canonique s'il diffère du titre retenu, l'axe retenu, les sources du brief, et quelques notes utiles (les angles employés et pourquoi, les consignes de l'utilisateur à ne pas perdre). Tu les as tous sous les yeux à ce stade; personne ne les retrouvera plus tard.
+
 Termine toujours par cette question exacte:
 "Comment trouvez-vous le titre, le texte, l'image titre et le diagramme (si généré) ? Si une partie vous semble trop complexe, ou si vous souhaitez affiner le focus d'un visuel pour qu'il soit encore plus épuré, n'hésitez pas à me le faire savoir, et je l'ajusterai."

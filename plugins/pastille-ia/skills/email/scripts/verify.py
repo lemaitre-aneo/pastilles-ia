@@ -14,6 +14,9 @@ import re
 import struct
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import render                     # noqa: E402
+
 try:
     import olefile
 except ImportError:
@@ -61,6 +64,22 @@ def controler_artefact(chemin, problemes):
     if re.search(r"<table[^>]*>(?:(?!</table>).)*<table", corps, re.I | re.S):
         problemes.append(f"{chemin}: table imbriquée; le bandeau doit rester une "
                          "table simple, une ligne et trois cellules")
+    # Sans son dossier, l'artefact se lit encore mais ne se reprend plus: il
+    # cesse d'être la référence pour retravailler la pastille.
+    try:
+        dossier = render.lire_dossier(corps)
+        champs = [c for c in ("titre", "paragraphes", "essentiel") if c in dossier]
+        print("  dossier incorporé          : relu,", len(dossier), "champs")
+        if len(champs) < 3:
+            problemes.append(f"{chemin}: dossier incomplet, il manque le texte même "
+                             "de la pastille")
+        absents = [c for c in ("titre_canonique", "axe", "prompt_image", "sources")
+                   if not dossier.get(c)]
+        if absents:
+            print("    champs de reprise absents :", ", ".join(absents))
+    except ValueError as erreur:
+        problemes.append(f"{chemin}: {erreur}; l'artefact ne pourra pas servir de "
+                         "référence pour reprendre la pastille")
 
 
 def main():

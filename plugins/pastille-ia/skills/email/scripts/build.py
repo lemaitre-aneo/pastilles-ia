@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Fabrique le courriel d'une pastille à partir d'une fiche JSON.
 
-    python3 build.py fiche.json --msg pastille-13.msg [--html "pastille 13 les tokens.html"]
+    python3 build.py fiche.json --msg "pastille 13 les tokens.msg" \
+                     --html "pastille 13 les tokens.html"
     python3 build.py --gabarit plugins/pastille-ia/shared/template-pastille.html
 
 Le gabarit de diffusion est produit par le même code que le courriel réel, avec
@@ -203,7 +204,7 @@ def main():
         return
 
     if not args.fiche or not args.msg:
-        raise SystemExit('usage: build.py fiche.json --msg sortie.msg '
+        raise SystemExit('usage: build.py fiche.json --msg "pastille NN accroche.msg" '
                          '[--html "pastille NN accroche.html"]')
 
     fiche = charger(args.fiche)
@@ -230,6 +231,18 @@ def main():
     print("msg écrit:", args.msg, os.path.getsize(args.msg), "octets")
     print("sujet:", render.sujet(fiche))
 
+    # Les deux fichiers portent le même nom, à l'extension près: l'accroche les
+    # rend reconnaissables dans un dossier, et côté HTML c'est le nom du fichier
+    # qui nomme la page importée, Notion ne lisant pas le h1 du document.
+    def rappeler_nom(chemin, extension):
+        attendu = render.limace(fiche["titre"], fiche["numero"]) + extension
+        if chemin and os.path.basename(chemin) != attendu:
+            print(f'  à renommer en "{attendu}"'
+                  + (": c'est le nom du fichier qui nomme la page importée"
+                     if extension == ".html" else ""))
+
+    rappeler_nom(args.msg, ".msg")
+
     def sources_data(images):
         return [f'data:{img["type_mime"]};base64,'
                 f'{base64.b64encode(img["donnees"]).decode("ascii")}' for img in images]
@@ -248,13 +261,19 @@ def main():
         with open(args.html, "w", encoding="utf-8") as f:
             f.write(render.html_plat_pastille(fiche, sources[0], sources[1]))
         print("html écrit:", args.html, os.path.getsize(args.html), "octets")
+        rappeler_nom(args.html, ".html")
         alerter_taille(args.html)
-        # Notion nomme la page importée d'après le nom du fichier, et non d'après
-        # le h1 du document: le nom de l'artefact est le titre de la page.
-        attendu = render.limace(fiche["titre"], fiche["numero"]) + ".html"
-        if os.path.basename(args.html) != attendu:
-            print(f'  à renommer en "{attendu}" avant un import: '
-                  "c'est le nom du fichier qui nomme la page Notion")
+        # Le dossier incorporé est ce qui fait de cet artefact la référence pour
+        # reprendre la pastille: on vérifie tout de suite qu'il se relit.
+        try:
+            render.lire_dossier(open(args.html, encoding="utf-8").read())
+        except ValueError as erreur:
+            raise SystemExit(f"dossier incorporé illisible: {erreur}")
+        absents = [c for c in ("titre_canonique", "axe", "prompt_image", "sources")
+                   if not fiche.get(c)]
+        if absents:
+            print("  dossier incomplet, champs absents:", ", ".join(absents),
+                  "\n  (une reprise ultérieure devra les redemander)")
 
 
 if __name__ == "__main__":
