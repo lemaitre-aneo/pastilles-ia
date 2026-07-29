@@ -417,15 +417,21 @@ def html_plat_pastille(c, source_image_titre, source_image_schema):
         f'<table style="width:100%; border-collapse:collapse; margin:0 0 24px 0; '
         f'background-color:{MARQUE_BLEU};">'
         f'<tr>'
-        f'<td style="padding:14px 20px; {st(BLANC, 13, 24)}">'
+        # Les cellules extérieures se réduisent à leur contenu (width:1%), la
+        # cellule du milieu prend le reste: sans cela les trois colonnes se
+        # partagent la largeur et le numéro s'éloigne de la rubrique, alors que
+        # le courriel les garde côte à côte.
+        f'<td style="width:1%; padding:14px 4px 14px 20px; white-space:nowrap; '
+        f'{st(BLANC, 13, 24)}">'
         f'<strong style="{st(MARQUE_ORANGE, 22, 24, "font-weight:700; ")}">'
         f'{c["numero"]}</strong>'
         f'<span style="{st(BLEU_PALE, 12, 24)}">&nbsp;/&nbsp;{c["total"]}</span>'
-        f'<span style="{st(BLANC, 13, 24)}">&nbsp;&nbsp;&nbsp;PASTILLE IA'
-        f'&nbsp;&nbsp;&middot;&nbsp;&nbsp;{_html.escape(fr_texte(c["rubrique"])).upper()}'
-        f'</span></td>'
-        f'<td align="right" style="padding:14px 20px; white-space:nowrap; '
-        f'{st(BLEU_PALE, 12, 24, "text-align:right; ")}">'
+        f'</td>'
+        f'<td style="width:98%; padding:14px 20px; {st(BLANC, 13, 24)}">'
+        f'PASTILLE IA&nbsp;&nbsp;&middot;&nbsp;&nbsp;'
+        f'{_html.escape(fr_texte(c["rubrique"])).upper()}</td>'
+        f'<td align="right" style="width:1%; padding:14px 20px; '
+        f'white-space:nowrap; {st(BLEU_PALE, 12, 24, "text-align:right; ")}">'
         f'&nbsp;{c["temps_lecture"]} de lecture</td>'
         f'</tr></table>',
 
@@ -482,6 +488,34 @@ def html_plat_pastille(c, source_image_titre, source_image_schema):
         f'<p style="margin:0; {st(MARQUE_BLEU, 15, 24, "font-weight:700; ")}">'
         f'<strong>{_inline(c["signature"])}</strong></p>']
 
+    # Sources: dans l'archive, pas dans le courriel. La norme les réserve à la
+    # vérification et ne les publie pas, mais un artefact conservé sans ses
+    # références perd ce qui permet de le rejuger plus tard.
+    #
+    # Elles vivent dans un <details>, replié. Ce choix règle la question de leur
+    # visibilité sans recourir au CSS, qu'un importeur ignore: un navigateur
+    # replie nativement l'élément, et Notion exporte ses blocs dépliants sous
+    # cette forme, donc il devrait les relire comme tels. Si un importeur ne
+    # connaissait pas <details>, le repli est bénin: les sources s'afficheraient
+    # simplement en liste, ce qui reste correct pour une archive.
+    if c.get("sources"):
+        out += [f'<details style="margin:24px 0 0 0;">',
+                f'<summary style="{st(GRIS, 12, 18, "font-weight:700; letter-spacing:0.6px; cursor:pointer; ")}">'
+                f'SOURCES</summary>',
+                f'<ul style="margin:8px 0 0 0; padding:0 0 0 20px; {st(GRIS, 13, 20)}">']
+        for source in c["sources"]:
+            if isinstance(source, str):
+                libelle, url = source, None
+            else:
+                libelle, url = source.get("titre", source.get("url", "")), source.get("url")
+            corps_source = _inline(libelle)
+            if url and url != libelle:
+                corps_source += (f' &ndash; <a href="{_html.escape(url, quote=True)}" '
+                                 f'style="{st(GRIS, 13, 20)}">{_html.escape(url)}</a>')
+            out.append(f'<li style="margin:0 0 4px 0; {st(GRIS, 13, 20)}">'
+                       f'{corps_source}</li>')
+        out += ["</ul>", "</details>"]
+
     corps = "\n".join(out)
     return ('<html><head><meta charset="utf-8">'
             f"<title>{_html.escape(sans_balises(c['titre']))}</title></head>\n"
@@ -514,7 +548,18 @@ def markdown_pastille(c, nom_image_titre, nom_image_schema):
         md += ["", f'> **{fr_texte(c["annexe"]["etiquette"])}**',
                f'> {fr_texte(c["annexe"]["texte"])}']
     md += ["", "---", "", f'*{fr_texte(c["mention_ia"])}*', "",
-           fr_texte(c["signature"]), ""]
+           fr_texte(c["signature"])]
+    if c.get("sources"):
+        md += ["", "## Sources"]
+        for source in c["sources"]:
+            if isinstance(source, str):
+                md.append(f"- {fr_texte(source)}")
+            else:
+                libelle = source.get("titre", source.get("url", ""))
+                url = source.get("url")
+                md.append(f"- [{fr_texte(libelle)}]({url})" if url
+                          else f"- {fr_texte(libelle)}")
+    md.append("")
     return "\n".join(md)
 
 

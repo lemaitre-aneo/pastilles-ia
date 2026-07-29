@@ -62,11 +62,12 @@ Une fiche décrit la pastille, le script fait le reste. Les emphases s'écrivent
   "alt_schema": "Ce que montre le schéma, une phrase.",
   "annexe": {"etiquette": "À essayer", "style": "essayer", "texte": "..."},
   "image_titre": "collee-1.png",
-  "image_schema": "collee-2.png"
+  "image_schema": "collee-2.png",
+  "sources": [{"titre": "Une source", "url": "https://..."}, "Une source sans lien"]
 }
 ```
 
-Points de vigilance: `numero` est le numéro de diffusion donné par l'utilisateur et `position_liste` la place du sujet dans la liste des 45, d'où la rubrique est déduite; les deux sont indépendants, ici 13 et 5. `rubrique` et `temps_lecture` peuvent être écrits en dur pour forcer une valeur, sinon ils sont calculés. `schema_apres` est le rang du paragraphe après lequel le schéma s'insère, donc l'avant-dernier, puisque le dernier paragraphe porte l'enjeu et se lit après le visuel. `annexe` est facultative et plafonnée à un bloc, `style` valant `essayer` ou `piege`. Le texte alternatif de l'illustration-titre n'est pas dans la fiche: c'est le titre exact, la norme l'impose. `mention_ia` et `signature` ont des valeurs par défaut, ne les redéclare que pour les changer.
+Points de vigilance: `numero` est le numéro de diffusion donné par l'utilisateur et `position_liste` la place du sujet dans la liste des 45, d'où la rubrique est déduite; les deux sont indépendants, ici 13 et 5. `rubrique` et `temps_lecture` peuvent être écrits en dur pour forcer une valeur, sinon ils sont calculés. `schema_apres` est le rang du paragraphe après lequel le schéma s'insère, donc l'avant-dernier, puisque le dernier paragraphe porte l'enjeu et se lit après le visuel. `annexe` est facultative et plafonnée à un bloc, `style` valant `essayer` ou `piege`. Le texte alternatif de l'illustration-titre n'est pas dans la fiche: c'est le titre exact, la norme l'impose. `mention_ia` et `signature` ont des valeurs par défaut, ne les redéclare que pour les changer. `sources` est facultatif mais recommandé: reprends les références du brief de recherche, chacune sous forme de chaîne ou d'objet `titre` plus `url`. Elles n'apparaissent que dans les artefacts conservés.
 
 ### 4. Construire et contrôler
 ```
@@ -117,7 +118,9 @@ Notion importe les fichiers `.html` comme les `.md`, mais sa documentation prév
 
 **Importe `pastille-NN-accroche.html`, tel quel, sans archive.** Cette variante a été validée dans Notion: le balisage aplati passe, et le fichier se suffisant à lui-même, il n'y a ni zip à préparer ni image à retrouver.
 
-Le bandeau est **une table d'une ligne et deux cellules**, seule table de l'artefact et seule exception à son balisage sans tables. La raison est l'import: une table simple arrive dans Notion comme une table, donc la rubrique et le temps de lecture restent séparés. Sans elle, l'importeur ignorant la mise en page collait les deux en un mot-valise, « COMPRENDRE1 min de lecture ». La cellule de droite commence en outre par une espace insécable, invisible dans une cellule alignée à droite, qui sert de repli si un importeur aplatit quand même la table. `verify.py` tolère cette table et une seule, et refuse toute table imbriquée: c'est la mise en page en tables qui s'importe mal, pas la table en soi.
+Le bandeau est **une table d'une ligne et trois cellules**, seule table de l'artefact et seule exception à son balisage sans tables. La raison est l'import: une table simple arrive dans Notion comme une table, donc le compte, la rubrique et le temps de lecture restent dans trois cellules distinctes au lieu d'être collés en une ligne de texte. Les cellules extérieures se réduisent à leur contenu et celle du milieu prend le reste, sans quoi les colonnes se partagent la largeur et le numéro s'éloigne de la rubrique. La cellule de droite commence en outre par une espace insécable, invisible dans une cellule alignée à droite, qui sert de repli si un importeur aplatit quand même la table. `verify.py` tolère cette table et une seule, et refuse toute table imbriquée: c'est la mise en page en tables qui s'importe mal, pas la table en soi.
+
+Les **sources** vivent dans un `<details>` replié, en pied de document. Ce choix règle leur visibilité sans recourir au CSS, qu'un importeur ignore: un navigateur replie nativement l'élément, et Notion exporte ses blocs dépliants sous cette forme, donc il devrait les relire comme un bloc dépliant. Si un importeur ne connaissait pas `<details>`, le repli est bénin, les sources s'affichant alors en simple liste. Le courriel, lui, ne les porte jamais: la norme de la série les réserve à la vérification. Mais un artefact conservé sans ses références perd ce qui permettrait de le rejuger dans un an, d'où leur présence ici.
 
 Deux replis, dans cet ordre:
 

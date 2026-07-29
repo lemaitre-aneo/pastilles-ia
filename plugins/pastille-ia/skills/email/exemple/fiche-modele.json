@@ -1,5 +1,5 @@
 {
-  "_lisez_moi": "Modèle de fiche à copier, sans contenu réel: les pastilles ne sont pas versionnées dans ce dépôt. numero est le numéro de diffusion donné par l'utilisateur, position_liste la place du sujet dans la liste des 45 dont la rubrique est déduite; les deux sont indépendants. Le temps de lecture est calculé et la rubrique déduite: n'écrivez temps_lecture ou rubrique en dur que pour forcer une valeur. Les emphases sont en markdown, la typographie française est appliquée par le script: pas d'espaces insécables ni d'apostrophes typographiques à saisir ici. Faites pointer image_titre et image_schema sur vos deux fichiers.",
+  "_lisez_moi": "Modèle de fiche à copier, sans contenu réel: les pastilles ne sont pas versionnées dans ce dépôt. numero est le numéro de diffusion donné par l'utilisateur, position_liste la place du sujet dans la liste des 45 dont la rubrique est déduite; les deux sont indépendants. Le temps de lecture est calculé et la rubrique déduite: n'écrivez temps_lecture ou rubrique en dur que pour forcer une valeur. Les emphases sont en markdown, la typographie française est appliquée par le script: pas d'espaces insécables ni d'apostrophes typographiques à saisir ici. Faites pointer image_titre et image_schema sur vos deux fichiers. Le champ sources est facultatif et n'apparaît que dans les artefacts conservés, jamais dans le courriel: chaque entrée est soit une chaîne, soit un objet titre plus url.",
   "numero": "NN",
   "total": 45,
   "position_liste": 1,
@@ -25,5 +25,12 @@
     "texte": "Bloc actionnable facultatif, un seul au maximum: À essayer, ou Le piège en passant style à piege."
   },
   "image_titre": "illustration-titre.png",
-  "image_schema": "schema.png"
+  "image_schema": "schema.png",
+  "sources": [
+    {
+      "titre": "Titre de la source, de préférence officielle",
+      "url": "https://exemple.invalid/page"
+    },
+    "Source citée par son seul titre, faute de lien stable"
+  ]
 }
