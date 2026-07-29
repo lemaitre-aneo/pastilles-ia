@@ -3,6 +3,7 @@
 
     python3 build.py fiche.json --msg pastille-13.msg [--html courriel.html]
                      [--markdown pastille.md] [--html-plat pastille-notion.html]
+                     [--html-plat-autonome pastille-plat-autonome.html]
     python3 build.py --gabarit plugins/pastille-ia/shared/template-pastille.html
 
 Le gabarit de diffusion est produit par le même code que le courriel réel, avec
@@ -193,6 +194,9 @@ def main():
     ap.add_argument("--html-plat", dest="html_plat",
                     help="chemin d'un HTML sans tables, pour tenter un import "
                          "qui garde la structure (Notion); images voisines")
+    ap.add_argument("--html-plat-autonome", dest="html_plat_autonome",
+                    help="idem, mais images incorporées: un seul fichier, "
+                         "importable sans archive")
     ap.add_argument("--gabarit", help="régénère le gabarit de diffusion à ce chemin")
     ap.add_argument("--sans-rognage", action="store_true",
                     help="conserve les bandes de fond des visuels, au lieu de les "
@@ -236,19 +240,31 @@ def main():
     print("msg écrit:", args.msg, os.path.getsize(args.msg), "octets")
     print("sujet:", render.sujet(fiche))
 
+    def sources_data(images):
+        return [f'data:{img["type_mime"]};base64,'
+                f'{base64.b64encode(img["donnees"]).decode("ascii")}' for img in images]
+
+    def alerter_taille(chemin):
+        # Notion plafonne l'import à 5 Mo sur le plan gratuit, 50 Mo sinon, et le
+        # base64 gonfle les visuels d'un tiers: un fichier autonome peut donc
+        # passer la limite sans que personne ne l'ait vu venir.
+        mo = os.path.getsize(chemin) / 1_048_576
+        if mo > 4.5:
+            print(f"attention: {chemin} pèse {mo:.1f} Mo, au-delà de la limite "
+                  "d'import de 5 Mo du plan gratuit de Notion")
+
     if args.html:
         # Les images sont incorporées en base64, pas référencées: un aperçu qui
         # pointe vers des fichiers voisins cesse d'afficher ses visuels dès
         # qu'on le déplace, ce qui en fait un contrôle visuel mais pas un
         # artefact conservable. Ici le fichier se suffit à lui-même.
         autonome = corps
-        for img in images:
-            donnees = base64.b64encode(img["donnees"]).decode("ascii")
-            autonome = autonome.replace(f'cid:{img["cid"]}',
-                                        f'data:{img["type_mime"]};base64,{donnees}')
+        for img, source in zip(images, sources_data(images)):
+            autonome = autonome.replace(f'cid:{img["cid"]}', source)
         with open(args.html, "w", encoding="utf-8") as f:
             f.write(render.document_html(fiche, autonome))
         print("html écrit:", args.html, os.path.getsize(args.html), "octets")
+        alerter_taille(args.html)
 
     noms = [os.path.basename(img["fichier"]) for img in images]
 
@@ -262,6 +278,14 @@ def main():
             f.write(render.html_plat_pastille(fiche, noms[0], noms[1]))
         print("html aplati écrit:", args.html_plat,
               "(images voisines:", ", ".join(noms) + ")")
+
+    if args.html_plat_autonome:
+        sources = sources_data(images)
+        with open(args.html_plat_autonome, "w", encoding="utf-8") as f:
+            f.write(render.html_plat_pastille(fiche, sources[0], sources[1]))
+        print("html aplati autonome écrit:", args.html_plat_autonome,
+              os.path.getsize(args.html_plat_autonome), "octets")
+        alerter_taille(args.html_plat_autonome)
 
 
 if __name__ == "__main__":

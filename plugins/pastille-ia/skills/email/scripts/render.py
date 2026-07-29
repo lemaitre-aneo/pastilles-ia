@@ -341,9 +341,12 @@ def html_plat_pastille(c, nom_image_titre, nom_image_schema):
     Le courriel, lui, est bâti en tables imbriquées parce que Word ne sait
     rien faire d'autre; c'est précisément ce qu'un importeur aplatit mal. Ici
     chaque bloc est la balise qui le décrit: un titre est un h1, une synthèse
-    est une citation à puces, une légende est une figcaption. Les images sont
-    référencées par leur nom de fichier, comme dans le Markdown: elles
-    voyagent dans le même dossier ou la même archive.
+    est une citation à puces, une légende est une figcaption.
+
+    Les deux sources d'images sont des chemins tels quels: l'appelant passe
+    soit un nom de fichier voisin (l'artefact voyage alors dans un dossier ou
+    une archive), soit une URL `data:` (l'artefact se suffit à lui-même). Le
+    balisage ne change pas, seule la portabilité du fichier change.
     """
     out = [f"<h1>{_inline(c['titre'])}</h1>",
            f"<p><em>Pastille IA {c['numero']} / {c['total']} . "

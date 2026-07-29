@@ -4,6 +4,7 @@
     python3 verify.py pastille-13.msg [image-titre.png image-schema.png]
                       [--html courriel.html] [--markdown pastille.md]
                       [--html-plat pastille-notion.html]
+                      [--html-plat-autonome pastille-plat-autonome.html]
 
 Un parseur indépendant (olefile) rouvre le fichier: c'est le seul moyen de
 vérifier le conteneur sans Outlook. Le rendu visuel, lui, se contrôle avec
@@ -50,7 +51,8 @@ def images_voisines(chemin, cites, problemes, quoi):
             problemes.append(f"{chemin}: {court} est cité mais absent du dossier")
 
 
-def controler_artefacts(html_archive, markdown, html_plat, problemes):
+def controler_artefacts(html_archive, markdown, html_plat, html_plat_autonome,
+                        problemes):
     """Les artefacts conservés ne passent pas par Outlook, mais ils ont leurs
     propres règles: le HTML doit se suffire à lui-même (sinon il n'est pas
     archivable) et le Markdown doit trouver ses images à côté de lui (sinon
@@ -75,26 +77,39 @@ def controler_artefacts(html_archive, markdown, html_plat, problemes):
         images_voisines(markdown, re.findall(r"!\[[^\]]*\]\(([^)]+)\)", corps),
                         problemes, "Notion")
 
-    if html_plat:
-        print("\nHTML aplati (import)")
-        corps = open(html_plat, encoding="utf-8").read()
+    for chemin, autonome in ((html_plat, False), (html_plat_autonome, True)):
+        if not chemin:
+            continue
+        print("\nHTML aplati" + (" autonome" if autonome else " (images voisines)"))
+        corps = open(chemin, encoding="utf-8").read()
         tables = len(re.findall(r"<table", corps, re.I))
+        sources = re.findall(r'<img src="([^"]+)"', corps)
         print("  tables                     :", tables)
         if tables:
-            problemes.append(f"{html_plat}: {tables} table(s); c'est exactement ce "
+            problemes.append(f"{chemin}: {tables} table(s); c'est exactement ce "
                              "qu'un importeur aplatit mal, cet artefact doit rester "
                              "sémantique")
-        if "data:image" in corps:
-            problemes.append(f"{html_plat}: images incorporées en data:; pour un "
-                             "import elles doivent être des fichiers voisins")
-        images_voisines(html_plat, re.findall(r'<img src="([^"]+)"', corps),
-                        problemes, "Notion")
+        if autonome:
+            incorporees = sum(s.startswith("data:image/") for s in sources)
+            print("  images incorporées         :", incorporees)
+            if incorporees != len(sources) or incorporees != 2:
+                problemes.append(f"{chemin}: {incorporees} image(s) incorporée(s) sur "
+                                 f"{len(sources)} au lieu de 2; le fichier doit se "
+                                 "suffire à lui-même")
+            if "cid:" in corps:
+                problemes.append(f"{chemin}: références cid: restantes")
+        else:
+            if any(s.startswith("data:") for s in sources):
+                problemes.append(f"{chemin}: images incorporées en data:; cette "
+                                 "variante les veut voisines, l'autre les incorpore")
+            else:
+                images_voisines(chemin, sources, problemes, "Notion")
 
 
 def main():
     argv = sys.argv[1:]
-    html_archive = markdown = html_plat = None
-    for drapeau in ("--html", "--markdown", "--html-plat"):
+    html_archive = markdown = html_plat = html_plat_autonome = None
+    for drapeau in ("--html", "--markdown", "--html-plat-autonome", "--html-plat"):
         if drapeau in argv:
             i = argv.index(drapeau)
             valeur = argv[i + 1] if i + 1 < len(argv) else None
@@ -104,6 +119,8 @@ def main():
                 html_archive = valeur
             elif drapeau == "--markdown":
                 markdown = valeur
+            elif drapeau == "--html-plat-autonome":
+                html_plat_autonome = valeur
             else:
                 html_plat = valeur
             del argv[i:i + 2]
@@ -199,7 +216,8 @@ def main():
             problemes.append(f"{nom}: AttachFlags devrait valoir 4 (ATT_MHTML_REF)")
     ole.close()
 
-    controler_artefacts(html_archive, markdown, html_plat, problemes)
+    controler_artefacts(html_archive, markdown, html_plat, html_plat_autonome,
+                        problemes)
 
     print()
     if problemes:

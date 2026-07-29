@@ -77,7 +77,7 @@ python3 ${CLAUDE_SKILL_DIR}/scripts/verify.py pastille-NN.msg \
     --html courriel.html --markdown pastille.md
 ```
 
-Ajoute `--html-plat pastille-notion.html` aux deux commandes si l'utilisateur veut aussi la variante HTML pour Notion (voir plus bas).
+Ajoute `--html-plat pastille-notion.html` ou `--html-plat-autonome pastille-plat-autonome.html` aux deux commandes si l'utilisateur veut aussi une variante HTML pour l'import (voir plus bas).
 
 Une même passe produit donc trois artefacts, tous depuis la même fiche et le même code de rendu: le `.msg` pour diffuser, le HTML pour conserver et relire, le Markdown pour archiver ailleurs et importer dans Notion. Voir « Les trois artefacts » plus bas pour ce que chacun garantit.
 
@@ -85,7 +85,7 @@ Une même passe produit donc trois artefacts, tous depuis la même fiche et le m
 
 Un mot sur le rognage, actif par défaut. Un schéma sorti de Gemini arrive souvent avec de larges bandes de fond en haut et en bas, et la tentation est de le rogner dans Outlook: ne le fais pas et ne le propose pas, car le rognage y réécrit les dimensions de l'image en dur, emporte le `max-width` et donne au bloc une largeur minimale qu'il ne sait plus réduire. Le script mesure donc les bandes de fond quasi blanc, garde 16 pixels de respiration et rogne avant de construire, en annonçant ce qu'il a retiré. Il s'abstient dans deux cas, en le disant: une image entièrement blanche, et un rognage qui emporterait plus de 60% de la surface, signe d'une détection douteuse plutôt que d'une vraie marge. Le drapeau `--sans-rognage` conserve les bandes et se contente de signaler celles qu'il a vues. Une illustration-titre pleine page n'est jamais concernée, faute de marge à retirer.
 
-`verify.py` rouvre le fichier avec un parseur indépendant et sort en erreur si une contrainte est violée: conteneur invalide, propriété manquante, pièce jointe qui ne correspond pas à sa source, `cid` non référencé, police entre apostrophes, couleur portée par une cellule, apostrophe droite restante. Avec `--html`, `--markdown` et `--html-plat`, il contrôle en plus les artefacts conservés: le HTML d'archive doit avoir ses deux images incorporées et plus aucune référence `cid:` (sans quoi il n'est pas autonome et ne s'affichera plus une fois déplacé); le Markdown et le HTML aplati doivent citer deux images, sans chemin, effectivement présentes à côté d'eux; et le HTML aplati doit être sans table et sans image incorporée, faute de quoi il perd la seule chose qui le distingue du courriel. Ne livre rien dont la vérification échoue.
+`verify.py` rouvre le fichier avec un parseur indépendant et sort en erreur si une contrainte est violée: conteneur invalide, propriété manquante, pièce jointe qui ne correspond pas à sa source, `cid` non référencé, police entre apostrophes, couleur portée par une cellule, apostrophe droite restante. Avec `--html`, `--markdown` et `--html-plat`, il contrôle en plus les artefacts conservés: le HTML d'archive doit avoir ses deux images incorporées et plus aucune référence `cid:` (sans quoi il n'est pas autonome et ne s'affichera plus une fois déplacé); le Markdown et le HTML aplati doivent citer deux images, sans chemin, effectivement présentes à côté d'eux; et les variantes aplaties doivent être sans table, avec des images voisines pour l'une et incorporées pour l'autre, faute de quoi elles perdent ce qui les distingue. Ne livre rien dont la vérification échoue.
 
 Contrôle ensuite le rendu visuel du HTML, à deux largeurs, en dessous et au dessus du plafond:
 
@@ -107,17 +107,22 @@ Un seul rendu, plusieurs sorties, pour des usages qui n'ont pas les mêmes contr
 - **`courriel.html`**, pour conserver et relire. Même corps, mais les deux visuels sont incorporés en base64 plutôt que référencés: le fichier se suffit à lui-même. Un HTML qui pointe vers des PNG voisins est un aperçu, pas un artefact conservable, car il cesse d'afficher ses images dès qu'on le déplace ou qu'on le transmet seul. Celui-ci s'ouvre dans n'importe quel navigateur, des années plus tard, et sert aussi de source aux captures de contrôle.
 - **`pastille.md`**, pour archiver ailleurs et importer dans Notion. Même contenu en Markdown, emphases conservées, typographie française appliquée, images citées par leur nom de fichier sans chemin. Le `.md` et les deux PNG vivent dans le même dossier, et c'est ce dossier qu'on zippe pour l'import.
 
-En option, `--html-plat` ajoute un quatrième fichier, `pastille-notion.html`: le même contenu en HTML sémantique sans aucune table, pour tenter l'import HTML plutôt que Markdown. Produis-le quand l'utilisateur veut comparer les deux imports, ou quand il préfère travailler en HTML.
+En option, deux variantes aplaties s'ajoutent, pour l'import: `--html-plat` écrit `pastille-notion.html` (images voisines) et `--html-plat-autonome` écrit `pastille-plat-autonome.html` (images incorporées, donc un seul fichier à importer, sans archive). Même balisage dans les deux cas, seule la portabilité change.
 
 ### Importer dans Notion: deux candidats, et pourquoi pas le courriel
 Notion importe les fichiers `.html` comme les `.md`, mais sa documentation prévient que les mises en page et les tables complexes sont aplaties ou demandent une reprise, et que les images ne suivent que si elles sont présentes et accessibles pendant l'import. Le corps du courriel est exactement ce cas limite: sept tables imbriquées, styles en ligne, balises `<font>`, tout cela imposé par le moteur de rendu de Word, plus des images en `data:` dont l'import n'est pas garanti. **N'importe donc pas `courriel.html` dans Notion**, c'est le seul des artefacts qui n'y est pas destiné.
 
-Deux artefacts sont faits pour ça, et se zippent avec les deux PNG:
+Deux axes indépendants décident de ce qu'on importe: la **structure** (tables du courriel, ou balisage aplati) et les **images** (voisines, donc à zipper, ou incorporées, donc un seul fichier). D'où les candidats:
 
-- **`pastille.md`**, le plus sûr: Markdown est le format que Notion importe le plus proprement.
-- **`pastille-notion.html`**, produit par `--html-plat`: le même contenu en HTML sémantique, sans une seule table, `h1` pour le titre, `p` pour les paragraphes, `blockquote` plus `ul` pour l'encadré, `figure` et `figcaption` pour le schéma et sa légende. Ce que Notion aplatit mal, ce sont les tables de mise en page; un HTML qui n'en a aucune n'a plus grand-chose à aplatir. Cette variante reste à valider dans Notion: si elle passe mieux que le Markdown (sur les emphases, l'ordre des blocs, la légende), c'est elle qu'il faut retenir.
+- **`pastille.md`**, à zipper avec les deux PNG. Markdown est le format que Notion importe le plus proprement, et il reste la référence de repli.
+- **`pastille-notion.html`** (`--html-plat`), à zipper aussi: HTML sémantique sans une seule table, `h1` pour le titre, `p` pour les paragraphes, `blockquote` plus `ul` pour l'encadré, `figure` et `figcaption` pour le schéma et sa légende.
+- **`pastille-plat-autonome.html`** (`--html-plat-autonome`): le même balisage aplati, mais images incorporées. C'est le candidat le plus commode s'il passe, puisqu'il s'importe seul, sans archive, et fait aussi office d'archive.
 
-Dans les deux cas, l'import se fait sur un zip du dossier: l'artefact et les deux PNG suffisent. Les images sont citées par leur seul nom de fichier, sans chemin, précisément pour être trouvées dans l'archive.
+Un import zippé retrouve ses images parce qu'elles sont citées par leur seul nom de fichier, sans chemin. Un import d'un seul fichier ne le peut pas: il faut alors que les images y soient incorporées. Les deux variantes aplaties existent donc pour cette seule raison, et `verify.py` refuse de les confondre.
+
+Attention à la taille sur les variantes incorporées: le base64 gonfle les visuels d'un tiers, et l'import Notion est plafonné à 5 Mo sur le plan gratuit, 50 Mo sinon. `build.py` alerte au-delà de 4,5 Mo; dans ce cas, passe par le zip et les images voisines.
+
+Le choix définitif attend une validation dans Notion. Tant qu'elle n'a pas eu lieu, produis les candidats que l'utilisateur veut comparer et ne présente aucun comme le bon.
 
 Ne promets pas un rendu Notion identique au courriel: la mise en forme de diffusion appartient au courriel, Notion garde le contenu et la structure. L'encadré « L'essentiel » et le bloc annexe arrivent en citations, à convertir en callout côté Notion si l'utilisateur le souhaite. Et s'il veut un rendu fidèle au pixel, dis-lui que cela demande de construire la page par blocs via l'API ou un connecteur Notion, ce que ce skill ne fait pas.
 

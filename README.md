@@ -43,13 +43,16 @@ Une seule fiche, un seul code de rendu, plusieurs sorties pour des usages qui n'
 | `pastille-NN.msg` | diffuser | brouillon Outlook, visuels en pièces jointes `cid:`, corps optimisé pour le moteur de rendu de Word |
 | `courriel.html` | conserver, relire, contrôler | visuels **incorporés en base64**: le fichier se suffit à lui-même et s'ouvre n'importe où, des années plus tard |
 | `pastille.md` | archiver ailleurs, importer dans Notion | Markdown, emphases et typographie conservées, images citées par leur nom de fichier |
-| `pastille-notion.html` (option `--html-plat`) | tenter l'import HTML dans Notion | HTML sémantique **sans aucune table**: `h1`, `p`, `blockquote`, `figure`; images voisines |
+| `pastille-notion.html` (option `--html-plat`) | tenter l'import HTML dans Notion | HTML sémantique **sans aucune table**: `h1`, `p`, `blockquote`, `figure`; images voisines, donc à zipper |
+| `pastille-plat-autonome.html` (option `--html-plat-autonome`) | idem, mais en un seul fichier | même balisage aplati, images incorporées: s'importe sans archive et fait aussi office d'archive |
 
 Un HTML qui pointe vers des PNG voisins est un aperçu, pas une archive: il cesse d'afficher ses images dès qu'on le déplace. D'où l'incorporation en base64.
 
 **Pour Notion, pas `courriel.html`.** Notion importe les `.html` comme les `.md`, mais sa documentation prévient que les mises en page et tables complexes sont aplaties ou demandent une reprise, et que les images ne suivent que si elles sont accessibles pendant l'import. Or le corps du courriel cumule les deux problèmes: sept tables imbriquées imposées par Word, et des images en `data:`.
 
-Deux candidats pour Notion, à zipper avec les deux PNG: `pastille.md`, le plus sûr, et `pastille-notion.html` (`--html-plat`), qui tente l'import HTML avec un balisage sémantique sans une seule table. Ce que Notion aplatit mal, ce sont les tables de mise en page; un HTML qui n'en a aucune n'a plus grand-chose à aplatir. Cette variante reste à valider dans Notion. Dans les deux cas, Notion garde le contenu et la structure, pas la mise en forme de diffusion, qui reste l'affaire du courriel.
+Deux axes décident de ce qu'on importe: la **structure** (tables du courriel, ou balisage aplati) et les **images** (voisines, donc à zipper, ou incorporées, donc un seul fichier). Un import zippé retrouve ses images parce qu'elles sont citées par leur nom sans chemin; un import d'un seul fichier exige qu'elles soient incorporées. D'où les trois candidats: `pastille.md` (zip), `pastille-notion.html` (zip), `pastille-plat-autonome.html` (fichier seul).
+
+Le plus commode, s'il passe, est le dernier: il s'importe sans archive et sert aussi d'archive. Attention alors à la taille, le base64 gonflant les visuels d'un tiers pour un import plafonné à 5 Mo sur le plan gratuit de Notion; `build.py` alerte au-delà de 4,5 Mo. Le choix définitif attend une validation dans Notion. Dans tous les cas, Notion garde le contenu et la structure, pas la mise en forme de diffusion, qui reste l'affaire du courriel.
 
 Les artefacts vivent dans un dossier par pastille, `sorties/pastille-NN-slug/`, avec la fiche et les visuels. Ce dossier n'est pas suivi par git: ce dépôt porte l'outillage, pas les pastilles diffusées. En session cloud, récupérez donc les fichiers avant la fin de la session.
 
