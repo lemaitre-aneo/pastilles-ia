@@ -244,7 +244,13 @@ Génère dans un premier temps seulement la première image (l'illustration-titr
 
 ## Charte graphique (bloc à insérer tel quel dans le prompt)
 Les trois couleurs officielles sont `#FE5100` (orange), `#000F9F` (bleu) et `#FFB600` (orange clair). Elles sont la source commune des illustrations et du courriel: le bloc ci-dessous les donne au générateur d'images, et le gabarit de diffusion en dérive ses teintes. Toute autre valeur employée quelque part est un dérivé de ces trois, jamais une couleur inventée.
-Style propre, moderne et professionnel, fond blanc. Palette: orange #FE5100 et bleu #000F9F en dominantes, orange clair #FFB600 en appui, blanc et gris pour les respirations, accents multiculturels discrets (rouge, vert, jaune, bleu) reprenant subtilement un motif de couleurs de logo. Superpositions graphiques épurées: motifs géométriques abstraits, quartiers de cercle, lignes claires. Composition aérée, jamais surchargée. Typographie sans serif, propre et corporate.
+
+L'orange clair n'est pas une couleur secondaire, et le bloc ne le présente plus comme telle. Deux des trois couleurs officielles étant des oranges, en faire l'appui de l'orange vif donnait des visuels entièrement chauds où le bleu perdait son rôle de contraste. Le second rôle revient donc au blanc et au gris, et l'orange clair à la touche ponctuelle. Il reste officiel: c'est son emphase qui tombe, pas son emploi.
+
+Le bloc à insérer est celui-ci, et lui seul (ce qui précède l'explique, ne le recopie pas dans le prompt):
+```
+Style propre, moderne et professionnel, fond blanc. Palette: orange #FE5100 et bleu #000F9F en dominantes, blanc et gris pour les respirations et les aplats secondaires, orange clair #FFB600 en touche ponctuelle seulement, jamais en aplat large ni en second rôle, accents multiculturels discrets (rouge, vert, jaune, bleu) reprenant subtilement un motif de couleurs de logo. Superpositions graphiques épurées: motifs géométriques abstraits, quartiers de cercle, lignes claires. Composition aérée, jamais surchargée. Typographie sans serif, propre et corporate.
+```
 
 ## Faire évoluer une pastille (doctrine commune: retoucher, réagencer, reprendre ou régénérer)
 Une pastille se retouche bien plus souvent qu'elle ne se crée: un mot qui gêne, un paragraphe trop dense, un titre à resserrer, une puce qui déborde. C'est une opération ordinaire. Deux questions la cadrent, dans cet ordre: l'ampleur de ce qui est demandé (retouche, réagencement, reprise d'un morceau ou régénération complète), puis, dès lors que le texte existant est conservé, le contexte dont on dispose.
