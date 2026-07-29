@@ -315,6 +315,40 @@ def document_html(c, corps):
     )
 
 
+def fr_texte(texte):
+    """Typographie française en caractères réels, pas en entités: pour tout ce
+    qui n'est pas du HTML de courriel (version texte, Markdown)."""
+    return _html.unescape(fr(texte))
+
+
+def markdown_pastille(c, nom_image_titre, nom_image_schema):
+    """Version Markdown du même contenu, pour archivage et import Notion.
+
+    Les images sont référencées par leur nom de fichier, sans chemin: le .md et
+    les deux PNG vivent dans le même dossier, et c'est ce dossier (zippé) que
+    Notion sait importer en retrouvant ses images. Les emphases restent en
+    Markdown (**gras**, *italique*), telles qu'elles arrivent dans la fiche.
+    """
+    md = [f'# {fr_texte(c["titre"])}', "",
+          f'*Pastille IA {c["numero"]} / {c["total"]} . {c["rubrique"]} . '
+          f'{c["temps_lecture"]} de lecture*', "",
+          f'![{fr_texte(sans_balises(c["titre"]))}]({nom_image_titre})', "",
+          "> **L’essentiel**"]
+    md += [f'> - {fr_texte(p)}' for p in c["essentiel"]]
+    apres = c.get("schema_apres", len(c["paragraphes"]) - 1)
+    for i, para_texte in enumerate(c["paragraphes"], start=1):
+        md += ["", fr_texte(para_texte)]
+        if i == apres:
+            md += ["", f'![{fr_texte(c["alt_schema"])}]({nom_image_schema})', "",
+                   f'*{fr_texte(c["legende_schema"])}*']
+    if c.get("annexe"):
+        md += ["", f'> **{fr_texte(c["annexe"]["etiquette"])}**',
+               f'> {fr_texte(c["annexe"]["texte"])}']
+    md += ["", "---", "", f'*{fr_texte(c["mention_ia"])}*', "",
+           fr_texte(c["signature"]), ""]
+    return "\n".join(md)
+
+
 def texte_pastille(c):
     """Version texte du même contenu, pour les clients sans HTML."""
     lignes = [f'PASTILLE IA {c["numero"]} / {c["total"]}  .  {c["rubrique"].upper()}'

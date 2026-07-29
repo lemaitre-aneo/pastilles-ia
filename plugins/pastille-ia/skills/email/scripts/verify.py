@@ -2,12 +2,14 @@
 """Contrôle un .msg fabriqué: structure, propriétés, pièces jointes, typographie.
 
     python3 verify.py pastille-13.msg [image-titre.png image-schema.png]
+                      [--html courriel.html] [--markdown pastille.md]
 
 Un parseur indépendant (olefile) rouvre le fichier: c'est le seul moyen de
 vérifier le conteneur sans Outlook. Le rendu visuel, lui, se contrôle avec
-l'aperçu HTML et un navigateur.
+le HTML autonome et un navigateur.
 """
 import hashlib
+import os
 import re
 import struct
 import sys
@@ -31,11 +33,60 @@ def proprietes(ole, chemin, taille_entete):
     return table
 
 
+def controler_artefacts(html_archive, markdown, problemes):
+    """Les artefacts conservés ne passent pas par Outlook, mais ils ont leurs
+    propres règles: le HTML doit se suffire à lui-même (sinon il n'est pas
+    archivable) et le Markdown doit trouver ses images à côté de lui (sinon
+    l'import Notion arrive sans visuels)."""
+    if html_archive:
+        print("\nHTML d'archive")
+        corps = open(html_archive, encoding="utf-8").read()
+        incorporees = corps.count('src="data:image/png;base64,')
+        residus = corps.count("cid:")
+        print("  images incorporées         :", incorporees)
+        print("  références cid: restantes  :", residus)
+        if incorporees != 2:
+            problemes.append(f"{html_archive}: {incorporees} image(s) incorporée(s) "
+                             "au lieu de 2, le fichier n'est pas autonome")
+        if residus:
+            problemes.append(f"{html_archive}: {residus} référence(s) cid: restantes, "
+                             "elles ne s'affichent que dans un client de messagerie")
+
+    if markdown:
+        print("\nMarkdown d'archive")
+        corps = open(markdown, encoding="utf-8").read()
+        voisin = os.path.dirname(os.path.abspath(markdown))
+        cites = re.findall(r"!\[[^\]]*\]\(([^)]+)\)", corps)
+        print("  images citées              :", ", ".join(cites) or "aucune")
+        if len(cites) != 2:
+            problemes.append(f"{markdown}: {len(cites)} image(s) citée(s) au lieu de 2")
+        for nom in cites:
+            if os.path.dirname(nom):
+                problemes.append(f"{markdown}: {nom} porte un chemin; Notion importe "
+                                 "les images voisines, pas celles d'un autre dossier")
+            elif not os.path.exists(os.path.join(voisin, nom)):
+                problemes.append(f"{markdown}: {nom} est cité mais absent du dossier")
+
+
 def main():
-    if len(sys.argv) < 2:
-        raise SystemExit("usage: verify.py fichier.msg [sources d'images...]")
-    chemin = sys.argv[1]
-    sources = sys.argv[2:]
+    argv = sys.argv[1:]
+    html_archive = markdown = None
+    for drapeau in ("--html", "--markdown"):
+        if drapeau in argv:
+            i = argv.index(drapeau)
+            valeur = argv[i + 1] if i + 1 < len(argv) else None
+            if not valeur:
+                raise SystemExit(f"{drapeau} attend un chemin")
+            if drapeau == "--html":
+                html_archive = valeur
+            else:
+                markdown = valeur
+            del argv[i:i + 2]
+    if not argv:
+        raise SystemExit("usage: verify.py fichier.msg [sources d'images...] "
+                         "[--html courriel.html] [--markdown pastille.md]")
+    chemin = argv[0]
+    sources = argv[1:]
     if not olefile.isOleFile(chemin):
         raise SystemExit("ce fichier n'est pas un conteneur OLE valide")
     ole = olefile.OleFileIO(chemin)
@@ -122,6 +173,8 @@ def main():
         if drapeaux != 4:
             problemes.append(f"{nom}: AttachFlags devrait valoir 4 (ATT_MHTML_REF)")
     ole.close()
+
+    controler_artefacts(html_archive, markdown, problemes)
 
     print()
     if problemes:

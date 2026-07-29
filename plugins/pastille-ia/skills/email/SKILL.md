@@ -1,11 +1,13 @@
 ---
-description: Fabrique le courriel de diffusion d'une pastille LLM déjà rédigée et déjà illustrée: un fichier .msg Outlook, prêt à compléter et à envoyer, contenant le corps HTML au gabarit de la série et les deux visuels en pièces jointes affichées dans le corps. Utilise ce skill dès qu'on te demande de générer, produire, fabriquer ou mettre en forme le mail, l'email, le courriel, le .msg ou la version diffusable d'une pastille, typiquement juste après avoir collé dans la conversation l'illustration-titre et le schéma générés par Gemini. Utilise-le aussi pour régénérer un courriel après une retouche du texte. Pour écrire la pastille elle-même, utilise generate; pour retoucher son texte, applique la retouche directement quand son contexte est dans la conversation, et n'appelle refine que si elle a été recollée sans son contexte de production.
+description: Fabrique le courriel de diffusion d'une pastille LLM déjà rédigée et déjà illustrée: un fichier .msg Outlook, prêt à compléter et à envoyer, contenant le corps HTML au gabarit de la série et les deux visuels en pièces jointes affichées dans le corps. Utilise ce skill dès qu'on te demande de générer, produire, fabriquer ou mettre en forme le mail, l'email, le courriel, le .msg ou la version diffusable d'une pastille, typiquement juste après avoir collé dans la conversation l'illustration-titre et le schéma générés par Gemini. Produit dans la même passe deux artefacts conservables: un HTML autonome (visuels incorporés) et un Markdown importable dans Notion. Utilise-le aussi pour régénérer un courriel après une retouche du texte. Pour écrire la pastille elle-même, utilise generate; pour retoucher son texte, applique la retouche directement quand son contexte est dans la conversation, et n'appelle refine que si elle a été recollée sans son contexte de production.
 ---
 
 # Fabrique du courriel d'une pastille (.msg Outlook)
 
 ## Ce que fait ce skill
-Prend une pastille dont le texte est validé et dont les deux visuels ont été générés, puis produit un `.msg` unique: brouillon non envoyé, sujet au format de la série, corps HTML au gabarit, illustration-titre et schéma attachés et affichés dans le corps par référence `cid:`. Le fichier s'ouvre dans Outlook, il ne reste qu'à renseigner les destinataires et à envoyer.
+Prend une pastille dont le texte est validé et dont les deux visuels ont été générés, puis produit un `.msg`: brouillon non envoyé, sujet au format de la série, corps HTML au gabarit, illustration-titre et schéma attachés et affichés dans le corps par référence `cid:`. Le fichier s'ouvre dans Outlook, il ne reste qu'à renseigner les destinataires et à envoyer.
+
+La même passe écrit deux artefacts destinés à rester: `courriel.html`, autonome parce que ses visuels y sont incorporés, et `pastille.md`, pour archiver ailleurs et importer dans Notion. Voir « Les trois artefacts ».
 
 Frontière avec les autres skills: `generate` écrit la pastille et produit le prompt d'images, `refine` réhydrate une pastille recollée sans son contexte avant de la retoucher, `review` la juge sans y toucher, et ce skill ne s'occupe que de la mise en courriel. Il ne réécrit jamais le texte: si une correction rédactionnelle apparaît en route, signale-la et propose de la traiter, ne la décide pas ici. Si l'utilisateur accepte, applique-la directement quand le dossier de la pastille est dans la conversation (voir la spec partagée, section « Faire évoluer une pastille »); `refine` ne sert que si le texte a été recollé sans son contexte. Si la correction est structurelle (changement d'axe, restructuration), c'est `generate` qui régénère, et les deux visuels sont alors à refaire dans Gemini avant de revenir ici. Dans tous les cas, le texte corrigé oblige à refabriquer le `.msg`, et à vérifier que les visuels n'ont pas été périmés par la correction.
 
@@ -68,28 +70,50 @@ Points de vigilance: `numero` est le numéro de diffusion donné par l'utilisate
 
 ### 4. Construire et contrôler
 ```
-python3 ${CLAUDE_SKILL_DIR}/scripts/build.py fiche.json --msg pastille-NN.msg --apercu apercu.html
-python3 ${CLAUDE_SKILL_DIR}/scripts/verify.py pastille-NN.msg pastille-NN-illustration-titre.png pastille-NN-schema.png
+python3 ${CLAUDE_SKILL_DIR}/scripts/build.py fiche.json --msg pastille-NN.msg \
+    --html courriel.html --markdown pastille.md
+python3 ${CLAUDE_SKILL_DIR}/scripts/verify.py pastille-NN.msg \
+    pastille-NN-illustration-titre.png pastille-NN-schema.png \
+    --html courriel.html --markdown pastille.md
 ```
 
-`build.py` écrit à côté de la fiche les deux PNG qu'il attache réellement, `pastille-NN-illustration-titre.png` et `pastille-NN-schema.png`. Ce sont eux qu'il faut passer à `verify.py`, et non les images d'origine: celles-ci ont pu être converties depuis le webp, aplaties ou rognées, auquel cas elles ne correspondent plus. Ce sont eux, aussi, que l'aperçu affiche.
+Une même passe produit donc trois artefacts, tous depuis la même fiche et le même code de rendu: le `.msg` pour diffuser, le HTML pour conserver et relire, le Markdown pour archiver ailleurs et importer dans Notion. Voir « Les trois artefacts » plus bas pour ce que chacun garantit.
+
+`build.py` écrit à côté de la fiche les deux PNG qu'il attache réellement, `pastille-NN-illustration-titre.png` et `pastille-NN-schema.png`. Ce sont eux qu'il faut passer à `verify.py`, et non les images d'origine: celles-ci ont pu être converties depuis le webp, aplaties ou rognées, auquel cas elles ne correspondent plus. Ce sont eux, aussi, qu'on retrouve dans le HTML (incorporés) et à côté du Markdown (référencés par leur nom).
 
 Un mot sur le rognage, actif par défaut. Un schéma sorti de Gemini arrive souvent avec de larges bandes de fond en haut et en bas, et la tentation est de le rogner dans Outlook: ne le fais pas et ne le propose pas, car le rognage y réécrit les dimensions de l'image en dur, emporte le `max-width` et donne au bloc une largeur minimale qu'il ne sait plus réduire. Le script mesure donc les bandes de fond quasi blanc, garde 16 pixels de respiration et rogne avant de construire, en annonçant ce qu'il a retiré. Il s'abstient dans deux cas, en le disant: une image entièrement blanche, et un rognage qui emporterait plus de 60% de la surface, signe d'une détection douteuse plutôt que d'une vraie marge. Le drapeau `--sans-rognage` conserve les bandes et se contente de signaler celles qu'il a vues. Une illustration-titre pleine page n'est jamais concernée, faute de marge à retirer.
 
-`verify.py` rouvre le fichier avec un parseur indépendant et sort en erreur si une contrainte est violée: conteneur invalide, propriété manquante, pièce jointe qui ne correspond pas à sa source, `cid` non référencé, police entre apostrophes, couleur portée par une cellule, apostrophe droite restante. Ne livre pas un fichier dont la vérification échoue.
+`verify.py` rouvre le fichier avec un parseur indépendant et sort en erreur si une contrainte est violée: conteneur invalide, propriété manquante, pièce jointe qui ne correspond pas à sa source, `cid` non référencé, police entre apostrophes, couleur portée par une cellule, apostrophe droite restante. Avec `--html` et `--markdown`, il contrôle en plus les deux artefacts conservés: le HTML doit avoir ses deux images incorporées et plus aucune référence `cid:` (sans quoi il n'est pas autonome et ne s'affichera plus une fois déplacé), le Markdown doit citer deux images, sans chemin, effectivement présentes à côté de lui. Ne livre rien dont la vérification échoue.
 
-Contrôle ensuite le rendu visuel de l'aperçu, à deux largeurs, en dessous et au dessus du plafond:
+Contrôle ensuite le rendu visuel du HTML, à deux largeurs, en dessous et au dessus du plafond:
 
 ```
 /opt/pw-browsers/chromium-1194/chrome-linux/chrome --headless --disable-gpu --no-sandbox \
   --hide-scrollbars --window-size=520,2400 --virtual-time-budget=3000 \
-  --screenshot=apercu-520.png --default-background-color=FFFFFFFF file://$PWD/apercu.html
+  --screenshot=apercu-520.png --default-background-color=FFFFFFFF file://$PWD/courriel.html
 ```
 
 Regarde les captures avant de livrer. Le chemin de Chromium peut différer, adapte-le; s'il n'y a pas de navigateur, dis-le à l'utilisateur plutôt que d'annoncer un contrôle que tu n'as pas fait.
 
 ### 5. Livrer
-Livre le `.msg` en fichier joint. Dis en une ligne ce que contient le courriel (brouillon non envoyé, sans destinataire, sujet exact) et rappelle la seule limite réelle: il n'y a pas d'Outlook dans l'environnement, donc la validation finale du rendu appartient à l'utilisateur. Ne prétends jamais avoir vérifié dans Outlook.
+Livre le `.msg` en fichier joint. Dis en une ligne ce que contient le courriel (brouillon non envoyé, sans destinataire, sujet exact), puis indique où sont les deux artefacts conservés et à quoi ils servent. Rappelle la seule limite réelle: il n'y a pas d'Outlook dans l'environnement, donc la validation finale du rendu appartient à l'utilisateur. Ne prétends jamais avoir vérifié dans Outlook.
+
+## Les trois artefacts
+Un seul rendu, trois sorties, pour trois usages qui n'ont pas les mêmes contraintes. Elles viennent du même code: si le rendu change, les trois changent ensemble, sans risque de version divergente.
+
+- **`pastille-NN.msg`**, pour diffuser. Brouillon Outlook, images en pièces jointes référencées par `cid:`, corps optimisé pour le moteur de rendu de Word. C'est le seul artefact destiné à être envoyé.
+- **`courriel.html`**, pour conserver et relire. Même corps, mais les deux visuels sont incorporés en base64 plutôt que référencés: le fichier se suffit à lui-même. Un HTML qui pointe vers des PNG voisins est un aperçu, pas un artefact conservable, car il cesse d'afficher ses images dès qu'on le déplace ou qu'on le transmet seul. Celui-ci s'ouvre dans n'importe quel navigateur, des années plus tard, et sert aussi de source aux captures de contrôle.
+- **`pastille.md`**, pour archiver ailleurs et importer dans Notion. Même contenu en Markdown, emphases conservées, typographie française appliquée, images citées par leur nom de fichier sans chemin. Le `.md` et les deux PNG vivent dans le même dossier, et c'est ce dossier qu'on zippe pour l'import.
+
+### Pourquoi le Markdown pour Notion, et pas le HTML
+Notion importe bien les fichiers `.html`, mais sa documentation prévient que les mises en page complexes et les tables complexes sont aplaties ou demandent une reprise, et que les images ne suivent que si elles sont présentes et accessibles pendant l'import. Or le corps du courriel est exactement ce cas limite: tables imbriquées, styles en ligne, balises `<font>`, contraintes imposées par Word. Importé tel quel, il arrive délavé et bancal, et les images incorporées en `data:` ne sont pas garanties.
+
+Le Markdown est le format que Notion importe le plus proprement (titres, paragraphes, listes, citations, liens), et les images se retrouvent quand elles sont dans le même dossier ou la même archive. Donc pour Notion: zippe le dossier de la pastille (le `.md` et les deux PNG suffisent) et importe le zip. L'encadré « L'essentiel » et le bloc annexe arrivent en citations, ce qui se convertit ensuite en callout Notion en deux clics si l'utilisateur le souhaite.
+
+Ne promets pas un rendu Notion identique au courriel: la mise en forme de diffusion appartient au courriel, Notion garde le contenu et la structure. Si l'utilisateur veut un rendu Notion fidèle au pixel, dis-lui que cela demande de construire la page par blocs via l'API ou un connecteur Notion, ce que ce skill ne fait pas.
+
+### Où écrire ces fichiers
+Un dossier par pastille, pour que le dossier soit l'archive: `sorties/pastille-NN-slug/`, contenant la fiche JSON, les visuels d'origine, les deux PNG produits, le `.msg`, le `courriel.html` et le `pastille.md`. Le dossier `sorties/` n'est pas suivi par git (voir `.gitignore`): ce dépôt porte l'outillage, pas les pastilles diffusées. En session cloud, pense donc à récupérer les fichiers avant la fin de la session, ou dis à l'utilisateur qu'ils disparaitront avec le conteneur.
 
 ## Ce que le courriel garantit, et pourquoi
 Ces choix sont des corrections de défauts constatés dans Outlook, pas des préférences. Ne les défais pas sans raison, et si tu les modifies, reporte-les dans le gabarit partagé.

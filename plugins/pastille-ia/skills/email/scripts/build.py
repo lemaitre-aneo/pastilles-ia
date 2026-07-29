@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """Fabrique le courriel d'une pastille à partir d'une fiche JSON.
 
-    python3 build.py fiche.json --msg pastille-13.msg [--apercu apercu.html]
+    python3 build.py fiche.json --msg pastille-13.msg [--html courriel.html] [--markdown pastille.md]
     python3 build.py --gabarit plugins/pastille-ia/shared/template-pastille.html
 
 Le gabarit de diffusion est produit par le même code que le courriel réel, avec
 un contenu de remplacement: il ne peut donc pas prendre du retard sur lui.
 """
 import argparse
+import base64
 import json
 import os
 import sys
@@ -142,7 +143,7 @@ def preparer_image(chemin, base, rognage=True):
 
     Outlook ne sait pas afficher le webp, et une transparence peut ressortir en
     noir selon le client. Le fichier produit est celui que porte le courriel:
-    c'est donc lui que l'aperçu doit afficher et que la vérification compare."""
+    c'est donc lui que les artefacts affichent et que la vérification compare."""
     etiquette = os.path.basename(chemin)
     try:
         from PIL import Image
@@ -183,7 +184,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("fiche", nargs="?", help="fiche JSON de la pastille")
     ap.add_argument("--msg", help="chemin du .msg à écrire")
-    ap.add_argument("--apercu", help="chemin d'un HTML autonome pour contrôle visuel")
+    ap.add_argument("--html", "--apercu", dest="html",
+                    help="chemin d'un HTML vraiment autonome (images en data:), "
+                         "à archiver et à ouvrir dans un navigateur")
+    ap.add_argument("--markdown", help="chemin d'un Markdown à archiver et à "
+                                       "importer dans Notion (images voisines)")
     ap.add_argument("--gabarit", help="régénère le gabarit de diffusion à ce chemin")
     ap.add_argument("--sans-rognage", action="store_true",
                     help="conserve les bandes de fond des visuels, au lieu de les "
@@ -200,7 +205,8 @@ def main():
         return
 
     if not args.fiche or not args.msg:
-        raise SystemExit("usage: build.py fiche.json --msg sortie.msg [--apercu a.html]")
+        raise SystemExit("usage: build.py fiche.json --msg sortie.msg "
+                         "[--html courriel.html] [--markdown pastille.md]")
 
     fiche = charger(args.fiche)
     dossier = os.path.dirname(os.path.abspath(args.fiche))
@@ -226,13 +232,25 @@ def main():
     print("msg écrit:", args.msg, os.path.getsize(args.msg), "octets")
     print("sujet:", render.sujet(fiche))
 
-    if args.apercu:
-        apercu = corps
+    if args.html:
+        # Les images sont incorporées en base64, pas référencées: un aperçu qui
+        # pointe vers des fichiers voisins cesse d'afficher ses visuels dès
+        # qu'on le déplace, ce qui en fait un contrôle visuel mais pas un
+        # artefact conservable. Ici le fichier se suffit à lui-même.
+        autonome = corps
         for img in images:
-            apercu = apercu.replace(f'cid:{img["cid"]}', img["fichier"])
-        with open(args.apercu, "w", encoding="utf-8") as f:
-            f.write(render.document_html(fiche, apercu))
-        print("aperçu écrit:", args.apercu)
+            donnees = base64.b64encode(img["donnees"]).decode("ascii")
+            autonome = autonome.replace(f'cid:{img["cid"]}',
+                                        f'data:{img["type_mime"]};base64,{donnees}')
+        with open(args.html, "w", encoding="utf-8") as f:
+            f.write(render.document_html(fiche, autonome))
+        print("html écrit:", args.html, os.path.getsize(args.html), "octets")
+
+    if args.markdown:
+        noms = [os.path.basename(img["fichier"]) for img in images]
+        with open(args.markdown, "w", encoding="utf-8") as f:
+            f.write(render.markdown_pastille(fiche, noms[0], noms[1]))
+        print("markdown écrit:", args.markdown, "(images voisines:", ", ".join(noms) + ")")
 
 
 if __name__ == "__main__":

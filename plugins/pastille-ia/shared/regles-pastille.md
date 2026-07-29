@@ -294,7 +294,7 @@ Ne déclenche pas de revue d'office sur une retouche: elle coûte trois sous-age
 - Contexte perdu: le livrable complet, tel que le définit le skill `refine`, puisque l'utilisateur n'a rien d'autre sous les yeux.
 
 ## Gabarit de diffusion (mise en forme du courriel)
-La pastille est diffusée par courriel, dans une mise en forme qui fait partie des normes de la série au même titre que le texte et les images. Le skill `email` fabrique ce courriel: un `.msg` Outlook contenant le corps HTML et les deux visuels affichés dans le corps. Le fichier de référence `plugins/pastille-ia/shared/template-pastille.html` est produit par le même code, avec un contenu de remplacement: c'est la version à coller à la main si le `.msg` ne peut pas servir, et elle ne peut pas prendre de retard sur le générateur.
+La pastille est diffusée par courriel, dans une mise en forme qui fait partie des normes de la série au même titre que le texte et les images. Le skill `email` fabrique ce courriel: un `.msg` Outlook contenant le corps HTML et les deux visuels affichés dans le corps. Le même code écrit aussi, dans le dossier de la pastille, un HTML autonome pour l'archivage et un Markdown pour un import ailleurs (Notion): trois sorties, un seul rendu, donc pas de version divergente. Le fichier de référence `plugins/pastille-ia/shared/template-pastille.html` est produit par le même code, avec un contenu de remplacement: c'est la version à coller à la main si le `.msg` ne peut pas servir, et elle ne peut pas prendre de retard sur le générateur.
 
 Ordre des blocs, de haut en bas:
 1. Bandeau de série: numéro de la pastille sur 45, rubrique, temps de lecture. En texte, jamais en image.
