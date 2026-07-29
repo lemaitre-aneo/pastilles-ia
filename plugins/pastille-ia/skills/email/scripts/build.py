@@ -27,14 +27,14 @@ DEFAUTS = {
     "mention_ia": "Cette pastille peut contenir des traces d'IA. En cas de doute, "
                   "demandez à un humain.",
     "signature": "L'Alliance IA",
-    "prefixe_sujet": "[Pastille IA de l'été 2026]",
+    "prefixe_sujet": "[Pastille IA de l'été]",
     "total": 45,
 }
 
 GABARIT = {
     "numero": "NN", "total": 45, "rubrique": "Rubrique", "temps_lecture": "X min",
     "titre": "Titre exact de la pastille",
-    "prefixe_sujet": "[Pastille IA de l'été 2026]",
+    "prefixe_sujet": "[Pastille IA de l'été]",
     "essentiel": ["Puce 1. Une ligne, pas deux.", "Puce 2.",
                   "Puce 3. Trois puces au maximum."],
     "paragraphes": ["Paragraphe 1. 45 à 60 mots, 2 à 3 phrases, **gras** et "
@@ -232,15 +232,21 @@ def main():
     print("msg écrit:", args.msg, os.path.getsize(args.msg), "octets")
     print("sujet:", objet)
 
-    # Un objet entièrement décodable dans un codage sur deux octets sera
-    # affiché de travers: on le signale ici, à la fabrication, plutôt que de
-    # le découvrir dans la boîte de réception. Normalement le préfixe de série
-    # l'empêche, donc l'alerte veut d'abord dire que ce préfixe a changé.
+    # Un objet entièrement décodable dans un codage sur deux octets sera affiché
+    # de travers: on le signale ici, à la fabrication, plutôt que de le découvrir
+    # dans la boîte de réception. C'est au préfixe de série de porter la rupture
+    # qui l'évite, puisqu'il est sur tous les courriels.
     for codage, rendu in render.objet_ambigu(objet)[:1]:
         print(f"  ALERTE objet ambigu ({codage}): Outlook (new) affichera")
         print("   ", rendu)
-        print("    le préfixe de série doit laisser un accent suivi d'un espace "
-              "ou d'une ponctuation")
+        print("    il faut un accent suivi d'un espace ou d'une ponctuation, "
+              "de préférence dans le préfixe")
+    hors = render.hors_cp1252(objet)
+    if hors:
+        print("  ALERTE l'objet porte",
+              ", ".join(f"U+{ord(c):04X}" for c in hors),
+              "hors cp1252: un client qui rabat l'objet en octets les remplacera "
+              "par des « ? » visibles")
 
     # Les deux fichiers portent le même nom, à l'extension près: l'accroche les
     # rend reconnaissables dans un dossier, et côté HTML c'est le nom du fichier

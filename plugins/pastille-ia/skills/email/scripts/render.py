@@ -220,6 +220,24 @@ def sujet(c):
 CODAGES_DEUX_OCTETS = ("cp936", "cp932", "cp949", "cp950")
 
 
+def hors_cp1252(sujet):
+    """Caractères de l'objet absents de cp1252, dans leur ordre d'apparition.
+
+    Ils sont un risque à part: là où Outlook (new) rabat l'objet en octets
+    cp1252, un caractère absent de cette table devient un « ? » bien visible.
+    Une espace fine ou insécable Unicode, un tiret cadratin, un emoji tombent
+    dans ce cas.
+    """
+    manquants = []
+    for c in sujet:
+        try:
+            c.encode("cp1252")
+        except UnicodeEncodeError:
+            if c not in manquants:
+                manquants.append(c)
+    return manquants
+
+
 def objet_ambigu(sujet):
     """Rendus erronés possibles de l'objet, chez un client qui rabat l'objet
     Unicode en octets 8 bits avant de le relire.
@@ -232,19 +250,15 @@ def objet_ambigu(sujet):
     contrôle: un objet qui se décode de bout en bout dans un de ces codages
     sera affiché de travers, un objet qui les fait échouer est sain.
 
-    C'est le préfixe de série qui porte cette immunité pour toute la série,
-    l'année qu'il contient plaçant une espace après un accent. Le contrôle
-    reste utile pour le jour où ce préfixe change.
+    Les caractères hors cp1252 sont remplacés par « ? » comme le ferait le
+    client, plutôt qu'ignorés: c'est ce « ? » qui casse alors le décodage sur
+    deux octets, et il faut le voir venir. Utiliser hors_cp1252 en plus, pour
+    ne pas guérir un objet illisible par un objet ponctué de « ? ».
 
     Rend la liste des (codage, rendu erroné). Vide quand l'objet ne risque
     rien, ce qui est notamment le cas dès qu'il est en ASCII pur.
     """
-    try:
-        octets = sujet.encode("cp1252")
-    except UnicodeEncodeError:
-        # Pas de repli 8 bits possible en cp1252: le client prendra un autre
-        # chemin (utf-8 déclaré, ou substitution), hors du champ de ce contrôle.
-        return []
+    octets = sujet.encode("cp1252", errors="replace")
     ambigus = []
     for codage in CODAGES_DEUX_OCTETS:
         try:

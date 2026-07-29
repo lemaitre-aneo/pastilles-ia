@@ -54,7 +54,7 @@ Une fiche décrit la pastille, le script fait le reste. Les emphases s'écrivent
   "total": 45,
   "position_liste": 5,
   "titre": "Titre exact retenu, celui rendu dans l'illustration",
-  "prefixe_sujet": "[Pastille IA de l'été 2026]",
+  "prefixe_sujet": "[Pastille IA de l'été]",
   "essentiel": ["Puce 1.", "Puce 2.", "Puce 3."],
   "paragraphes": ["Paragraphe 1", "Paragraphe 2", "Paragraphe 3", "Paragraphe 4"],
   "schema_apres": 3,
@@ -86,7 +86,7 @@ Un mot sur le rognage, actif par défaut. Un schéma sorti de Gemini arrive souv
 
 `verify.py` rouvre le fichier avec un parseur indépendant et sort en erreur si une contrainte est violée: conteneur invalide, propriété manquante, pièce jointe qui ne correspond pas à sa source, `cid` non référencé, police entre apostrophes, couleur portée par une cellule, apostrophe droite restante, sujet ambigu au codage. Avec `--html`, il contrôle en plus l'artefact conservé: ses deux images doivent être incorporées et plus aucune référence `cid:` ne doit rester, sans quoi le fichier ne se suffit pas à lui-même et n'affichera plus ses visuels une fois déplacé; et il ne doit porter qu'une table, celle du bandeau, sans imbrication, faute de quoi il redevient de la mise en page en tables, ce qu'un importeur aplatit mal. Ne livre rien dont la vérification échoue.
 
-Le sujet ambigu mérite un mot, car c'est le seul contrôle dont le correctif est éditorial. Le sujet est le seul texte accentué du courriel, et Outlook (new) le rabat en octets cp1252 avant de le relire dans un codage sur deux octets: un sujet qui s'y décode entièrement s'affiche `[Pastille IA de l掗t閉 #7 : ...`, un sujet qui fait échouer ce décodage est intégralement sauvé par le repli. L'immunité est portée par le préfixe de série, dont l'année place une espace après un accent: c'est pour cela que le préfixe par défaut est `[Pastille IA de l'été 2026]` et non `[Pastille IA de l'été]`, et cela protège n'importe quel titre. Si l'alerte tombe quand même, c'est que le préfixe a changé: rétablis un préfixe sain plutôt que de toucher au titre. Et si le préfixe est sain et l'alerte persiste, propose deux ou trois reformulations du titre à l'utilisateur en expliquant la contrainte en une phrase; ne réécris pas son titre de ton propre chef, et ne lui retire jamais ses accents en silence.
+Le sujet ambigu mérite un mot, car c'est le seul contrôle dont le correctif est éditorial. Le sujet est le seul texte accentué du courriel, et Outlook (new) le rabat en octets cp1252 avant de le relire dans un codage sur deux octets: un sujet qui s'y décode entièrement s'affiche `[Pastille IA de l掗t閉 #7 : ...`, un sujet qui fait échouer ce décodage est intégralement sauvé par le repli. Il suffit d'un accent suivi d'un espace ou d'une ponctuation, et c'est le préfixe de série qui devrait le porter, puisqu'il est sur tous les courriels (voir « Gabarit de diffusion »). Quand l'alerte tombe, dis-le à l'utilisateur avec le rendu erroné sous les yeux et laisse-le trancher entre corriger le préfixe une fois pour toutes et reformuler ce titre-ci; ne réécris pas son titre de ton propre chef, et ne lui retire jamais ses accents en silence.
 
 Contrôle ensuite le rendu visuel du HTML, à deux largeurs, en dessous et au dessus du plafond:
 

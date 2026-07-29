@@ -168,9 +168,14 @@ def main():
     if ambigus:
         codage, rendu = ambigus[0]
         problemes.append(f"objet entièrement décodable en {codage}: Outlook (new) "
-                         f"affichera « {rendu} »; le préfixe de série doit laisser "
-                         "un accent suivi d'un espace ou d'une ponctuation, "
-                         "ce que fait son année")
+                         f"affichera « {rendu} »; il faut un accent suivi d'un "
+                         "espace ou d'une ponctuation, à porter de préférence par "
+                         "le préfixe de série, qui vaut pour tous les courriels")
+    hors = render.hors_cp1252(sujet)
+    if hors:
+        problemes.append("l'objet porte " + ", ".join(f"U+{ord(c):04X}" for c in hors)
+                         + ", absents de cp1252: un client qui rabat l'objet en "
+                         "octets les remplacera par des « ? » visibles")
 
     print("\npièces jointes")
     empreintes = {hashlib.sha256(open(s, "rb").read()).hexdigest(): s for s in sources}
