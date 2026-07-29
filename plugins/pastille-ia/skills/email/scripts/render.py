@@ -217,7 +217,7 @@ def sujet(c):
     sujet: son octet 0xA0 suivi du 0x23 du dièse fait échouer le décodage sur
     deux octets, et le sujet entier retombe alors sur cp1252 (voir
     objet_ambigu). Elle est invisible, elle ne touche ni le préfixe ni le
-    titre, et personne ne cherche « ] # » dans sa boite.
+    titre, et personne ne cherche « ] # » dans sa boîte.
     """
     def ordinaire(texte):
         return sans_balises(texte).replace("\u00a0", " ")
@@ -241,8 +241,15 @@ def hors_cp1252(sujet):
 
     Ils sont un risque à part: là où Outlook (new) rabat l'objet en octets
     cp1252, un caractère absent de cette table devient un « ? » bien visible.
-    Une espace fine ou insécable Unicode, un tiret cadratin, un emoji tombent
-    dans ce cas.
+    Une espace fine, une espace de largeur nulle, un emoji, un accent décomposé
+    (`e` suivi d'un diacritique combinant) tombent dans ce cas.
+
+    Ce que cp1252 contient, en revanche, et qui ne déclenche donc rien ici: tous
+    les caractères du français, accents, cédille, e-dans-l'o (0x9C), guillemets
+    français, apostrophe typographique. L'insécable (0xA0) y est aussi, et c'est
+    précisément ce qui permet à `sujet` de s'en servir comme rupture. Le tiret
+    cadratin (0x97) y figure également: s'il est refusé, c'est par choix
+    éditorial de la série, pas parce qu'il ne passerait pas.
     """
     manquants = []
     for c in sujet:
@@ -463,6 +470,12 @@ def limace(titre, numero=None):
     accroche = _re.split(r"\s*[:?]\s*", texte, maxsplit=1)[0]
     if len(accroche.split()) >= 2:
         texte = accroche
+    # L'e-dans-l'o et l'e-dans-l'a n'ont aucune décomposition Unicode: le pli en
+    # ASCII les supprimerait purement et simplement, et « cœur » donnerait
+    # « cur ». Or le français les exige (voir la spec, « Caractères »), donc un
+    # titre peut légitimement en porter: on les délie à la main.
+    texte = texte.translate(str.maketrans({"œ": "oe", "Œ": "OE",
+                                           "æ": "ae", "Æ": "AE"}))
     base = _unicodedata.normalize("NFKD", texte)
     base = base.encode("ascii", "ignore").decode("ascii").lower()
     # Séparateur: l'espace. Les tirets ne survivent pas à toutes les chaînes de

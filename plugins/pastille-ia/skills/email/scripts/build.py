@@ -13,6 +13,7 @@ import base64
 import json
 import os
 import sys
+import unicodedata
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -57,6 +58,33 @@ GABARIT = {
 }
 
 
+# Caractères que la spec refuse dans le texte d'une pastille (section
+# « Caractères »): typographie importée, ou invisible et donc invérifiable à
+# l'œil. Les accents, la cédille et l'e-dans-l'o n'y sont pas et n'y seront
+# jamais: ce sont ceux que le français exige, les signaler reviendrait à
+# signaler du français correct.
+REFUSES = {"—": "un tiret cadratin, à remplacer par une virgule, un deux-points "
+                     "ou une parenthèse",
+           "–": "un demi-cadratin, même remplacement",
+           " ": "une espace fine", " ": "une espace fine insécable",
+           "​": "une espace de largeur nulle", "­": "un trait conditionnel"}
+
+
+def caracteres_refuses(fiche):
+    """Les caractères refusés présents dans le texte, avec leur libellé."""
+    morceaux = ([fiche["titre"], fiche["legende_schema"], fiche["alt_schema"]]
+                + list(fiche["essentiel"]) + list(fiche["paragraphes"])
+                + ([fiche["annexe"]["texte"]] if fiche.get("annexe") else []))
+    texte = " ".join(morceaux)
+    trouves = {nom for c, nom in REFUSES.items() if c in texte}
+    # Un accent décomposé se lit comme son équivalent composé mais sort de
+    # cp1252, donc devient un « ? » visible dans le sujet du courriel.
+    if any(unicodedata.combining(c) for c in texte):
+        trouves.add("un accent décomposé (un e suivi d'un diacritique "
+                    "combinant, au lieu d'un é)")
+    return sorted(trouves)
+
+
 def charger(chemin):
     with open(chemin, encoding="utf-8") as f:
         fiche = json.load(f)
@@ -79,6 +107,8 @@ def charger(chemin):
     # dessiné, pour qui ne voit pas l'image, la légende dit ce qu'il faut en
     # retenir. Recopier l'une dans l'autre prive le lecteur d'écran du contenu du
     # schéma, le seul visuel de la pastille qui porte de l'information.
+    for refuse in caracteres_refuses(fiche):
+        print("attention: le texte porte", refuse)
     if fiche["alt_schema"].strip() == fiche["legende_schema"].strip():
         print("attention: alt_schema reprend la légende mot pour mot; l'alt doit "
               "dire ce que le schéma montre, sa structure et ses libellés, là où la "

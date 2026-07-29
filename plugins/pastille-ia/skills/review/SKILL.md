@@ -12,7 +12,7 @@ Deux façons d'arriver ici, et la sortie n'est pas la même:
 - **Invoqué par `generate` ou `refine`**, au moment de leur revue, ou depuis une retouche menée dans le fil: le livrable est la liste consolidée des constats, rendue au processus appelant, qui applique et réécrit. N'affiche pas le rapport comme un livrable, et ne réécris pas: ce n'est pas ton rôle dans ce mode.
 
 ## Spec partagée (à lire en premier)
-Les normes de la série vivent dans un fichier partagé, source unique commune aux quatre skills. La section « Boite à outils de revue » porte le principe des constats, ce que la revue peut juger, les trois grilles, les règles d'arbitrage et le gabarit de relecteur. Applique-les tels quels, ne les réinvente pas ici.
+Les normes de la série vivent dans un fichier partagé, source unique commune aux quatre skills. La section « Boîte à outils de revue » porte le principe des constats, ce que la revue peut juger, les trois grilles, les règles d'arbitrage et le gabarit de relecteur. Applique-les tels quels, ne les réinvente pas ici.
 
 `${CLAUDE_SKILL_DIR}/references/regles-pastille.md`
 

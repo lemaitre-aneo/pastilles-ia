@@ -2,7 +2,7 @@
 
 Ce fichier est la source unique des normes de la série. Les skills `generate` (création), `refine` (reprise d'une pastille venue d'ailleurs), `review` (revue critique) et `email` (mise en courriel) le lisent tous les quatre via `${CLAUDE_SKILL_DIR}/references/regles-pastille.md`. Ne duplique pas ces règles dans un SKILL.md: modifie-les ici.
 
-Il contient: la liste des 45 pastilles et les consignes de périmètre, le vocabulaire de l'axe et de l'angle avec la bibliothèque d'angles et la règle de composition, les Règles du texte, les Règles du titre, les Règles d'écriture pour la pastille finale, la spec du prompt de génération d'images (avec la bibliothèque de formes de schéma, l'aperçu des visuels et les gabarits), la charte graphique, la doctrine d'évolution d'une pastille (retoucher, réagencer ou régénérer, et avec quel contexte), le gabarit de diffusion, et la boite à outils de revue (grilles + gabarit de relecteur).
+Il contient: la liste des 45 pastilles et les consignes de périmètre, le vocabulaire de l'axe et de l'angle avec la bibliothèque d'angles et la règle de composition, les Règles du texte, les Règles du titre, les Règles d'écriture pour la pastille finale, la spec du prompt de génération d'images (avec la bibliothèque de formes de schéma, l'aperçu des visuels et les gabarits), la charte graphique, la doctrine d'évolution d'une pastille (retoucher, réagencer ou régénérer, et avec quel contexte), le gabarit de diffusion, et la boîte à outils de revue (grilles + gabarit de relecteur).
 
 ## Liste des 45 pastilles (pour la continuité)
 1. Au fait, c'est quoi un LLM ?
@@ -56,7 +56,7 @@ Cette liste est un inventaire de sujets, pas un ordre de diffusion. Ses position
 Sers-toi de cette liste pour situer la pastille et délimiter son périmètre. Avant de rédiger:
 - Repère les 1 à 3 pastilles voisines qui recouvrent le sujet, et dresse une courte liste "déjà traité ailleurs, à ne pas ré-expliquer".
 - Si une pastille voisine a déjà été produite, demande son texte à l'utilisateur (ou appuie-toi dessus s'il est fourni) pour caler précisément la limite.
-- Les concepts fondateurs déjà couverts ne sont rappelés qu'en une phrase de mise en contexte, jamais ré-expliqués. Le coeur de la pastille est consacré à ce que son titre ajoute de neuf.
+- Les concepts fondateurs déjà couverts ne sont rappelés qu'en une phrase de mise en contexte, jamais ré-expliqués. Le cœur de la pastille est consacré à ce que son titre ajoute de neuf.
 - Ne renvoie pas vers les autres pastilles dans le texte final, sauf si le titre l'impose.
 
 Le libellé du titre peut évoluer (voir Règles du titre), mais le périmètre reste ancré sur le titre canonique: c'est lui, et non le libellé retenu, qui définit ce qui relève du sujet et ce qui est laissé aux voisines.
@@ -84,7 +84,7 @@ Bibliothèque, pour les slots libres (et pour remplir l'ancrage):
 - **Avant/après**: la même tâche sans puis avec, pour rendre l'écart tangible.
 - **Ordre de grandeur**: partir d'un chiffre frappant et le rendre parlant. Exige un brief solide, sinon c'est l'angle qui invente.
 - **Frontière**: ce que le sujet ne fait pas, ne couvre pas, ne remplace pas. Précieux quand le voisinage dans les 45 est chargé.
-- **Filiation**: d'où ça vient, ce que ça remplace, pourquoi cela apparait maintenant.
+- **Filiation**: d'où ça vient, ce que ça remplace, pourquoi cela apparaît maintenant.
 - **Scène**: un court échange, un dialogue, un moment de bureau.
 - **Garde-fou**: le risque, puis la parade, dans cet ordre.
 - **Progression**: partir de ce que le lecteur sait déjà et avancer d'un cran à la fois jusqu'au concept. L'angle de l'ordre d'exposition, là où l'analogie substitue une image et où la mécanique entre directement dans le fonctionnement.
@@ -106,7 +106,7 @@ Six rédacteurs: trois slots de noyau et trois slots libres.
 - **Trois slots libres**, choisis dans la bibliothèque ou inventés, selon l'axe et la rubrique.
 - **Jeu par défaut**, à garder en l'absence de raison de faire autrement: mécanique, enjeu, analogie (ancrage), puis cas d'usage, idée reçue et un troisième angle ajusté à la rubrique. Le socle est éprouvé sur la série; s'en écarter demande une raison, pas une envie.
 - **Contrainte de diversité**, qui est la raison d'être du fan-out: les trois slots libres doivent ouvrir sur des portes réellement différentes. Deux angles qui démarrent sur la même scène ou la même métaphore n'en font qu'un, et on a payé deux fois.
-- **Ne choisis pas les angles d'après ce que tu écrirais toi-même.** C'est le piège du choix libre: six déclinaisons de ton intuition ne valent pas mieux qu'un seul brouillon, et tu perds ce que le fan-out est censé t'apporter. En cas d'hésitation, retiens l'angle qui te parait le moins naturel: c'est précisément celui que tu n'aurais pas écrit seul.
+- **Ne choisis pas les angles d'après ce que tu écrirais toi-même.** C'est le piège du choix libre: six déclinaisons de ton intuition ne valent pas mieux qu'un seul brouillon, et tu perds ce que le fan-out est censé t'apporter. En cas d'hésitation, retiens l'angle qui te paraît le moins naturel: c'est précisément celui que tu n'aurais pas écrit seul.
 - **Annonce les angles retenus en une ligne** dès que tu t'écartes du jeu par défaut, avec la raison en quelques mots. L'utilisateur doit pouvoir dire « non, garde l'analogie » avant que six sous-agents ne partent.
 - **Pondère les angles à la fusion, ne les additionne pas.** Le fan-out produit six brouillons, pas six sixièmes de pastille. Voir « Pondérer les angles à la fusion » ci-dessous.
 - **Garde la trace des angles employés.** Si l'utilisateur demande plus tard un traitement particulier, il faut savoir si cet angle a été couvert: c'est ce qui décide entre reprendre le brouillon correspondant et relancer un fan-out (voir « Faire évoluer une pastille »).
@@ -117,7 +117,7 @@ La fusion n'est pas une moyenne. Tous les angles ne pèsent pas pareil dans une 
 - **Par défaut**, aucun angle ne domine a priori: on retient de chaque brouillon ce que son angle était seul à pouvoir produire, et le texte final trouve sa propre porte d'entrée.
 - **Quand un angle est demandé** par l'utilisateur, ou quand un angle sert manifestement mieux l'axe que les autres, il devient **dominant**: c'est lui qui donne la porte d'entrée, la charpente et le registre du texte. Le premier paragraphe s'ouvre sur son terrain, pas au troisième détour.
 - **Dominant ne veut pas dire exclusif.** Ce n'est pas un copier-coller du brouillon concerné: les autres angles continuent d'alimenter ce qui reste pertinent, un chiffre juste venu de la mécanique, une conclusion mieux tournée venue de l'enjeu, un exemple frappant venu d'ailleurs. On garde ce qui sert le texte et se coule dans le registre dominant; on écarte ce qui tire dans une autre direction.
-- **Les deux dérives, symétriques.** Diluer l'angle demandé jusqu'à ce qu'il ne soit plus qu'une couleur parmi six: l'utilisateur ne reconnait pas ce qu'il a demandé. Ou réduire la fusion au seul brouillon dominant: on jette cinq brouillons payés et la pastille perd en justesse et en relief. Le bon dosage se voit à la lecture: la porte d'entrée est celle demandée, et le corps reste nourri.
+- **Les deux dérives, symétriques.** Diluer l'angle demandé jusqu'à ce qu'il ne soit plus qu'une couleur parmi six: l'utilisateur ne reconnaît pas ce qu'il a demandé. Ou réduire la fusion au seul brouillon dominant: on jette cinq brouillons payés et la pastille perd en justesse et en relief. Le bon dosage se voit à la lecture: la porte d'entrée est celle demandée, et le corps reste nourri.
 - Le noyau garde son rôle même sous un angle dominant: la mécanique fournit l'exactitude, l'enjeu fournit la clôture obligatoire. Un angle dominant ne dispense ni de l'un ni de l'autre.
 
 Conséquence directe pour le fan-out de `generate`: les six rédacteurs partagent le même axe et se répartissent les angles. Donc:
@@ -129,15 +129,30 @@ Conséquence directe pour le fan-out de `generate`: les six rédacteurs partagen
 - Taille des paragraphes: 45 à 60 mots chacun, 2 à 3 phrases. C'est une contrainte ferme, pas un repère. Au-delà, le paragraphe dépasse quinze lignes sur téléphone et redevient un pavé. Si un paragraphe déborde, coupe-le en deux plutôt que de le comprimer. Le corps explicatif est en prose continue, sans listes ni puces.
 - Ordre des paragraphes: le dernier paragraphe porte l'enjeu, c'est-à-dire ce que le sujet change concrètement pour le lecteur. Il se lit après le schéma et clôt la pastille.
 - Blocs structurés, en complément du corps et jamais à sa place. La pastille porte systématiquement un encadré de synthèse, "L'essentiel", placé en tête: deux à trois puces d'une ligne chacune, ou une phrase unique si le sujet n'a qu'un seul angle. Une puce tient en douze mots ou soixante-dix signes au maximum, ce qui garantit la ligne unique jusqu'à 600 pixels de large; au-delà elle passe sur deux lignes et l'encadré redevient de la prose courte au lieu d'un balayage. Une puce qui déborde porte en général deux idées: coupe-la ou choisis. Elle peut porter en outre un seul bloc annexe au maximum, au choix un encadré actionnable (prompt à copier, méthode courte) ou un encadré de mise en garde. La synthèse porte le quoi, la prose porte le pourquoi et le comment. Test de relecture: si l'encadré peut remplacer l'article, c'est l'article qui est trop mince, pas l'encadré qui est trop bavard.
-- Ton décontracté, précis et léger: accessible, vivant et sans lourdeur, mais techniquement juste. Public visé: une main-d'oeuvre diverse en société de conseil, du profil non technique au développeur.
+- Ton décontracté, précis et léger: accessible, vivant et sans lourdeur, mais techniquement juste. Public visé: une main-d'œuvre diverse en société de conseil, du profil non technique au développeur.
 - Rythme: privilégie des phrases plutôt courtes et directes, mais varie leur longueur et ajoute du liant (connecteurs, deux-points, points-virgules) pour éviter le style haché ou télégraphique. La lecture à voix haute doit rester fluide.
 - Reste léger, évite le name-dropping. N'accumule pas les noms de modèles, d'outils, d'entreprises, de chercheurs ou de techniques pour faire savant: privilégie l'explication claire du mécanisme. Ne cite un nom précis que s'il éclaire vraiment le propos, une ou deux fois au maximum. La recherche sert l'exactitude et alimente la section Sources, elle n'a pas à truffer le texte de références.
 - Contenu autonome: la pastille se comprend seule, sans avoir lu les autres, sauf mention contraire dans le titre.
 - Rédige en français.
 - Ne mentionne jamais ANEO ni aucun nom d'entreprise.
 - Le texte explicatif ne figure jamais dans l'image.
-- N'utilise pas de tiret cadratin. Privilégie des caractères standard (virgules, deux-points, parenthèses).
+- N'utilise pas de tiret cadratin: une virgule, un deux-points ou une parenthèse font le même travail. Voir « Caractères » pour la liste, courte, de ce qui est refusé, et pour ce qui est au contraire indispensable.
 - Typographie française: espace insécable avant `:` `;` `!` `?`, et apostrophe typographique (’) plutôt que droite. Le skill `email` l'applique automatiquement au courriel, corps HTML et version texte; pour un rendu en conversation, applique-la à la main.
+
+### Caractères: ce qui est refusé, ce qui est indispensable
+La règle a longtemps tenu en trois mots, « pas de caractère non standard », ce qui se lisait de travers: un accent n'a rien de non standard, et écrire « coeur » ou « Etat » pour faire prudent serait une faute d'orthographe, pas une précaution.
+
+**Indispensable, jamais concerné par la règle: tout ce que le bon usage du français exige.** Les accents sur les minuscules comme sur les capitales (é, è, ê, à, ù, ô, î, É, À), la cédille (ç, Ç), l'e-dans-l'o (cœur, œil, œuvre, nœud), l'e-dans-l'a (et cætera), les guillemets français (« »), l'apostrophe typographique (’), l'espace insécable posée par le rendu. Le mot juste s'écrit avec ses caractères. La technique ne s'y oppose pas: tous figurent dans cp1252, le codage de repli des clients de messagerie, et le corps du courriel part de toute façon en entités ASCII.
+
+**Refusé, et c'est une courte liste de typographie importée ou invisible:**
+- Le **tiret cadratin** (—) et le demi-cadratin (–), conventions anglo-saxonnes qui n'apportent rien qu'une virgule, un deux-points ou une parenthèse ne fasse mieux en français. C'est un choix éditorial de la série, pas une contrainte technique: ces deux caractères passeraient très bien.
+- Les **espaces exotiques**: fine, fine insécable, largeur nulle, ainsi que toute insécable saisie à la main dans un texte que le rendu typographiera lui-même.
+- Les **emoji** et les symboles décoratifs, qui ne sont pas le registre de la série.
+- Les **accents décomposés**, un `e` suivi d'un diacritique combinant au lieu d'un `é`: identiques à l'œil, mais absents de cp1252, donc rendus par un `?` visible dans un sujet de courriel.
+
+Autrement dit, la question n'est pas « ce caractère est-il exotique ? » mais « le français l'exige-t-il ? ». Si oui, il est requis; si non et qu'il vient d'une autre convention typographique, il est refusé.
+
+Cette liste est contrôlée, et dans ce sens-là seulement: `build.py` signale les caractères refusés qu'il trouve dans une fiche, sans bloquer, et ne dit jamais rien des accents, de la cédille ni de l'e-dans-l'o, qui sont attendus. Le nom de fichier de l'artefact, qui doit rester en ASCII, délie l'e-dans-l'o au passage (`cœur` donne `coeur`) plutôt que de le perdre.
 
 ## Règles du titre
 Le titre est généré comme le reste, mais sous contrainte forte, car il porte trois rôles: identité de la série, ancre de périmètre et texte exact rendu dans l'image.
@@ -146,7 +161,7 @@ Le titre est généré comme le reste, mais sous contrainte forte, car il porte 
 - Style de la série: une accroche courte et imagée, le plus souvent suivie de deux-points puis d'une glose en langage clair, ou une question. Registre décontracté, précis et léger, comme le texte.
 - Cohérence: le titre tient sa promesse. Le texte délivre ce que le titre annonce, sans sur-promesse ni effet clickbait.
 - Rendu image: assez court pour un rendu fiable par le générateur d'images. Un titre long est un compromis à signaler (suggérer Nano Banana Pro).
-- Contraintes dures: français, aucun tiret cadratin ni caractère non standard, aucun nom d'entreprise.
+- Contraintes dures: français, avec les caractères que le français exige (accents, cédille, e-dans-l'o), aucun tiret cadratin, aucun nom d'entreprise. Voir « Caractères ».
 - Rien à surveiller côté encodage: le sujet du courriel a un piège qui avale les accents, mais il est neutralisé une fois pour toutes par la rupture que `render.sujet` place entre le préfixe et le numéro (voir « Gabarit de diffusion »). Choisis le titre sur ses mérites.
 
 ## Règles d'écriture pour la pastille finale
@@ -155,7 +170,7 @@ Le titre est généré comme le reste, mais sous contrainte forte, car il porte 
 - Rédige l'encadré de synthèse une fois le texte arrêté, jamais avant: il doit dénouer ce que le titre annonce, sans le reformuler. Douze mots ou soixante-dix signes par puce au maximum.
 - Ton décontracté, précis et léger, accessible mais techniquement juste. Évite le name-dropping: pas d'accumulation de noms de modèles, outils, entreprises ou chercheurs, privilégie l'explication du mécanisme.
 - Rythme: privilégie des phrases plutôt courtes et directes, mais varie leur longueur et ajoute du liant (connecteurs, deux-points, points-virgules) pour éviter le style haché ou télégraphique. La lecture à voix haute doit rester fluide.
-- Français. Ne mentionne aucune entreprise. Pas de tiret cadratin.
+- Français, écrit avec les caractères du français: accents (capitales comprises), cédille, e-dans-l'o (cœur, œil, œuvre). Pas de tiret cadratin, ni d'espace fine, ni d'emoji: voir « Caractères ». Ne mentionne aucune entreprise.
 - Contenu autonome, compréhensible seul.
 - Titre: voir Règles du titre. Le titre retenu doit tenir sa promesse (le texte délivre ce qu'il annonce, sans sur-promesse) et rester dans le périmètre canonique.
 
@@ -178,19 +193,19 @@ Contenu du bloc:
 - Le livrable porte en outre, à côté du bloc, un **aperçu des visuels**: la description en clair de ce que chaque image doit montrer. Voir « Aperçu des visuels ».
 
 ### Le schéma: forme libre, invariants fermes
-Un schéma pertinent est un schéma dont la forme dit déjà quelque chose. Trois boites et deux flèches conviennent à une séquence; imposées à un mécanisme qui n'en est pas une, elles le déguisent en séquence et le lecteur retient une idée fausse. La forme du schéma est donc un choix éditorial, au même titre que l'angle du texte, et elle se prend d'après le mécanisme à montrer, pas d'après le réflexe du générateur d'images.
+Un schéma pertinent est un schéma dont la forme dit déjà quelque chose. Trois boîtes et deux flèches conviennent à une séquence; imposées à un mécanisme qui n'en est pas une, elles le déguisent en séquence et le lecteur retient une idée fausse. La forme du schéma est donc un choix éditorial, au même titre que l'angle du texte, et elle se prend d'après le mécanisme à montrer, pas d'après le réflexe du générateur d'images.
 
 Ce qui est libre, et doit l'être:
 - **La forme**: voir la bibliothèque ci-dessous, qui n'est pas fermée. Une forme inventée pour un mécanisme particulier est légitime si elle tient en une ligne et se dessine sans ambiguïté.
 - **Le format**: du 4:3 paysage au portrait 4:5, carré compris. Prends celui que la forme réclame, une pile de couches et une comparaison en deux colonnes ne demandent pas le même cadre.
-- **La densité**: ce qui est plafonné n'est pas un nombre de blocs mais ce que l'oeil doit démêler à 560 pixels de large. En pratique 3 à 6 éléments porteurs de sens; une forme qui organise vraiment peut en compter davantage, une matrice à deux axes fait quatre cases plus deux libellés d'axe et se lit d'un coup.
+- **La densité**: ce qui est plafonné n'est pas un nombre de blocs mais ce que l'œil doit démêler à 560 pixels de large. En pratique 3 à 6 éléments porteurs de sens; une forme qui organise vraiment peut en compter davantage, une matrice à deux axes fait quatre cases plus deux libellés d'axe et se lit d'un coup.
 
 Les invariants, qui ne se négocient pas:
 - **Une seconde image, dans son propre fichier**, jamais fusionnée avec l'illustration-titre ni juxtaposée dans la même image.
 - **Le mécanisme des deux premiers paragraphes**, jamais la conclusion: le schéma s'insère avant le dernier paragraphe et doit se comprendre sans l'avoir lu.
 - **Un seul mécanisme par schéma.** Deux idées dans une image donnent deux images ratées. Test: on doit pouvoir dire ce que montre le schéma en une phrase, et cette phrase est justement sa légende de diffusion.
-- **Lisible à 560 pixels de large, sur téléphone.** C'est la contrainte qui borne toutes les libertés ci-dessus. Elle exclut le 16:9 et tout format plus large, où les libellés s'écrasent à cette largeur; elle exclut le portrait au-delà du 4:5, où le visuel devient une colonne qu'on ne saisit plus d'un coup d'oeil dans un courriel; et c'est elle qui plafonne la densité.
-- **Le format distingue les deux visuels.** L'illustration-titre est toujours en 16:9, le schéma toujours plus compact: c'est ainsi que la fabrication du courriel reconnait lequel est lequel quand les deux images sortent du transcript de la conversation. Un schéma en 16:9 les rendrait indiscernables.
+- **Lisible à 560 pixels de large, sur téléphone.** C'est la contrainte qui borne toutes les libertés ci-dessus. Elle exclut le 16:9 et tout format plus large, où les libellés s'écrasent à cette largeur; elle exclut le portrait au-delà du 4:5, où le visuel devient une colonne qu'on ne saisit plus d'un coup d'œil dans un courriel; et c'est elle qui plafonne la densité.
+- **Le format distingue les deux visuels.** L'illustration-titre est toujours en 16:9, le schéma toujours plus compact: c'est ainsi que la fabrication du courriel reconnaît lequel est lequel quand les deux images sortent du transcript de la conversation. Un schéma en 16:9 les rendrait indiscernables.
 - **Libellés en français**, courts, en groupes nominaux.
 - **Charte graphique commune aux deux images**, et très peu de fioritures: la liberté porte sur la forme du schéma, pas sur son habillage.
 
@@ -200,18 +215,18 @@ Ces formes ont fait la preuve de leur utilité, et la liste n'est pas fermée. E
 - **Flux ou processus**: des étapes ordonnées, une flèche par passage. La bonne forme quand l'ordre est le propos, la mauvaise partout ailleurs. C'est la forme par défaut du générateur, donc celle qu'il faut justifier plutôt que subir.
 - **Boucle ou cycle**: le mécanisme revient à son point de départ. Itération d'un prompt, agent qui reprend son travail, aller-retour entre l'humain et le modèle.
 - **Comparaison en colonnes**: deux ou trois cas lus sur la même grille. Avant/après, avec/sans, petit modèle contre grand modèle.
-- **Couches ou pile**: ce qui compte est ce qui repose sur quoi. Le modèle, son harnais, ses outils; le socle pré-entrainé et ce qu'on ajoute par-dessus.
+- **Couches ou pile**: ce qui compte est ce qui repose sur quoi. Le modèle, son harnais, ses outils; le socle pré-entraîné et ce qu'on ajoute par-dessus.
 - **Anatomie ou éclaté**: un objet unique dont on nomme les parties. Un prompt et ses composants, une fenêtre de contexte et ce qui l'occupe.
-- **Matrice ou quadrant**: deux critères croisés, quatre cas. Quand il s'agit de situer et de décider plutôt que de suivre un enchainement.
+- **Matrice ou quadrant**: deux critères croisés, quatre cas. Quand il s'agit de situer et de décider plutôt que de suivre un enchaînement.
 - **Entonnoir ou sablier**: un volume qui se réduit puis parfois se rouvre. Résumé, filtrage, sélection de passages avant réponse.
 - **Zones et périmètre**: le dedans, le dehors, et la ligne entre les deux. Ce qui sort du cadre, ce qui ne doit pas y entrer.
-- **Chronologie**: la position dans le temps est le propos. Des données d'entrainement figées à une date et le présent du lecteur.
+- **Chronologie**: la position dans le temps est le propos. Des données d'entraînement figées à une date et le présent du lecteur.
 - **Balance ou arbitrage**: deux forces qui se pèsent. Coût contre qualité, vitesse contre précision, autonomie contre contrôle.
 - **Arborescence ou branchement**: une décision ouvre des chemins distincts qui ne se rejoignent pas.
 
 Comment choisir, et comment vérifier:
 - **Partir du mécanisme, pas de la forme.** Écris d'abord en une phrase ce que le lecteur doit comprendre, puis demande-toi quelle forme rend cela visible.
-- **Test de substitution**: si le schéma pouvait passer dans une autre forme sans rien perdre, la forme n'apporte rien, et c'est en général un enchainement de boites posé par réflexe. Une forme juste n'est pas interchangeable.
+- **Test de substitution**: si le schéma pouvait passer dans une autre forme sans rien perdre, la forme n'apporte rien, et c'est en général un enchaînement de boîtes posé par réflexe. Une forme juste n'est pas interchangeable.
 - **Le nombre ne fait pas la pertinence.** Six rédacteurs sur le même axe proposent souvent le même flux d'étapes: une forme proposée une seule fois n'en est pas plus faible, c'est parfois la seule qui regarde le mécanisme en face.
 - **Ce que la forme coûte au lecteur compte aussi.** Une matrice demande de comprendre deux axes avant de lire une case: elle vaut ce prix quand le croisement est le propos, pas quand il décore.
 
@@ -220,7 +235,7 @@ Le prompt est fait pour être collé, pas pour être lu: personne ne relit un bl
 
 Ce qu'il contient:
 - **Illustration-titre**: une ou deux phrases sur le motif central et sur ce qu'il donne à voir du sujet, puis le titre exact rendu, entre guillemets.
-- **Schéma**: la forme retenue et, en une phrase, le mécanisme qu'elle rend visible (pourquoi cette forme plutôt qu'un enchainement de boites), la structure dans l'ordre où elle se lit, les libellés exacts, et le format retenu.
+- **Schéma**: la forme retenue et, en une phrase, le mécanisme qu'elle rend visible (pourquoi cette forme plutôt qu'un enchaînement de boîtes), la structure dans l'ordre où elle se lit, les libellés exacts, et le format retenu.
 
 Trois textes voisins, à ne pas confondre: ils n'ont ni la même destination ni le même lecteur.
 - L'**aperçu** est interne et n'est jamais publié. Il dit ce que l'image doit montrer, et pourquoi cette forme.
@@ -263,7 +278,7 @@ La demande porte-t-elle sur la façon de dire, ou sur ce que la pastille raconte
 Cinq réponses possibles, de la plus légère à la plus coûteuse:
 
 - **Retouche**: l'axe et le fond restent, la surface bouge. Ton, longueur, un paragraphe, une puce, le titre, un chiffre, un exemple à remplacer, l'enjeu à remettre en clôture, un libellé de schéma. C'est le cas ordinaire: passe au test du contexte.
-- **Réagencement**: l'axe tient et le matériau est bon, mais l'architecture ne va pas. L'ordre des paragraphes est à revoir, un point secondaire doit devenir le coeur, le mécanisme et l'exemple doivent échanger leurs places, l'encadré est à refaire sur un autre découpage, le schéma doit illustrer autre chose du même texte (et prendre alors la forme que cet autre mécanisme réclame). C'est plus qu'un diff minimal, et pourtant il n'y a aucun matériau neuf à produire: celui qui tient le dossier réorganise lui-même, dans le fil, en s'appuyant sur le texte courant et, s'ils sont là, sur les brouillons déjà reçus. Pas de fan-out: relancer six rédacteurs pour réarranger ce qu'on a déjà, c'est payer six fois pour du matériau qu'on ne cherche pas.
+- **Réagencement**: l'axe tient et le matériau est bon, mais l'architecture ne va pas. L'ordre des paragraphes est à revoir, un point secondaire doit devenir le cœur, le mécanisme et l'exemple doivent échanger leurs places, l'encadré est à refaire sur un autre découpage, le schéma doit illustrer autre chose du même texte (et prendre alors la forme que cet autre mécanisme réclame). C'est plus qu'un diff minimal, et pourtant il n'y a aucun matériau neuf à produire: celui qui tient le dossier réorganise lui-même, dans le fil, en s'appuyant sur le texte courant et, s'ils sont là, sur les brouillons déjà reçus. Pas de fan-out: relancer six rédacteurs pour réarranger ce qu'on a déjà, c'est payer six fois pour du matériau qu'on ne cherche pas.
 - **Reprise ciblée**: une partie délimitée doit être re-produite, le reste tient. Un paragraphe qui n'explique rien, une analogie qui tombe à plat, un encadré à refaire, un titre à retrouver. Il faut du matériau neuf, mais pour ce morceau seulement: le diff minimal ne suffit pas (on ne retouche pas, on remplace), et la régénération complète jetterait ce qui marche. Le bon geste est un fan-out ciblé, quelques rédacteurs sur ce seul morceau, avec le texte conservé transmis comme cadre à respecter.
 - **Changement d'angle**: l'axe reste, le traitement change. L'utilisateur veut partir d'un cas d'usage, d'une idée reçue, du mécanisme, plutôt que de la porte d'entrée retenue. Ce n'est pas un changement de sujet, donc pas une régénération: si cet angle faisait partie du jeu retenu, son brouillon existe déjà. Refais la fusion en pondérant cet angle comme dominant (voir « Pondérer les angles à la fusion »), et non en recopiant son brouillon: les autres brouillons gardent ce qu'ils avaient de juste et de fort. Zéro sous-agent. Regarde la trace des angles employés (voir « Composer le jeu d'angles ») avant de conclure qu'il manque.
 - **Structurel (changement d'axe)**: il faut du matériau neuf partout. L'axe change, le thème se déplace, ou le brouillon retenu est à jeter. Le diff minimal n'y arrive pas: appliqué à un axe qui change, il garde la charpente de l'ancien sujet sous le vocabulaire du nouveau, exactement le patchwork que la règle de la voix unique veut éviter. Il faut régénérer, voir « Régénération » ci-dessous.
@@ -279,7 +294,7 @@ Signaux structurels (matériau neuf nécessaire):
 - Déplacement du thème ou du périmètre: la pastille doit traiter un autre sujet, empiéter volontairement sur une voisine, ou son titre canonique change.
 
 Un **changement d'angle** n'est pas dans cette liste, et c'est volontaire: « pars d'une situation de travail », « plutôt sous l'angle de l'idée reçue », « explique le mécanisme au lieu de filer la métaphore » demandent un autre traitement du même axe, pas un autre sujet. Ne relance un fan-out (sous angle imposé) que si le brouillon correspondant n'est plus disponible, contexte perdu, ou si l'angle demandé ne figurait pas dans le jeu retenu.
-- Insatisfaction qui se répète: après deux ou trois retouches sur le même point, si rien ne convainc, ce n'est plus la formulation qui est en cause mais le brouillon retenu. Dis-le et propose la régénération plutôt que d'enchainer une quatrième retouche.
+- Insatisfaction qui se répète: après deux ou trois retouches sur le même point, si rien ne convainc, ce n'est plus la formulation qui est en cause mais le brouillon retenu. Dis-le et propose la régénération plutôt que d'enchaîner une quatrième retouche.
 - Revue qui rend des constats de fond massifs (le texte n'explique pas son sujet, le titre ne tient pas sa promesse, le mécanisme illustré est mal choisi): le défaut est dans le brouillon, pas dans les phrases. Nuance utile: si ce qui échoue est le traitement et non le sujet, un autre angle suffit peut-être, et le brouillon correspondant est peut-être déjà écrit.
 
 #### Ce qu'on transmet de l'ancien texte
@@ -332,7 +347,7 @@ Cas limites:
 ### Règles du diff minimal (dans les deux cas)
 - Applique uniquement ce qui est demandé et ce qui en découle nécessairement. Préserve tout le reste: n'en profite pas pour réécrire des passages non concernés, ni pour "améliorer" au passage.
 - Réécris en une seule voix cohérente, sans effet patchwork à la jointure de la retouche.
-- Respecte toutes les normes de cette spec (Règles du texte, Règles du titre, Règles d'écriture pour la pastille finale), y compris les contraintes dures: français, pas de tiret cadratin ni caractère non standard, aucun nom d'entreprise ni ANEO, corps explicatif en prose sans listes ni puces. Les blocs structurés définis par cette spec (encadré de synthèse, bloc annexe) restent autorisés et ne comptent pas comme des listes.
+- Respecte toutes les normes de cette spec (Règles du texte, Règles du titre, Règles d'écriture pour la pastille finale), y compris les contraintes dures: français avec les caractères qu'il exige (voir « Caractères »), pas de tiret cadratin, aucun nom d'entreprise ni ANEO, corps explicatif en prose sans listes ni puces. Les blocs structurés définis par cette spec (encadré de synthèse, bloc annexe) restent autorisés et ne comptent pas comme des listes.
 - Vérifie ce que la retouche déplace: la taille des paragraphes touchés (45 à 60 mots), la place de l'enjeu (dernier paragraphe), la longueur des puces de « L'essentiel » (douze mots ou soixante-dix signes), le nombre d'emphases. Une retouche locale casse souvent une contrainte de comptage voisine.
 - Titre: si la retouche implique le titre, applique les Règles du titre et garde le périmètre ancré sur le canonique. Sinon, laisse le titre retenu tel quel.
 - Recherche: ne relance une recherche web que si la retouche touche un fait, un chiffre ou une donnée mouvante que le brief disponible ne couvre pas. Une retouche de style ne demande aucune recherche quand le brief est là. N'invente jamais un chiffre: si tu ne peux le vérifier ni par le brief ni par une recherche, demande la donnée à l'utilisateur plutôt que d'affirmer.
@@ -374,13 +389,13 @@ Ordre des blocs, de haut en bas:
 
 Sujet du courriel: `[Prefixe] #NN : Titre retenu`, par exemple `[Pastille IA de l'été] #4 : Les tokens : la monnaie d'échange (et la manière de penser) des LLM`. Le préfixe suit la saison de diffusion. Un titre qui contient déjà un deux-points en produit deux dans le sujet, c'est accepté. Le sujet reste en espaces ordinaires, sans insécables: la recherche des messageries les gère mal. Une seule exception, et elle n'est pas typographique: l'espace entre le préfixe et le numéro est insécable, parce qu'elle est la **rupture d'encodage** du sujet.
 
-Voici pourquoi. Le sujet est le seul texte accentué du courriel, le corps partant en entités ASCII. Or Outlook (new) reconvertit le `.msg` en MIME, rabat ce sujet Unicode en octets cp1252, puis tente de les relire dans un codage sur deux octets. Ce décodage avale les caractères deux par deux: `[Pastille IA de l'été] #7 : la monnaie d'échange` devient `[Pastille IA de l掗t閉 #7 : la monnaie d掗change`, deux caractères fondus en un idéogramme et le crochet fermant emporté avec. Mais quand le décodage **échoue**, le client se replie sur cp1252 et le sujet entier s'affiche juste — y compris les parties qui, isolément, se décodaient très bien. Ce comportement est vérifié: une pastille dont le sujet contenait « de zéro à chaque session » s'est affichée correctement pendant toute une saison, alors qu'elle portait par ailleurs `L'IA` et `zéro`, deux séquences parfaitement décodables.
+Voici pourquoi. Le sujet est le seul texte accentué du courriel, le corps partant en entités ASCII. Or Outlook (new) reconvertit le `.msg` en MIME, rabat ce sujet Unicode en octets cp1252, puis tente de les relire dans un codage sur deux octets. Ce décodage avale les caractères deux par deux: `[Pastille IA de l'été] #7 : la monnaie d'échange` devient `[Pastille IA de l掗t閉 #7 : la monnaie d掗change`, deux caractères fondus en un idéogramme et le crochet fermant emporté avec. Mais quand le décodage **échoue**, le client se replie sur cp1252 et le sujet entier s'affiche juste, y compris les parties qui, isolément, se décodaient très bien. Ce comportement est vérifié: une pastille dont le sujet contenait « de zéro à chaque session » s'est affichée correctement pendant toute une saison, alors qu'elle portait par ailleurs `L'IA` et `zéro`, deux séquences parfaitement décodables.
 
 Il suffit donc d'une seule séquence invalide n'importe où pour protéger tout le sujet: un octet supérieur à 0x80 suivi d'un octet inférieur à 0x40. L'insécable entre préfixe et numéro fait exactement cela, `0xA0` suivi du `0x23` du dièse. Elle est invisible, elle ne modifie ni le préfixe ni le titre, elle ne gêne aucune recherche que quelqu'un ferait vraiment, et elle vaut pour tous les courriels sans dépendre du libellé du préfixe ni de celui du titre. C'est `render.sujet` qui la place; `build.py` alerte et `verify.py` refuse le fichier si elle a sauté.
 
 Trois fausses pistes, pour ne pas les reprendre. Une espace de largeur nulle est absente de cp1252: elle devient un `?` visible, et placée ailleurs qu'immédiatement après un octet haut elle ne protège même pas. Les accents décomposés (`e` + diacritique combinant) cumulent les deux défauts: des `?` visibles, et un sujet toujours avalé puisque la décomposition laisse `'e` en paire valide. Et déshabiller un titre de ses accents ne se fait pas: un titre français désaccentué se remarque tout de suite, la faute n'est pas dans la série mais dans le client.
 
-Une limite assumée: cette rupture protège du codage constaté, cp936. Elle ne protège pas de cp932, où l'insécable est un octet simple et non un octet de tête — et aucun caractère invisible ne le peut, seul un caractère visible après un accent y parviendrait. Le contrôle ne bloque donc que sur cp936 et signale les autres pour information.
+Une limite assumée: cette rupture protège du codage constaté, cp936. Elle ne protège pas de cp932, où l'insécable est un octet simple et non un octet de tête: aucun caractère invisible ne peut y protéger le sujet, seul un caractère visible après un accent y parviendrait. Le contrôle ne bloque donc que sur cp936 et signale les autres pour information.
 
 Contraintes de mise en page:
 - Tables et styles en ligne uniquement, colonne unique. Une feuille de style ne survit pas au collage dans un client de messagerie, et le moteur de rendu d'Outlook pour Windows ne gère ni les grilles ni les boîtes flexibles.
@@ -414,7 +429,7 @@ La rubrique, elle, suit le sujet et non le numéro de diffusion: elle se lit sur
 - Agents et outils: positions 30 à 38
 - Risques et cadre: position 15, puis 39 à 45
 
-## Boite à outils de revue (grilles + gabarit de relecteur)
+## Boîte à outils de revue (grilles + gabarit de relecteur)
 Ces grilles et ce gabarit sont les normes de la revue critique. Le processus, lui, est porté par le skill `review`: c'est lui qui lance les relecteurs et consolide leurs constats, qu'il soit invoqué directement par un humain, par `generate` et `refine` au moment de leur revue, ou depuis une retouche menée dans le fil de la conversation (voir « Faire évoluer une pastille »). Celui qui déclenche la revue ne la conduit jamais lui-même: il la déclenche puis applique ce qu'elle rend.
 
 Principe: les relecteurs produisent des CONSTATS, jamais une réécriture. Chacun renvoie une liste de problèmes localisés, assortis d'une gravité et d'un correctif précis. C'est le skill appelant qui applique et réécrit, pour garder une voix unique et éviter l'effet patchwork.
@@ -424,7 +439,7 @@ Ce que la revue peut juger: les relecteurs ne voient pas les images, générées
 Les trois grilles (une par relecteur):
 1. Fond, exactitude et périmètre: exactitude vs le brief (aucun chiffre, date ou fait inventé ni sur-affirmé, rien qui le contredise), cohérence entre le titre retenu et ce que le texte délivre (le titre tient-il sa promesse, sans sur-promesse ni clickbait ?), maintien du titre retenu dans le périmètre canonique (il ne doit ni élargir ni déplacer le sujet défini par le titre canonique, ni empiéter sur une voisine), chevauchements avec les pastilles voisines (le texte ré-explique-t-il ce qui est traité ailleurs ? redites à signaler), autonomie du contenu, clarté du message à retenir, repérage de ce qui vieillira mal (à nuancer).
 2. Forme, ton et pédagogie: ton décontracté-précis-léger et techniquement juste, absence de name-dropping, rythme et fluidité à la lecture à voix haute, longueur adaptée à la profondeur (3 à 4 paragraphes de 45 à 60 mots chacun, corps en prose sans listes, dernier paragraphe consacré à l'enjeu; signale tout paragraphe qui dépasse 60 mots et propose où le couper) et chasse au verbiage, accessibilité pour un profil non technique (jargon expliqué, analogies claires), sobriété des emphases (gras/italique), une à deux par paragraphe au maximum: signale tout excès, ne réclame jamais d'emphase supplémentaire, le message clé étant porté par l'encadré de synthèse; qualité de cet encadré (deux à trois puces, douze mots ou soixante-dix signes chacune au maximum: compte-les et signale celles qui débordent, en proposant la coupe; il dénoue le titre au lieu de le reformuler, et il ne peut pas se substituer à l'article), force de l'accroche et qualité du titre retenu (accroche et punch, respect du style de la série, longueur raisonnable, pas de name-dropping dans le titre; un titre qui s'écarte du canonique n'est pas un défaut en soi, ne réclame le retour au canonique que si le titre retenu est plus faible).
-3. Conformité et visuel: contraintes dures (aucun tiret cadratin ni caractère non standard, aucun nom d'entreprise ni ANEO, français correct, corps explicatif en prose sans listes ni puces), y compris dans le titre retenu; blocs structurés conformes (encadré de synthèse présent, plafonné à trois puces, chacune tenant en douze mots ou soixante-dix signes, un seul bloc annexe au maximum); puis le prompt image et son aperçu: titre retenu reproduit au caractère près (et non le titre canonique s'ils diffèrent), longueur du titre compatible avec un rendu image fiable (sinon suggérer Nano Banana Pro), charte présente une seule fois, texte de la pastille bien marqué "à ne pas afficher", illustration-titre iconique et non schéma de processus, schéma présent (il est systématique) et généré en 2e image séparée, schéma qui illustre le mécanisme du corps et non la conclusion; **pertinence de la forme du schéma**, qui est le point le plus utile de cette grille: la forme retenue rend-elle visible le mécanisme, ou est-ce un enchainement de boites appliqué par réflexe à un mécanisme qui n'est pas une séquence ? applique le test de substitution (si une autre forme ferait aussi bien, la forme n'apporte rien) et propose la forme qui conviendrait mieux, en la nommant; un seul mécanisme par schéma; format dans la fourchette admise (du 4:3 au portrait 4:5, jamais 16:9 ni plus large, sous peine de rendre les deux visuels indiscernables) et densité lisible à 560 pixels de large; libellés de schéma courts (groupes nominaux) et en français; aperçu des visuels présent, en clair, et d'accord avec le prompt (une divergence est un défaut, le prompt faisant foi); textes alternatifs fournis pour les deux images, celui du schéma dérivé de l'aperçu (il nomme ce qui est dessiné et ses libellés, il ne recopie pas la légende et ne se réduit pas à "schéma explicatif"); cohérence entre le visuel décrit et le coeur du texte.
+3. Conformité et visuel: contraintes dures (aucun tiret cadratin, aucune espace fine ni emoji, aucun accent décomposé, aucun nom d'entreprise ni ANEO, français correct et écrit avec ses caractères, accents et cédille et e-dans-l'o compris, voir « Caractères »: un « coeur » ou un « Etat » sans accent est un constat à lever, pas une prudence; corps explicatif en prose sans listes ni puces), y compris dans le titre retenu; blocs structurés conformes (encadré de synthèse présent, plafonné à trois puces, chacune tenant en douze mots ou soixante-dix signes, un seul bloc annexe au maximum); puis le prompt image et son aperçu: titre retenu reproduit au caractère près (et non le titre canonique s'ils diffèrent), longueur du titre compatible avec un rendu image fiable (sinon suggérer Nano Banana Pro), charte présente une seule fois, texte de la pastille bien marqué "à ne pas afficher", illustration-titre iconique et non schéma de processus, schéma présent (il est systématique) et généré en 2e image séparée, schéma qui illustre le mécanisme du corps et non la conclusion; **pertinence de la forme du schéma**, qui est le point le plus utile de cette grille: la forme retenue rend-elle visible le mécanisme, ou est-ce un enchaînement de boîtes appliqué par réflexe à un mécanisme qui n'est pas une séquence ? applique le test de substitution (si une autre forme ferait aussi bien, la forme n'apporte rien) et propose la forme qui conviendrait mieux, en la nommant; un seul mécanisme par schéma; format dans la fourchette admise (du 4:3 au portrait 4:5, jamais 16:9 ni plus large, sous peine de rendre les deux visuels indiscernables) et densité lisible à 560 pixels de large; libellés de schéma courts (groupes nominaux) et en français; aperçu des visuels présent, en clair, et d'accord avec le prompt (une divergence est un défaut, le prompt faisant foi); textes alternatifs fournis pour les deux images, celui du schéma dérivé de l'aperçu (il nomme ce qui est dessiné et ses libellés, il ne recopie pas la légende et ne se réduit pas à "schéma explicatif"); cohérence entre le visuel décrit et le cœur du texte.
 
 ### Arbitrage des constats
 Une fois les trois relecteurs revenus, leurs constats sont consolidés avant d'être appliqués. Ces règles valent partout, quel que soit le skill qui a déclenché la revue:
@@ -446,7 +461,7 @@ Titre canonique de la pastille (issu de la série, ancre de périmètre): [TITRE
 Titre retenu (à juger, peut différer du canonique): [TITRE_RETENU]
 
 Consignes posées par l'utilisateur (contraintes assumées, ne les compte pas comme des défauts; bloc à supprimer s'il n'y en a pas):
-[CONSIGNES: ce qu'il a imposé ou écarté, avec ses mots. Si l'une de ces consignes te parait poser un problème réel, dis-le comme une alerte séparée, pas comme un constat à corriger]
+[CONSIGNES: ce qu'il a imposé ou écarté, avec ses mots. Si l'une de ces consignes te paraît poser un problème réel, dis-le comme une alerte séparée, pas comme un constat à corriger]
 
 Texte à relire:
 [TEXTE COMPLET]

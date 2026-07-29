@@ -24,7 +24,7 @@ Le script écrit une `fiche.json` et les deux visuels, prêts pour `build.py`. S
 
 Ce que cela change, et il faut le mesurer: **pas de recherche pour reconstituer un brief**, les sources d'origine étant là; **pas de titre à deviner ni de prompt image à réinventer**; **pas de visuel à redemander**. Tu passes directement à la retouche, avec le vrai dossier plutôt qu'une approximation. Si des champs manquent (le script les liste), ne demande que ceux-là.
 
-Le formalisme, pour le connaitre sans avoir à le déduire: le dossier est un commentaire HTML `<!--pastille:dossier ... pastille:fin-->` contenant la fiche en JSON, à la fin du corps. Un commentaire, précisément pour qu'aucun rendu ni aucun import ne le fasse apparaitre. Ne le modifie jamais à la main: retouche la fiche, puis refabrique les deux fichiers avec `build.py`, qui réécrit le dossier à partir d'elle. Un dossier édité à la main et un texte affiché qui divergent, c'est une archive qui ment.
+Le formalisme, pour le connaître sans avoir à le déduire: le dossier est un commentaire HTML `<!--pastille:dossier ... pastille:fin-->` contenant la fiche en JSON, à la fin du corps. Un commentaire, précisément pour qu'aucun rendu ni aucun import ne le fasse apparaître. Ne le modifie jamais à la main: retouche la fiche, puis refabrique les deux fichiers avec `build.py`, qui réécrit le dossier à partir d'elle. Un dossier édité à la main et un texte affiché qui divergent, c'est une archive qui ment.
 
 ### Sans artefact, avec le texte recollé: reconstitution
 **Chemin pleinement supporté, et il le restera.** Toutes les pastilles diffusées avant l'introduction du dossier n'ont pas d'artefact, et il n'y a aucune raison de les rendre intraitables: l'artefact est une commodité quand il existe, jamais une condition d'entrée. Ne demande donc pas le fichier HTML deux fois, et ne bloque jamais faute de l'avoir.
@@ -52,14 +52,14 @@ Frontière avec les autres skills: `generate` crée une pastille à partir d'un 
 Après une retouche, si la pastille a déjà été mise en courriel, le skill `email` régénère le `.msg` sans rien relancer d'autre.
 
 ## Spec partagée (à lire en premier)
-Les normes de la série vivent dans un fichier partagé, source unique commune à ce skill et aux skills `generate`, `review` et `email`: liste des 45 pastilles et périmètre, vocabulaire de l'axe et de l'angle avec la bibliothèque d'angles, Règles du texte, Règles du titre, Règles d'écriture pour la pastille finale, spec du prompt image et gabarits, charte graphique, doctrine d'évolution (retoucher, réagencer ou régénérer), boite à outils de revue. Lis-le avant de commencer:
+Les normes de la série vivent dans un fichier partagé, source unique commune à ce skill et aux skills `generate`, `review` et `email`: liste des 45 pastilles et périmètre, vocabulaire de l'axe et de l'angle avec la bibliothèque d'angles, Règles du texte, Règles du titre, Règles d'écriture pour la pastille finale, spec du prompt image et gabarits, charte graphique, doctrine d'évolution (retoucher, réagencer ou régénérer), boîte à outils de revue. Lis-le avant de commencer:
 
 `${CLAUDE_SKILL_DIR}/references/regles-pastille.md` (c'est le fichier `references/regles-pastille.md` situé dans le dossier de ce skill).
 
 Toute retouche que tu appliques doit rester conforme à ces normes. Ne recopie pas ces règles ici: si elles doivent évoluer, modifie la spec partagée.
 
 ## Environnement
-Le coeur du skill (édition et, au besoin, recherche web ciblée) ne requiert pas de sous-agents et fonctionne partout. Seule la revue critique optionnelle en lance trois, et elle est déléguée au skill `review`, qui gère aussi ses replis quand les sous-agents ne sont pas disponibles.
+Le cœur du skill (édition et, au besoin, recherche web ciblée) ne requiert pas de sous-agents et fonctionne partout. Seule la revue critique optionnelle en lance trois, et elle est déléguée au skill `review`, qui gère aussi ses replis quand les sous-agents ne sont pas disponibles.
 
 ## Entrées
 Deux entrées possibles, et l'ordre de préférence n'est pas négociable:
@@ -83,7 +83,7 @@ Dans le cas texte plus prompt image, le prompt que tu produis en sortie doit res
 - Seul le titre est fourni, pas de texte: ne raffine rien et n'invente aucun texte. Demande explicitement le texte actuel de la pastille avant de continuer. Si en réalité aucune pastille n'existe encore (rien à raffiner, l'utilisateur veut la créer de zéro), c'est le skill `generate` qu'il faut utiliser: signale-le et bascule.
 - Seul le texte est fourni, pas de titre: distingue les deux titres, car ils n'ont pas le même enjeu.
   - Titre canonique (ancre de périmètre): infère-le en rapprochant le texte de la liste des 45 (spec partagée). C'est un jugement de périmètre, sans risque de rendu; ne demande confirmation que si la retouche risque de déplacer le sujet.
-  - Titre retenu (la chaine exacte affichée et rendue dans l'image): ne le reconstruis pas en douce. Propose le libellé le plus probable et demande à l'utilisateur de le confirmer ou de coller l'exact. Exige l'exact avant de l'écrire dans un prompt image, et dès que la retouche touche au titre: à cet endroit le titre est reproduit au caractère près, une reconstruction approximative désynchroniserait l'image du vrai visuel. Pour une simple retouche de texte qui ne touche ni au titre ni à l'image, un libellé proposé et validé suffit; ne bloque pas.
+  - Titre retenu (la chaîne exacte affichée et rendue dans l'image): ne le reconstruis pas en douce. Propose le libellé le plus probable et demande à l'utilisateur de le confirmer ou de coller l'exact. Exige l'exact avant de l'écrire dans un prompt image, et dès que la retouche touche au titre: à cet endroit le titre est reproduit au caractère près, une reconstruction approximative désynchroniserait l'image du vrai visuel. Pour une simple retouche de texte qui ne touche ni au titre ni à l'image, un libellé proposé et validé suffit; ne bloque pas.
 
 ## Étape 1, retrouver le contexte
 Avec l'artefact HTML, cette étape se réduit à lire le dossier: le titre canonique, l'axe, le prompt d'images et les sources y sont, et les notes disent souvent pourquoi tel choix a été fait. Vérifie seulement que la pastille est bien celle que l'utilisateur croit, puis passe à l'étape 3.
@@ -105,7 +105,7 @@ Reconstituer un brief que l'on a déjà, sous une forme ou une autre, c'est le r
 
 Seule exception: si l'utilisateur demande explicitement de ne pas rechercher, respecte-le, mais signale que la justesse et la revue en pâtiront. Dans tous les cas, n'invente jamais un chiffre: si tu ne peux vérifier ni par une source fournie ni par une recherche, dis-le et demande la donnée à l'utilisateur plutôt que d'affirmer.
 
-Si le brief reconstitué révèle que le problème n'est pas la formulation mais l'angle même de la pastille (le texte explique mal ce que les sources disent, l'axe ne tient pas), dis-le et propose la régénération plutôt que d'enchainer des retouches: à ce stade tu as le titre canonique, le périmètre et un brief, c'est-à-dire tout ce dont `generate` a besoin.
+Si le brief reconstitué révèle que le problème n'est pas la formulation mais l'angle même de la pastille (le texte explique mal ce que les sources disent, l'axe ne tient pas), dis-le et propose la régénération plutôt que d'enchaîner des retouches: à ce stade tu as le titre canonique, le périmètre et un brief, c'est-à-dire tout ce dont `generate` a besoin.
 
 ## Étape 3, appliquer le diff minimal
 Applique les règles de la spec partagée, section « Faire évoluer une pastille », sous-section « Règles du diff minimal »: ne changer que ce qui est demandé et ce qui en découle, une seule voix, conformité aux normes de la série, et vérification des contraintes de comptage que la retouche déplace (taille des paragraphes, place de l'enjeu, longueur des puces, emphases).
