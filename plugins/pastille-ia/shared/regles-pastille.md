@@ -87,14 +87,18 @@ Bibliothèque, pour les slots libres (et pour remplir l'ancrage):
 - **Filiation**: d'où ça vient, ce que ça remplace, pourquoi cela apparait maintenant.
 - **Scène**: un court échange, un dialogue, un moment de bureau.
 - **Garde-fou**: le risque, puis la parade, dans cet ordre.
+- **Progression**: partir de ce que le lecteur sait déjà et avancer d'un cran à la fois jusqu'au concept. L'angle de l'ordre d'exposition, là où l'analogie substitue une image et où la mécanique entre directement dans le fonctionnement.
+- **Question-réponse**: partir de la question que le lecteur se pose vraiment, y répondre, et laisser cette réponse ouvrir la suivante. Proche de l'idée reçue, mais sans malentendu à corriger: il n'y a qu'une curiosité à satisfaire.
 
 Affinités indicatives par rubrique (voir « Numéro et rubrique »), à ne pas suivre mécaniquement:
-- Comprendre: analogie, mécanique, filiation.
-- Limites: idée reçue, contre-exemple, ordre de grandeur.
+- Comprendre: analogie, mécanique, filiation, progression.
+- Limites: idée reçue, contre-exemple, ordre de grandeur, question-réponse.
 - Prompting: cas d'usage, avant/après, scène, contre-exemple.
 - Au travail: cas d'usage, avant/après, scène.
-- Agents et outils: mécanique, frontière, contre-exemple.
-- Risques et cadre: garde-fou, idée reçue, ordre de grandeur, frontière.
+- Agents et outils: mécanique, frontière, contre-exemple, progression.
+- Risques et cadre: garde-fou, idée reçue, ordre de grandeur, frontière, question-réponse.
+
+Ce qui n'est pas un angle: une qualité exigée de tous. « Pédagogique », « clair », « accessible », « juste », « vivant » ne sont pas des portes d'entrée, ce sont des normes que les six brouillons doivent tenir ensemble (voir Règles du texte, et la grille 2 de la revue). En faire des angles laisserait entendre que les autres peuvent être obscurs ou faux, et produirait un brouillon indistinct de son voisin. Quand l'envie d'un angle « pédagogique » se présente, ce qui manque est presque toujours un ordre d'exposition (progression) ou une entrée par la question du lecteur (question-réponse): ces deux-là sont des angles, et ils sont dans la liste.
 
 ### Composer le jeu d'angles
 Six rédacteurs: trois slots de noyau et trois slots libres.

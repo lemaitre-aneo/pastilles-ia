@@ -17,7 +17,9 @@ Six rédacteurs, et leur jeu d'angles n'est pas figé. **Trois slots de noyau** 
 - **enjeu**, qui fournit le dernier paragraphe, obligatoire dans la série;
 - **ancrage concret**, dont la *fonction* est fixe mais l'*angle* libre dans sa famille (analogie, cas d'usage, scène, avant/après). Il faut toujours un brouillon qui rattache le sujet au monde du lecteur; mais la métaphore tire à vide sur certains sujets, alors que l'ancrage, lui, marche partout.
 
-**Trois slots libres** se choisissent dans la bibliothèque d'angles (idée reçue, contre-exemple, avant/après, ordre de grandeur, frontière, filiation, scène, garde-fou, et les angles d'ancrage non employés) selon l'axe et la rubrique, ou s'inventent quand un axe le mérite.
+**Trois slots libres** se choisissent dans la bibliothèque d'angles (idée reçue, contre-exemple, avant/après, ordre de grandeur, frontière, filiation, scène, garde-fou, progression, question-réponse, et les angles d'ancrage non employés) selon l'axe et la rubrique, ou s'inventent quand un axe le mérite.
+
+Un angle est une **porte d'entrée**, pas une qualité. « Pédagogique », « clair », « accessible » n'en sont donc pas: ce sont des normes que les six brouillons doivent tenir ensemble, et en faire des angles laisserait entendre que les autres peuvent être obscurs. Quand l'envie d'un angle « pédagogique » se présente, ce qui manque est presque toujours un ordre d'exposition (*progression*: partir de ce que le lecteur sait et avancer d'un cran à la fois) ou une entrée par sa question (*question-réponse*).
 
 Le socle par défaut (mécanique, enjeu, analogie en ancrage, puis cas d'usage et idée reçue) reste le repli: il est éprouvé sur la série, s'en écarter demande une raison. Et la liberté est bornée par deux garde-fous, sans lesquels elle se retourne contre le fan-out:
 
