@@ -1,5 +1,5 @@
 {
-  "_lisez_moi": "Modèle de fiche à copier, sans contenu réel: les pastilles ne sont pas versionnées dans ce dépôt. numero est le numéro de diffusion donné par l'utilisateur, position_liste la place du sujet dans la liste des 45 dont la rubrique est déduite; les deux sont indépendants. Le temps de lecture est calculé et la rubrique déduite: n'écrivez temps_lecture ou rubrique en dur que pour forcer une valeur. Les emphases sont en markdown, la typographie française est appliquée par le script: pas d'espaces insécables ni d'apostrophes typographiques à saisir ici. Faites pointer image_titre et image_schema sur vos deux fichiers. Le champ sources est facultatif et n'apparaît que dans les artefacts conservés, jamais dans le courriel: chaque entrée est soit une chaîne, soit un objet titre plus url. Les champs de reprise (titre_canonique, axe, prompt_image, sources, notes) partent dans le dossier incorporé au fichier HTML, jamais dans le courriel: c'est ce qui permet de reprendre la pastille des mois plus tard depuis le seul artefact.",
+  "_lisez_moi": "Modèle de fiche à copier, sans contenu réel: les pastilles ne sont pas versionnées dans ce dépôt. numero est le numéro de diffusion donné par l'utilisateur, position_liste la place du sujet dans la liste des 45 dont la rubrique est déduite; les deux sont indépendants. Le temps de lecture est calculé et la rubrique déduite: n'écrivez temps_lecture ou rubrique en dur que pour forcer une valeur. Les emphases sont en markdown, la typographie française est appliquée par le script: pas d'espaces insécables ni d'apostrophes typographiques à saisir ici. Faites pointer image_titre et image_schema sur vos deux fichiers. Le champ sources est facultatif et n'apparaît que dans les artefacts conservés, jamais dans le courriel: chaque entrée est soit une chaîne, soit un objet titre plus url. Les champs de reprise (titre_canonique, axe, prompt_image, apercu_visuels, sources, notes) partent dans le dossier incorporé au fichier HTML, jamais dans le courriel: c'est ce qui permet de reprendre la pastille des mois plus tard depuis le seul artefact.",
   "numero": "NN",
   "total": 45,
   "position_liste": 1,
@@ -18,7 +18,7 @@
   ],
   "schema_apres": 3,
   "legende_schema": "Légende du schéma, une phrase qui dit ce qu'il faut y voir.",
-  "alt_schema": "Description de ce que montre le schéma, une phrase.",
+  "alt_schema": "Équivalent textuel du schéma, dérivé de l'aperçu des visuels: ce qui est dessiné, la forme et les libellés dans l'ordre de lecture, une à deux phrases. Ne recopiez pas la légende ici, elle dit ce qu'il faut retenir et non ce qui est montré.",
   "annexe": {
     "etiquette": "À essayer",
     "style": "essayer",
@@ -26,6 +26,7 @@
   },
   "image_titre": "illustration-titre.png",
   "image_schema": "schema.png",
+  "_visuels": "Ces deux champs sont obligatoires pour le courriel, facultatifs pour l'archive seule: sans eux, build.py --html écrit un artefact provisoire qui porte à leur place un encadré nommant le visuel attendu et reprenant son texte alternatif, et refuse de fabriquer le .msg.",
   "sources": [
     {
       "titre": "Titre de la source, de préférence officielle",
@@ -36,6 +37,7 @@
   "titre_canonique": "Titre de la série dont dérive cette pastille, s'il diffère du titre retenu",
   "axe": "Le sujet précis traité dans ce thème, tel qu'arbitré avec l'utilisateur",
   "prompt_image": "Le bloc de prompt collé dans Gemini, tel quel, retours à la ligne compris",
+  "apercu_visuels": "Illustration-titre: le motif central, et le titre exact rendu. Schéma: la forme retenue et le mécanisme qu'elle rend visible, la structure dans l'ordre de lecture, les libellés, le format. Interne, jamais publié: c'est ce qui dira dans six mois ce que les visuels montraient sans avoir à les ouvrir.",
   "notes": [
     "Angles retenus et pourquoi",
     "Consignes de l'utilisateur à ne pas perdre"

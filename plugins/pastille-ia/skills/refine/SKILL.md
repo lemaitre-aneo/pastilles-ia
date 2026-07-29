@@ -14,7 +14,7 @@ Le test qui décide, ses cas limites et les règles communes vivent dans la spec
 ## Deux entrées possibles, et elles ne demandent pas le même travail
 
 ### Avec l'artefact HTML: rien à reconstituer
-Depuis que le skill `email` incorpore un dossier dans le fichier HTML de la pastille, **ce fichier est l'entrée de référence**. Il porte tout: le texte, le titre retenu et le titre canonique, l'axe, le prompt d'images, les sources, les notes d'échange, et les deux visuels en base64. Demande-le une fois, en ouverture: « avez-vous le fichier HTML de la pastille ? » vaut mieux que dix questions de reconstitution. Si la réponse est non, n'insiste pas et prends l'autre chemin, qui reste entier.
+Depuis que le skill `email` incorpore un dossier dans le fichier HTML de la pastille, **ce fichier est l'entrée de référence**. Il porte tout: le texte, le titre retenu et le titre canonique, l'axe, le prompt d'images et l'aperçu des visuels, les sources, les notes d'échange, et les deux visuels en base64. Demande-le une fois, en ouverture: « avez-vous le fichier HTML de la pastille ? » vaut mieux que dix questions de reconstitution. Si la réponse est non, n'insiste pas et prends l'autre chemin, qui reste entier.
 
 ```
 python3 ${CLAUDE_SKILL_DIR}/../email/scripts/dossier.py "pastille NN accroche.html" --dossier .
@@ -24,7 +24,7 @@ Le script écrit une `fiche.json` et les deux visuels, prêts pour `build.py`. S
 
 Ce que cela change, et il faut le mesurer: **pas de recherche pour reconstituer un brief**, les sources d'origine étant là; **pas de titre à deviner ni de prompt image à réinventer**; **pas de visuel à redemander**. Tu passes directement à la retouche, avec le vrai dossier plutôt qu'une approximation. Si des champs manquent (le script les liste), ne demande que ceux-là.
 
-Le formalisme, pour le connaitre sans avoir à le déduire: le dossier est un commentaire HTML `<!--pastille:dossier ... pastille:fin-->` contenant la fiche en JSON, à la fin du corps. Un commentaire, précisément pour qu'aucun rendu ni aucun import ne le fasse apparaitre. Ne le modifie jamais à la main: retouche la fiche, puis refabrique les deux fichiers avec `build.py`, qui réécrit le dossier à partir d'elle. Un dossier édité à la main et un texte affiché qui divergent, c'est une archive qui ment.
+Le formalisme, pour le connaître sans avoir à le déduire: le dossier est un commentaire HTML `<!--pastille:dossier ... pastille:fin-->` contenant la fiche en JSON, à la fin du corps. Un commentaire, précisément pour qu'aucun rendu ni aucun import ne le fasse apparaître. Ne le modifie jamais à la main: retouche la fiche, puis refabrique les deux fichiers avec `build.py`, qui réécrit le dossier à partir d'elle. Un dossier édité à la main et un texte affiché qui divergent, c'est une archive qui ment.
 
 ### Sans artefact, avec le texte recollé: reconstitution
 **Chemin pleinement supporté, et il le restera.** Toutes les pastilles diffusées avant l'introduction du dossier n'ont pas d'artefact, et il n'y a aucune raison de les rendre intraitables: l'artefact est une commodité quand il existe, jamais une condition d'entrée. Ne demande donc pas le fichier HTML deux fois, et ne bloque jamais faute de l'avoir.
@@ -52,14 +52,14 @@ Frontière avec les autres skills: `generate` crée une pastille à partir d'un 
 Après une retouche, si la pastille a déjà été mise en courriel, le skill `email` régénère le `.msg` sans rien relancer d'autre.
 
 ## Spec partagée (à lire en premier)
-Les normes de la série vivent dans un fichier partagé, source unique commune à ce skill et aux skills `generate`, `review` et `email`: liste des 45 pastilles et périmètre, vocabulaire de l'axe et de l'angle avec la bibliothèque d'angles, Règles du texte, Règles du titre, Règles d'écriture pour la pastille finale, spec du prompt image et gabarits, charte graphique, doctrine d'évolution (retoucher, réagencer ou régénérer), boite à outils de revue. Lis-le avant de commencer:
+Les normes de la série vivent dans un fichier partagé, source unique commune à ce skill et aux skills `generate`, `review` et `email`: liste des 45 pastilles et périmètre, vocabulaire de l'axe et de l'angle avec la bibliothèque d'angles, Règles du texte, Règles du titre, Règles d'écriture pour la pastille finale, spec du prompt image et gabarits, charte graphique, doctrine d'évolution (retoucher, réagencer ou régénérer), boîte à outils de revue. Lis-le avant de commencer:
 
 `${CLAUDE_SKILL_DIR}/references/regles-pastille.md` (c'est le fichier `references/regles-pastille.md` situé dans le dossier de ce skill).
 
 Toute retouche que tu appliques doit rester conforme à ces normes. Ne recopie pas ces règles ici: si elles doivent évoluer, modifie la spec partagée.
 
 ## Environnement
-Le coeur du skill (édition et, au besoin, recherche web ciblée) ne requiert pas de sous-agents et fonctionne partout. Seule la revue critique optionnelle en lance trois, et elle est déléguée au skill `review`, qui gère aussi ses replis quand les sous-agents ne sont pas disponibles.
+Le cœur du skill (édition et, au besoin, recherche web ciblée) ne requiert pas de sous-agents et fonctionne partout. Seule la revue critique optionnelle en lance trois, et elle est déléguée au skill `review`, qui gère aussi ses replis quand les sous-agents ne sont pas disponibles.
 
 ## Entrées
 Deux entrées possibles, et l'ordre de préférence n'est pas négociable:
@@ -83,7 +83,7 @@ Dans le cas texte plus prompt image, le prompt que tu produis en sortie doit res
 - Seul le titre est fourni, pas de texte: ne raffine rien et n'invente aucun texte. Demande explicitement le texte actuel de la pastille avant de continuer. Si en réalité aucune pastille n'existe encore (rien à raffiner, l'utilisateur veut la créer de zéro), c'est le skill `generate` qu'il faut utiliser: signale-le et bascule.
 - Seul le texte est fourni, pas de titre: distingue les deux titres, car ils n'ont pas le même enjeu.
   - Titre canonique (ancre de périmètre): infère-le en rapprochant le texte de la liste des 45 (spec partagée). C'est un jugement de périmètre, sans risque de rendu; ne demande confirmation que si la retouche risque de déplacer le sujet.
-  - Titre retenu (la chaine exacte affichée et rendue dans l'image): ne le reconstruis pas en douce. Propose le libellé le plus probable et demande à l'utilisateur de le confirmer ou de coller l'exact. Exige l'exact avant de l'écrire dans un prompt image, et dès que la retouche touche au titre: à cet endroit le titre est reproduit au caractère près, une reconstruction approximative désynchroniserait l'image du vrai visuel. Pour une simple retouche de texte qui ne touche ni au titre ni à l'image, un libellé proposé et validé suffit; ne bloque pas.
+  - Titre retenu (la chaîne exacte affichée et rendue dans l'image): ne le reconstruis pas en douce. Propose le libellé le plus probable et demande à l'utilisateur de le confirmer ou de coller l'exact. Exige l'exact avant de l'écrire dans un prompt image, et dès que la retouche touche au titre: à cet endroit le titre est reproduit au caractère près, une reconstruction approximative désynchroniserait l'image du vrai visuel. Pour une simple retouche de texte qui ne touche ni au titre ni à l'image, un libellé proposé et validé suffit; ne bloque pas.
 
 ## Étape 1, retrouver le contexte
 Avec l'artefact HTML, cette étape se réduit à lire le dossier: le titre canonique, l'axe, le prompt d'images et les sources y sont, et les notes disent souvent pourquoi tel choix a été fait. Vérifie seulement que la pastille est bien celle que l'utilisateur croit, puis passe à l'étape 3.
@@ -105,7 +105,7 @@ Reconstituer un brief que l'on a déjà, sous une forme ou une autre, c'est le r
 
 Seule exception: si l'utilisateur demande explicitement de ne pas rechercher, respecte-le, mais signale que la justesse et la revue en pâtiront. Dans tous les cas, n'invente jamais un chiffre: si tu ne peux vérifier ni par une source fournie ni par une recherche, dis-le et demande la donnée à l'utilisateur plutôt que d'affirmer.
 
-Si le brief reconstitué révèle que le problème n'est pas la formulation mais l'angle même de la pastille (le texte explique mal ce que les sources disent, l'axe ne tient pas), dis-le et propose la régénération plutôt que d'enchainer des retouches: à ce stade tu as le titre canonique, le périmètre et un brief, c'est-à-dire tout ce dont `generate` a besoin.
+Si le brief reconstitué révèle que le problème n'est pas la formulation mais l'angle même de la pastille (le texte explique mal ce que les sources disent, l'axe ne tient pas), dis-le et propose la régénération plutôt que d'enchaîner des retouches: à ce stade tu as le titre canonique, le périmètre et un brief, c'est-à-dire tout ce dont `generate` a besoin.
 
 ## Étape 3, appliquer le diff minimal
 Applique les règles de la spec partagée, section « Faire évoluer une pastille », sous-section « Règles du diff minimal »: ne changer que ce qui est demandé et ce qui en découle, une seule voix, conformité aux normes de la série, et vérification des contraintes de comptage que la retouche déplace (taille des paragraphes, place de l'enjeu, longueur des puces, emphases).
@@ -113,15 +113,21 @@ Applique les règles de la spec partagée, section « Faire évoluer une pastill
 ## Étape 4, re-synchronisation du prompt image (diff minimal)
 Applique la sous-section « Re-synchronisation du prompt image » de la même section de la spec partagée. Rappel du cas propre à ce skill: quand l'utilisateur a fourni un prompt image, pars de CE prompt et n'y applique que le plus petit changement nécessaire; s'il n'en a pas fourni, n'en fabrique pas sans demande explicite.
 
+Deux points propres à une reprise, puisque les pastilles antérieures n'ont pas d'aperçu des visuels:
+- **Rédige l'aperçu à partir du prompt fourni**, même si la retouche ne touche pas aux images. Il se déduit du prompt sans rien inventer, il coûte trois lignes, et il donne à l'utilisateur comme à la revue de quoi juger des visuels qu'aucun de vous ne peut regarder. Il part ensuite dans le dossier (champ `apercu_visuels`), donc la reprise suivante n'aura plus à le refaire.
+- **Si le prompt bouge, l'aperçu bouge avec lui**, dans le même mouvement: un livrable qui annonce une image et un bloc qui en commande une autre est plus trompeur que pas d'aperçu du tout.
+
 ## Étape 5, revue critique (déléguée au skill `review`, proposée et non imposée)
 Ne déclenche pas de revue d'office. Propose-la, et ne la déclenche qu'avec l'accord de l'utilisateur (elle coûte trois sous-agents).
 
-Si l'utilisateur accepte: invoque le skill `review` via l'outil Skill, et passe-lui le dossier complet, à savoir le titre canonique et le titre retenu, le texte raffiné, le bloc prompt image (ou la mention "inchangé", ou son absence), le brief de référence (les Sources fournies ou le brief reconstitué à l'étape 2, et signale-le s'il manque vraiment), la liste "déjà traité ailleurs", les textes voisins si disponibles, et les consignes que l'utilisateur a posées en demandant la retouche (ce qu'il voulait, ce qu'il a exclu): un relecteur qui les ignore reproche au texte ce qui vient d'être décidé. Précise que tu l'appelles depuis `refine`: dans ce mode, il rend la liste consolidée des constats et n'affiche pas de rapport.
+Si l'utilisateur accepte: invoque le skill `review` via l'outil Skill, et passe-lui le dossier complet, à savoir le titre canonique et le titre retenu, le texte raffiné, le bloc prompt image (ou la mention "inchangé", ou son absence) et l'aperçu des visuels, le brief de référence (les Sources fournies ou le brief reconstitué à l'étape 2, et signale-le s'il manque vraiment), la liste "déjà traité ailleurs", les textes voisins si disponibles, et les consignes que l'utilisateur a posées en demandant la retouche (ce qu'il voulait, ce qu'il a exclu): un relecteur qui les ignore reproche au texte ce qui vient d'être décidé. Précise que tu l'appelles depuis `refine`: dans ce mode, il rend la liste consolidée des constats et n'affiche pas de rapport.
 
 Puis applique: la revue rend des constats déjà dédoublonnés et arbitrés selon la spec partagée, section « Arbitrage des constats ». Réécris en une seule voix, une seule passe, sans boucler. Si un constat contredit une norme de la spec, écarte-le en le disant.
 
 ## Refabriquer les fichiers
-Une reprise ne s'arrête pas au texte affiché en conversation. Si tu es parti d'un artefact, ou si la pastille a déjà été diffusée, refabrique les deux fichiers avec le skill `email`: le `.msg` et l'artefact HTML, depuis la fiche retouchée. C'est ce qui garde le dossier, le texte et les visuels d'accord entre eux, et c'est ce qui fera de la prochaine reprise une lecture au lieu d'une reconstitution.
+Une reprise ne s'arrête pas au texte affiché en conversation. Si tu es parti d'un artefact, ou si la pastille a déjà été diffusée, refabrique les fichiers avec le skill `email` depuis la fiche retouchée. Quand une diffusion suit, ce sont les deux, le `.msg` et l'artefact HTML. Quand la reprise ne repart pas (une ancienne pastille qu'on remet au formalisme, une retouche d'archive), **l'artefact seul suffit**: `build.py fiche.json --html "..."` sans `--msg`, contrôlé par `verify.py --html "..."`. Inutile de fabriquer un courriel que personne n'enverra. C'est ce qui garde le dossier, le texte et les visuels d'accord entre eux, et c'est ce qui fera de la prochaine reprise une lecture au lieu d'une reconstitution.
+
+Cas fréquent en reprise, et qui ne bloque plus: **les visuels sont perdus** (une pastille recollée sans ses images, un artefact ancien qu'on n'a plus). Produis quand même l'artefact, sans les images: il portera à leur emplacement un encadré qui les nomme et reprend leur texte alternatif, donc la pastille rejoint le formalisme tout de suite au lieu d'attendre une régénération de visuels. Dis-le en une ligne, avec ce que cela implique: archive provisoire, diffusion impossible tant que les deux visuels manquent, à refabriquer une fois qu'ils existent.
 
 Deux cas à signaler franchement à l'utilisateur au moment de refabriquer:
 - **Le prompt d'images a changé**: les visuels du dossier sont périmés, il faut les régénérer dans Gemini avant de refabriquer, sinon l'artefact porterait un texte neuf et une image ancienne.
@@ -134,7 +140,8 @@ N'affiche que le livrable, dans cet ordre:
 - Si une revue a eu lieu: un court résumé "Ce que la revue a corrigé" (2 à 4 lignes), avant le reste. Sinon, pas de résumé.
 - Le titre retenu, en tête. S'il diffère du titre canonique de la série, ajoute juste en dessous une ligne discrète, par exemple: Titre canonique de la série: "...". Dites-moi si vous préférez le conserver, je reviens dessus en un mot.
 - L'encadré "L'essentiel", puis le texte raffiné, puis le bloc annexe s'il y en a un. Si la pastille fournie n'en comportait pas, rédige-les: ils sont désormais requis par la spec.
-- Le prompt image seulement s'il a changé: un bloc de code intitulé "Prompt images (à coller dans Gemini)", prêt à copier, suivi d'une ligne qui dit ce que cela implique: les visuels déjà diffusés sont périmés et doivent être régénérés avant toute nouvelle diffusion, l'illustration portant un titre qui n'est plus le titre retenu. S'il n'a pas changé, écris une seule ligne: "Prompt images: inchangé (la retouche n'affecte pas le rendu), les visuels existants restent valables." S'il n'y a pas de prompt image et que rien n'en impose un, n'en parle pas.
+- L'aperçu des visuels, deux courtes descriptions de ce que montrent les deux images (motif central et titre exact rendu pour l'illustration; forme retenue, mécanisme rendu visible, structure, libellés et format pour le schéma). Affiche-le dans les deux cas, prompt changé ou non: c'est ce qui permet à l'utilisateur de vérifier que les visuels qu'il a sous la main correspondent encore au texte retouché, ce que tu ne peux pas constater à sa place.
+- Le prompt image seulement s'il a changé: un bloc de code intitulé "Prompt images (à coller dans Gemini)", prêt à copier, suivi d'une ligne qui dit ce que cela implique: les visuels déjà diffusés sont périmés et doivent être régénérés avant toute nouvelle diffusion, l'illustration portant un titre qui n'est plus le titre retenu. S'il n'a pas changé, écris une seule ligne: "Prompt images: inchangé (la retouche n'affecte pas le rendu), les visuels existants restent valables." S'il n'y a pas de prompt image et que rien n'en impose un, n'en parle pas, et n'affiche pas d'aperçu non plus: il n'y a rien dont il serait le reflet.
 - Une section "Sources" listant les références du brief effectivement mobilisé, qu'il vienne des Sources fournies par l'utilisateur ou d'une recherche relancée (2 à 4, de préférence officielles). À omettre seulement si, exceptionnellement, aucune source n'a été mobilisée.
 
 Termine toujours par cette question exacte:

@@ -3,10 +3,15 @@
 
     python3 verify.py pastille-13.msg [image-titre.png image-schema.png]
                       [--html "pastille 13 les tokens.html"]
+    python3 verify.py --html "pastille 13 les tokens.html"   (archive seule)
 
 Un parseur indépendant (olefile) rouvre le fichier: c'est le seul moyen de
 vérifier le conteneur sans Outlook. Le rendu visuel, lui, se contrôle avec
 l'artefact HTML et un navigateur.
+
+L'artefact se contrôle aussi seul, sans .msg: une pastille peut être archivée
+sans être rediffusée, et ses règles propres (se suffire à lui-même, pas de mise
+en page en tables, un dossier qui se relit) ne dépendent pas du courriel.
 """
 import hashlib
 import os
@@ -45,12 +50,35 @@ def controler_artefact(chemin, problemes):
     sources = re.findall(r'<img src="([^"]+)"', corps)
     incorporees = sum(s.startswith("data:image/") for s in sources)
     tables = len(re.findall(r"<table", corps, re.I))
-    print("  images incorporées         :", incorporees)
+    # Le dossier dit combien de visuels la pastille déclare, et c'est lui qui fait
+    # référence: une archive peut légitimement n'en porter aucun, quand elle est
+    # conservée avant que les images existent. Ce qui reste faux, c'est un visuel
+    # déclaré et non incorporé, ou un visuel absent dont rien ne dit ce qu'il
+    # devait montrer.
+    try:
+        dossier = render.lire_dossier(corps)
+    except ValueError as erreur:
+        dossier = None
+        problemes.append(f"{chemin}: {erreur}; l'artefact ne pourra pas servir de "
+                         "référence pour reprendre la pastille")
+    attendues = (sum(bool(dossier.get(c)) for c in ("image_titre", "image_schema"))
+                 if dossier else 2)
+    print("  images incorporées         :", incorporees,
+          f"({attendues} déclarée(s) dans le dossier)")
     print("  tables                     :", tables, "(1 attendue: le bandeau)")
-    if incorporees != len(sources) or incorporees != 2:
+    if incorporees != len(sources):
         problemes.append(f"{chemin}: {incorporees} image(s) incorporée(s) sur "
-                         f"{len(sources)} au lieu de 2; le fichier doit se suffire "
-                         "à lui-même")
+                         f"{len(sources)}; le fichier doit se suffire à lui-même")
+    elif incorporees != attendues:
+        problemes.append(f"{chemin}: {incorporees} image(s) incorporée(s) pour "
+                         f"{attendues} déclarée(s) dans le dossier")
+    if attendues < 2:
+        print(f"  archive provisoire         : {2 - attendues} visuel(s) non encore "
+              "généré(s)")
+        if render.MARQUE_ATTENTE not in corps:
+            problemes.append(f"{chemin}: un visuel manque sans que le document ne "
+                             "porte son emplacement décrit; il ne resterait alors "
+                             "aucune trace de ce qu'il devait montrer")
     if "cid:" in corps:
         problemes.append(f"{chemin}: références cid: restantes, elles ne "
                          "s'affichent que dans un client de messagerie")
@@ -65,21 +93,30 @@ def controler_artefact(chemin, problemes):
         problemes.append(f"{chemin}: table imbriquée; le bandeau doit rester une "
                          "table simple, une ligne et trois cellules")
     # Sans son dossier, l'artefact se lit encore mais ne se reprend plus: il
-    # cesse d'être la référence pour retravailler la pastille.
-    try:
-        dossier = render.lire_dossier(corps)
+    # cesse d'être la référence pour retravailler la pastille. Il a déjà été relu
+    # plus haut, pour savoir combien de visuels la pastille déclare; son absence y
+    # a déjà été signalée.
+    if dossier:
         champs = [c for c in ("titre", "paragraphes", "essentiel") if c in dossier]
         print("  dossier incorporé          : relu,", len(dossier), "champs")
         if len(champs) < 3:
             problemes.append(f"{chemin}: dossier incomplet, il manque le texte même "
                              "de la pastille")
-        absents = [c for c in ("titre_canonique", "axe", "prompt_image", "sources")
+        absents = [c for c in ("titre_canonique", "axe", "prompt_image",
+                               "apercu_visuels", "sources")
                    if not dossier.get(c)]
         if absents:
             print("    champs de reprise absents :", ", ".join(absents))
-    except ValueError as erreur:
-        problemes.append(f"{chemin}: {erreur}; l'artefact ne pourra pas servir de "
-                         "référence pour reprendre la pastille")
+
+
+def conclure(problemes):
+    print()
+    if problemes:
+        print("PROBLÈMES")
+        for p in problemes:
+            print(" -", p)
+        sys.exit(1)
+    print("aucun problème détecté")
 
 
 def main():
@@ -93,8 +130,16 @@ def main():
             raise SystemExit("--html attend un chemin")
         del argv[i:i + 2]
     if not argv:
+        # Rien à rouvrir côté courriel: on contrôle l'archive seule, ce qui est le
+        # cas d'une pastille conservée sans être rediffusée.
+        if artefact:
+            problemes = []
+            controler_artefact(artefact, problemes)
+            return conclure(problemes)
         raise SystemExit('usage: verify.py fichier.msg [sources d\'images...] '
-                         '[--html "pastille NN accroche.html"]')
+                         '[--html "pastille NN accroche.html"]\n'
+                         '       verify.py --html "pastille NN accroche.html"'
+                         '   (archive seule)')
     chemin = argv[0]
     sources = argv[1:]
     if not olefile.isOleFile(chemin):
@@ -205,13 +250,7 @@ def main():
     if artefact:
         controler_artefact(artefact, problemes)
 
-    print()
-    if problemes:
-        print("PROBLÈMES")
-        for p in problemes:
-            print(" -", p)
-        sys.exit(1)
-    print("aucun problème détecté")
+    conclure(problemes)
 
 
 if __name__ == "__main__":

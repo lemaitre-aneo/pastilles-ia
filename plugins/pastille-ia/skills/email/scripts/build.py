@@ -13,6 +13,7 @@ import base64
 import json
 import os
 import sys
+import unicodedata
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -20,8 +21,13 @@ import msg as msgfile          # noqa: E402
 import render                  # noqa: E402
 
 OBLIGATOIRES = ("numero", "total", "titre", "prefixe_sujet", "essentiel",
-                "paragraphes", "legende_schema", "alt_schema", "image_titre",
-                "image_schema")
+                "paragraphes", "legende_schema", "alt_schema")
+
+# Les visuels ne sont obligatoires que pour le courriel. L'archive s'écrit sans
+# eux, avec un emplacement décrit à leur place: une pastille peut être conservée
+# avant d'être illustrée, et une reprise ancienne les a parfois perdus. Le
+# courriel n'a pas cette latitude, le schéma étant systématique dans la série.
+VISUELS = ("image_titre", "image_schema")
 
 DEFAUTS = {
     "mention_ia": "Cette pastille peut contenir des traces d'IA. En cas de doute, "
@@ -52,6 +58,33 @@ GABARIT = {
 }
 
 
+# Caractères que la spec refuse dans le texte d'une pastille (section
+# « Caractères »): typographie importée, ou invisible et donc invérifiable à
+# l'œil. Les accents, la cédille et l'e-dans-l'o n'y sont pas et n'y seront
+# jamais: ce sont ceux que le français exige, les signaler reviendrait à
+# signaler du français correct.
+REFUSES = {"—": "un tiret cadratin, à remplacer par une virgule, un deux-points "
+                     "ou une parenthèse",
+           "–": "un demi-cadratin, même remplacement",
+           " ": "une espace fine", " ": "une espace fine insécable",
+           "​": "une espace de largeur nulle", "­": "un trait conditionnel"}
+
+
+def caracteres_refuses(fiche):
+    """Les caractères refusés présents dans le texte, avec leur libellé."""
+    morceaux = ([fiche["titre"], fiche["legende_schema"], fiche["alt_schema"]]
+                + list(fiche["essentiel"]) + list(fiche["paragraphes"])
+                + ([fiche["annexe"]["texte"]] if fiche.get("annexe") else []))
+    texte = " ".join(morceaux)
+    trouves = {nom for c, nom in REFUSES.items() if c in texte}
+    # Un accent décomposé se lit comme son équivalent composé mais sort de
+    # cp1252, donc devient un « ? » visible dans le sujet du courriel.
+    if any(unicodedata.combining(c) for c in texte):
+        trouves.add("un accent décomposé (un e suivi d'un diacritique "
+                    "combinant, au lieu d'un é)")
+    return sorted(trouves)
+
+
 def charger(chemin):
     with open(chemin, encoding="utf-8") as f:
         fiche = json.load(f)
@@ -70,6 +103,16 @@ def charger(chemin):
                   "étroit, et porte peut-être deux idées")
     if not 3 <= len(fiche["paragraphes"]) <= 4:
         raise SystemExit("la pastille compte 3 ou 4 paragraphes")
+    # L'alt et la légende ne font pas le même travail: l'alt décrit ce qui est
+    # dessiné, pour qui ne voit pas l'image, la légende dit ce qu'il faut en
+    # retenir. Recopier l'une dans l'autre prive le lecteur d'écran du contenu du
+    # schéma, le seul visuel de la pastille qui porte de l'information.
+    for refuse in caracteres_refuses(fiche):
+        print("attention: le texte porte", refuse)
+    if fiche["alt_schema"].strip() == fiche["legende_schema"].strip():
+        print("attention: alt_schema reprend la légende mot pour mot; l'alt doit "
+              "dire ce que le schéma montre, sa structure et ses libellés, là où la "
+              "légende dit ce qu'il faut en retenir")
     # Rubrique et temps de lecture se déduisent, plutôt que d'être réclamés:
     # le numéro de diffusion, lui, ne se déduit de rien.
     if "rubrique" not in fiche:
@@ -88,7 +131,7 @@ def charger(chemin):
 TOLERANCE_BLANC = 6      # un pixel plus clair que ça compte comme fond
 MARGE_CONSERVEE = 16     # respiration gardée autour du contenu, en pixels source
 BANDE_MINIMALE = 0.02    # en deçà, la bande ne vaut pas un rognage
-ROGNAGE_MAXIMAL = 0.60   # au delà, on suspecte une fausse détection et on s'abstient
+ROGNAGE_MAXIMAL = 0.60   # au-delà, on suspecte une fausse détection et on s'abstient
 
 
 def mesurer_marges(im):
@@ -203,15 +246,29 @@ def main():
         print("gabarit écrit:", args.gabarit)
         return
 
-    if not args.fiche or not args.msg:
+    # Le courriel n'est pas toujours demandé: archiver une pastille et la diffuser
+    # sont deux gestes distincts, et une reprise qui ne sera pas rediffusée n'a
+    # aucune raison de fabriquer un .msg que personne n'enverra. L'un des deux
+    # chemins de sortie suffit donc.
+    if not args.fiche or not (args.msg or args.html):
         raise SystemExit('usage: build.py fiche.json --msg "pastille NN accroche.msg" '
-                         '[--html "pastille NN accroche.html"]')
+                         '[--html "pastille NN accroche.html"]\n'
+                         '       build.py fiche.json --html "pastille NN accroche.html"'
+                         '   (archive seule, sans courriel)')
 
     fiche = charger(args.fiche)
     dossier = os.path.dirname(os.path.abspath(args.fiche))
-    corps = render.html_pastille(fiche)
-    document = render.document_html(fiche, corps)
-    texte = render.texte_pastille(fiche)
+
+    # Un courriel sans schéma n'est pas conforme à la série, et l'illustration
+    # porte le titre: on refuse donc de le fabriquer plutôt que de livrer un
+    # visuel manquant à des destinataires. L'archive, elle, sait attendre.
+    absents = [c for c in VISUELS if not fiche.get(c)]
+    if args.msg and absents:
+        raise SystemExit(
+            "le courriel exige les deux visuels, or " + ", ".join(absents)
+            + " manque(nt) à la fiche: le schéma est systématique dans la série. "
+            "Générez les visuels, ou produisez l'archive seule en attendant, avec "
+            "--html et sans --msg.")
 
     images = []
     for cid, cle, base, court in (
@@ -219,35 +276,15 @@ def main():
              f'P{fiche["numero"]}TITRE.PNG'),
             ("IMAGE_SCHEMA", "image_schema", f'pastille-{fiche["numero"]}-schema',
              f'P{fiche["numero"]}SCHEMA.PNG')):
-        chemin = fiche[cle]
+        chemin = fiche.get(cle)
+        if not chemin:
+            continue
         if not os.path.isabs(chemin):
             chemin = os.path.join(dossier, chemin)
         produit = preparer_image(chemin, base, rognage=not args.sans_rognage)
         images.append({"cid": cid, "nom": base + ".png", "nom_court": court[:12],
                        "type_mime": "image/png", "fichier": produit,
                        "donnees": open(produit, "rb").read()})
-
-    objet = render.sujet(fiche)
-    msgfile.ecrire(args.msg, objet, document, texte, images)
-    print("msg écrit:", args.msg, os.path.getsize(args.msg), "octets")
-    print("sujet:", objet)
-
-    # Un objet entièrement décodable dans un codage sur deux octets sera affiché
-    # de travers: on le signale ici, à la fabrication, plutôt que de le découvrir
-    # dans la boîte de réception. C'est au préfixe de série de porter la rupture
-    # qui l'évite, puisqu'il est sur tous les courriels.
-    ambigus = dict(render.objet_ambigu(objet))
-    if render.CODAGE_CONSTATE in ambigus:
-        print(f"  ALERTE objet ambigu ({render.CODAGE_CONSTATE}): Outlook (new) "
-              "affichera")
-        print("   ", ambigus[render.CODAGE_CONSTATE])
-        print("    la rupture d'encodage entre le préfixe et le numéro a sauté")
-    hors = render.hors_cp1252(objet)
-    if hors:
-        print("  ALERTE l'objet porte",
-              ", ".join(f"U+{ord(c):04X}" for c in hors),
-              "hors cp1252: un client qui rabat l'objet en octets les remplacera "
-              "par des « ? » visibles")
 
     # Les deux fichiers portent le même nom, à l'extension près: l'accroche les
     # rend reconnaissables dans un dossier, et côté HTML c'est le nom du fichier
@@ -259,7 +296,33 @@ def main():
                   + (": c'est le nom du fichier qui nomme la page importée"
                      if extension == ".html" else ""))
 
-    rappeler_nom(args.msg, ".msg")
+    if args.msg:
+        corps = render.html_pastille(fiche)
+        document = render.document_html(fiche, corps)
+        texte = render.texte_pastille(fiche)
+        objet = render.sujet(fiche)
+        msgfile.ecrire(args.msg, objet, document, texte, images)
+        print("msg écrit:", args.msg, os.path.getsize(args.msg), "octets")
+        print("sujet:", objet)
+
+        # Un objet entièrement décodable dans un codage sur deux octets sera
+        # affiché de travers: on le signale ici, à la fabrication, plutôt que de
+        # le découvrir dans la boîte de réception. C'est au préfixe de série de
+        # porter la rupture qui l'évite, puisqu'il est sur tous les courriels.
+        ambigus = dict(render.objet_ambigu(objet))
+        if render.CODAGE_CONSTATE in ambigus:
+            print(f"  ALERTE objet ambigu ({render.CODAGE_CONSTATE}): Outlook (new) "
+                  "affichera")
+            print("   ", ambigus[render.CODAGE_CONSTATE])
+            print("    la rupture d'encodage entre le préfixe et le numéro a sauté")
+        hors = render.hors_cp1252(objet)
+        if hors:
+            print("  ALERTE l'objet porte",
+                  ", ".join(f"U+{ord(c):04X}" for c in hors),
+                  "hors cp1252: un client qui rabat l'objet en octets les remplacera "
+                  "par des « ? » visibles")
+
+        rappeler_nom(args.msg, ".msg")
 
     def sources_data(images):
         return [f'data:{img["type_mime"]};base64,'
@@ -275,10 +338,18 @@ def main():
                   "d'import de 5 Mo du plan gratuit de Notion")
 
     if args.html:
-        sources = sources_data(images)
+        # Par cid et non par position: un visuel peut manquer, et c'est alors le
+        # second qui glisserait à la place du premier.
+        sources = dict(zip((img["cid"] for img in images), sources_data(images)))
         with open(args.html, "w", encoding="utf-8") as f:
-            f.write(render.html_plat_pastille(fiche, sources[0], sources[1]))
+            f.write(render.html_plat_pastille(fiche, sources.get("IMAGE_TITRE"),
+                                              sources.get("IMAGE_SCHEMA")))
         print("html écrit:", args.html, os.path.getsize(args.html), "octets")
+        if absents:
+            print("  archive provisoire:", ", ".join(absents), "absent(s) de la "
+                  "fiche, l'artefact porte à leur place un emplacement décrit")
+            print("  (refabriquez-la une fois les visuels générés; le courriel, "
+                  "lui, ne peut pas être produit d'ici là)")
         rappeler_nom(args.html, ".html")
         alerter_taille(args.html)
         # Le dossier incorporé est ce qui fait de cet artefact la référence pour
@@ -287,10 +358,11 @@ def main():
             render.lire_dossier(open(args.html, encoding="utf-8").read())
         except ValueError as erreur:
             raise SystemExit(f"dossier incorporé illisible: {erreur}")
-        absents = [c for c in ("titre_canonique", "axe", "prompt_image", "sources")
-                   if not fiche.get(c)]
-        if absents:
-            print("  dossier incomplet, champs absents:", ", ".join(absents),
+        absents_reprise = [c for c in ("titre_canonique", "axe", "prompt_image",
+                                       "apercu_visuels", "sources")
+                           if not fiche.get(c)]
+        if absents_reprise:
+            print("  dossier incomplet, champs absents:", ", ".join(absents_reprise),
                   "\n  (une reprise ultérieure devra les redemander)")
 
 
