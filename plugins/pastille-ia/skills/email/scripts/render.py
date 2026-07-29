@@ -269,8 +269,23 @@ def html_pastille(c):
                        'font-size:0; line-height:0;">\n'
                        + image("IMAGE_SCHEMA", c["alt_schema"], W_SCHEMA)
                        + "\n</td>\n</tr>\n")
-            out.append(ligne(para(c["legende_schema"], GRIS, 13, 20, align=None),
-                             "8px 20px 0 20px"))
+            # La légende se cale sur la largeur du schéma, pas sur celle de la
+            # colonne: une phrase qui dépasse l'image qu'elle décrit ne se
+            # rattache plus visuellement à elle. Même plafond que l'image, donné
+            # en plus à Word par commentaire conditionnel, puisqu'il ignore
+            # max-width; la largeur reste fluide en dessous.
+            legende = (
+                f'<!--[if mso]><table role="presentation" cellpadding="0" '
+                f'cellspacing="0" border="0" width="{W_SCHEMA}" align="center" '
+                f'style="width:{W_SCHEMA}px;"><tr><td style="padding:0;">'
+                f'<![endif]-->\n'
+                + table(extra=f" max-width:{W_SCHEMA}px;")
+                + '<td style="padding:0;">\n'
+                + para(c["legende_schema"], GRIS, 13, 20, align=None)
+                + "\n</td>\n</tr>\n</table>\n"
+                + "<!--[if mso]></td></tr></table><![endif]-->")
+            out.append('<tr>\n<td align="center" style="padding:8px 20px 0 20px;">\n'
+                       + legende + "\n</td>\n</tr>\n")
 
     if c.get("annexe"):
         a = c["annexe"]
@@ -499,11 +514,13 @@ def html_plat_pastille(c, source_image_titre, source_image_schema):
         out.append(f'<p style="{p_corps}">{_inline(para_texte)}</p>')
         if i == apres:
             out += [
-                '<figure style="margin:0 0 16px 0;">',
+                # La figure porte le plafond de largeur, et non l'image seule:
+                # la légende se cale ainsi sur la largeur du schéma au lieu de
+                # s'étaler sur toute la colonne.
+                f'<figure style="max-width:{W_SCHEMA}px; margin:0 auto 16px auto;">',
                 f'<img src="{source_image_schema}" '
                 f'alt="{_html.escape(fr_texte(c["alt_schema"]))}" '
-                f'style="max-width:{W_SCHEMA}px; width:100%; height:auto; '
-                f'display:block; margin:0 auto;">',
+                f'style="width:100%; height:auto; display:block;">',
                 f'<figcaption style="margin:8px 0 0 0; {st(GRIS, 13, 20)}">'
                 f'{_inline(c["legende_schema"])}</figcaption>',
                 "</figure>"]
