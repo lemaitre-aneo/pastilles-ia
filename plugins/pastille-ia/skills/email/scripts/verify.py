@@ -2,13 +2,11 @@
 """Contrôle un .msg fabriqué: structure, propriétés, pièces jointes, typographie.
 
     python3 verify.py pastille-13.msg [image-titre.png image-schema.png]
-                      [--html courriel.html] [--markdown pastille.md]
-                      [--html-plat pastille-notion.html]
-                      [--html-plat-autonome pastille-plat-autonome.html]
+                      [--html "pastille 13 les tokens.html"]
 
 Un parseur indépendant (olefile) rouvre le fichier: c'est le seul moyen de
 vérifier le conteneur sans Outlook. Le rendu visuel, lui, se contrôle avec
-le HTML autonome et un navigateur.
+l'artefact HTML et un navigateur.
 """
 import hashlib
 import os
@@ -35,104 +33,49 @@ def proprietes(ole, chemin, taille_entete):
     return table
 
 
-def images_voisines(chemin, cites, problemes, quoi):
-    """Un artefact d'import ne trouve ses images que si elles sont à côté de lui,
-    citées par leur seul nom: c'est la condition que Notion documente."""
-    voisin = os.path.dirname(os.path.abspath(chemin))
-    courts = [n if len(n) <= 60 else n[:57] + "..." for n in cites]
-    print("  images citées              :", ", ".join(courts) or "aucune")
-    if len(cites) != 2:
-        problemes.append(f"{chemin}: {len(cites)} image(s) citée(s) au lieu de 2")
-    for nom, court in zip(cites, courts):
-        if os.path.dirname(nom):
-            problemes.append(f"{chemin}: {court} porte un chemin; {quoi} importe "
-                             "les images voisines, pas celles d'un autre dossier")
-        elif not os.path.exists(os.path.join(voisin, nom)):
-            problemes.append(f"{chemin}: {court} est cité mais absent du dossier")
-
-
-def controler_artefacts(html_archive, markdown, html_plat, html_plat_autonome,
-                        problemes):
-    """Les artefacts conservés ne passent pas par Outlook, mais ils ont leurs
-    propres règles: le HTML doit se suffire à lui-même (sinon il n'est pas
-    archivable) et le Markdown doit trouver ses images à côté de lui (sinon
-    l'import Notion arrive sans visuels)."""
-    if html_archive:
-        print("\nHTML d'archive")
-        corps = open(html_archive, encoding="utf-8").read()
-        incorporees = corps.count('src="data:image/png;base64,')
-        residus = corps.count("cid:")
-        print("  images incorporées         :", incorporees)
-        print("  références cid: restantes  :", residus)
-        if incorporees != 2:
-            problemes.append(f"{html_archive}: {incorporees} image(s) incorporée(s) "
-                             "au lieu de 2, le fichier n'est pas autonome")
-        if residus:
-            problemes.append(f"{html_archive}: {residus} référence(s) cid: restantes, "
-                             "elles ne s'affichent que dans un client de messagerie")
-
-    if markdown:
-        print("\nMarkdown d'archive")
-        corps = open(markdown, encoding="utf-8").read()
-        images_voisines(markdown, re.findall(r"!\[[^\]]*\]\(([^)]+)\)", corps),
-                        problemes, "Notion")
-
-    for chemin, autonome in ((html_plat, False), (html_plat_autonome, True)):
-        if not chemin:
-            continue
-        print("\nHTML aplati" + (" autonome" if autonome else " (images voisines)"))
-        corps = open(chemin, encoding="utf-8").read()
-        tables = len(re.findall(r"<table", corps, re.I))
-        sources = re.findall(r'<img src="([^"]+)"', corps)
-        print("  tables                     :", tables, "(1 attendue: le bandeau)")
-        # Une table simple s'importe comme une table, ce qui est voulu pour le
-        # bandeau. Ce qu'un importeur aplatit mal, ce sont les tables de mise en
-        # page, imbriquées: c'est cela qu'on refuse, pas la table en soi.
-        if tables > 1:
-            problemes.append(f"{chemin}: {tables} tables; seul le bandeau en justifie "
-                             "une, au-delà c'est de la mise en page, et c'est ce qu'un "
-                             "importeur aplatit mal")
-        if re.search(r"<table[^>]*>(?:(?!</table>).)*<table", corps, re.I | re.S):
-            problemes.append(f"{chemin}: table imbriquée; le bandeau doit rester une "
-                             "table simple, une ligne et deux cellules")
-        if autonome:
-            incorporees = sum(s.startswith("data:image/") for s in sources)
-            print("  images incorporées         :", incorporees)
-            if incorporees != len(sources) or incorporees != 2:
-                problemes.append(f"{chemin}: {incorporees} image(s) incorporée(s) sur "
-                                 f"{len(sources)} au lieu de 2; le fichier doit se "
-                                 "suffire à lui-même")
-            if "cid:" in corps:
-                problemes.append(f"{chemin}: références cid: restantes")
-        else:
-            if any(s.startswith("data:") for s in sources):
-                problemes.append(f"{chemin}: images incorporées en data:; cette "
-                                 "variante les veut voisines, l'autre les incorpore")
-            else:
-                images_voisines(chemin, sources, problemes, "Notion")
+def controler_artefact(chemin, problemes):
+    """L'artefact conservé ne passe pas par Outlook, mais il a ses propres règles:
+    il doit se suffire à lui-même (sinon il n'est ni archivable ni importable
+    seul) et rester sans mise en page en tables (sinon un importeur l'aplatit)."""
+    print("\nHTML conservé")
+    corps = open(chemin, encoding="utf-8").read()
+    sources = re.findall(r'<img src="([^"]+)"', corps)
+    incorporees = sum(s.startswith("data:image/") for s in sources)
+    tables = len(re.findall(r"<table", corps, re.I))
+    print("  images incorporées         :", incorporees)
+    print("  tables                     :", tables, "(1 attendue: le bandeau)")
+    if incorporees != len(sources) or incorporees != 2:
+        problemes.append(f"{chemin}: {incorporees} image(s) incorporée(s) sur "
+                         f"{len(sources)} au lieu de 2; le fichier doit se suffire "
+                         "à lui-même")
+    if "cid:" in corps:
+        problemes.append(f"{chemin}: références cid: restantes, elles ne "
+                         "s'affichent que dans un client de messagerie")
+    # Une table simple s'importe comme une table, ce qui est voulu pour le
+    # bandeau. Ce qu'un importeur aplatit mal, ce sont les tables de mise en
+    # page, imbriquées: c'est cela qu'on refuse, pas la table en soi.
+    if tables > 1:
+        problemes.append(f"{chemin}: {tables} tables; seul le bandeau en justifie "
+                         "une, au-delà c'est de la mise en page, et c'est ce qu'un "
+                         "importeur aplatit mal")
+    if re.search(r"<table[^>]*>(?:(?!</table>).)*<table", corps, re.I | re.S):
+        problemes.append(f"{chemin}: table imbriquée; le bandeau doit rester une "
+                         "table simple, une ligne et trois cellules")
 
 
 def main():
     argv = sys.argv[1:]
-    html_archive = markdown = html_plat = html_plat_autonome = None
-    for drapeau in ("--html", "--markdown", "--html-plat-autonome", "--html-plat"):
-        if drapeau in argv:
-            i = argv.index(drapeau)
-            valeur = argv[i + 1] if i + 1 < len(argv) else None
-            if not valeur:
-                raise SystemExit(f"{drapeau} attend un chemin")
-            if drapeau == "--html":
-                html_archive = valeur
-            elif drapeau == "--markdown":
-                markdown = valeur
-            elif drapeau == "--html-plat-autonome":
-                html_plat_autonome = valeur
-            else:
-                html_plat = valeur
-            del argv[i:i + 2]
+    # Attention au nom: `html` désigne plus bas le corps HTML lu dans le .msg.
+    artefact = None
+    if "--html" in argv:
+        i = argv.index("--html")
+        artefact = argv[i + 1] if i + 1 < len(argv) else None
+        if not artefact:
+            raise SystemExit("--html attend un chemin")
+        del argv[i:i + 2]
     if not argv:
-        raise SystemExit("usage: verify.py fichier.msg [sources d'images...] "
-                         "[--html courriel.html] [--markdown pastille.md]")
+        raise SystemExit('usage: verify.py fichier.msg [sources d\'images...] '
+                         '[--html "pastille NN accroche.html"]')
     chemin = argv[0]
     sources = argv[1:]
     if not olefile.isOleFile(chemin):
@@ -222,8 +165,8 @@ def main():
             problemes.append(f"{nom}: AttachFlags devrait valoir 4 (ATT_MHTML_REF)")
     ole.close()
 
-    controler_artefacts(html_archive, markdown, html_plat, html_plat_autonome,
-                        problemes)
+    if artefact:
+        controler_artefact(artefact, problemes)
 
     print()
     if problemes:

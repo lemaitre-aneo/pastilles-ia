@@ -332,10 +332,13 @@ def limace(titre, numero=None):
         texte = accroche
     base = _unicodedata.normalize("NFKD", texte)
     base = base.encode("ascii", "ignore").decode("ascii").lower()
-    base = _re.sub(r"[^a-z0-9]+", "-", base).strip("-")
-    while len(base) > 48 and "-" in base:
-        base = base.rsplit("-", 1)[0]
-    return "-".join(([f"pastille-{numero}"] if numero is not None else []) + [base])
+    # Séparateur: l'espace. Les tirets ne survivent pas à toutes les chaînes de
+    # téléchargement, qui les suppriment et recollent les mots; l'espace, lui,
+    # passe, et il donne un titre de page lisible côté Notion.
+    base = _re.sub(r"[^a-z0-9]+", " ", base).strip()
+    while len(base) > 48 and " " in base:
+        base = base.rsplit(" ", 1)[0]
+    return " ".join(([f"pastille {numero}"] if numero is not None else []) + [base])
 
 
 def fr_texte(texte):
@@ -522,45 +525,6 @@ def html_plat_pastille(c, source_image_titre, source_image_schema):
             f'<body style="margin:0 auto; padding:24px 20px; max-width:{MAX_W}px; '
             f'background-color:{BLANC}; {st(NOIR, 16, 26)}">\n'
             f"{corps}\n</body></html>\n")
-
-
-def markdown_pastille(c, nom_image_titre, nom_image_schema):
-    """Version Markdown du même contenu, pour archivage et import Notion.
-
-    Les images sont référencées par leur nom de fichier, sans chemin: le .md et
-    les deux PNG vivent dans le même dossier, et c'est ce dossier (zippé) que
-    Notion sait importer en retrouvant ses images. Les emphases restent en
-    Markdown (**gras**, *italique*), telles qu'elles arrivent dans la fiche.
-    """
-    md = [f'# {fr_texte(c["titre"])}', "",
-          f'*Pastille IA {c["numero"]} / {c["total"]} . {c["rubrique"]} . '
-          f'{c["temps_lecture"]} de lecture*', "",
-          f'![{fr_texte(sans_balises(c["titre"]))}]({nom_image_titre})', "",
-          "> **L’essentiel**"]
-    md += [f'> - {fr_texte(p)}' for p in c["essentiel"]]
-    apres = c.get("schema_apres", len(c["paragraphes"]) - 1)
-    for i, para_texte in enumerate(c["paragraphes"], start=1):
-        md += ["", fr_texte(para_texte)]
-        if i == apres:
-            md += ["", f'![{fr_texte(c["alt_schema"])}]({nom_image_schema})', "",
-                   f'*{fr_texte(c["legende_schema"])}*']
-    if c.get("annexe"):
-        md += ["", f'> **{fr_texte(c["annexe"]["etiquette"])}**',
-               f'> {fr_texte(c["annexe"]["texte"])}']
-    md += ["", "---", "", f'*{fr_texte(c["mention_ia"])}*', "",
-           fr_texte(c["signature"])]
-    if c.get("sources"):
-        md += ["", "## Sources"]
-        for source in c["sources"]:
-            if isinstance(source, str):
-                md.append(f"- {fr_texte(source)}")
-            else:
-                libelle = source.get("titre", source.get("url", ""))
-                url = source.get("url")
-                md.append(f"- [{fr_texte(libelle)}]({url})" if url
-                          else f"- {fr_texte(libelle)}")
-    md.append("")
-    return "\n".join(md)
 
 
 def texte_pastille(c):
