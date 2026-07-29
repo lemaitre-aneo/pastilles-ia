@@ -350,7 +350,10 @@ def html_plat_pastille(c, source_image_titre, source_image_schema):
        naïf peut aussi en recracher le contenu au milieu de la page. En ligne,
        ce risque n'existe pas, et c'est accessoirement la seule chose que le
        courriel sait faire, donc le même vocabulaire sert deux fois.
-    2. Les couleurs sont dérivées de la palette de la série, jamais réécrites:
+    2. Le titre est présent mais masqué visuellement, comme dans le courriel où
+       l'illustration le porte seule. Un import a besoin du h1, un lecteur
+       d'écran aussi; `display:none` les aurait privés des deux.
+    3. Les couleurs sont dérivées de la palette de la série, jamais réécrites:
        le bandeau, l'encadré et les blocs annexes reprennent exactement les
        teintes du courriel, y compris les versions assombries des petits
        libellés, qui existent pour le contraste.
@@ -367,20 +370,31 @@ def html_plat_pastille(c, source_image_titre, source_image_schema):
     p_corps = (f'margin:0 0 16px 0; {st(NOIR, 16, 26, "text-align:justify; ")}')
     out = [
         # Bandeau de série: un seul paragraphe, comme dans le courriel, avec le
-        # numéro en orange sur le bleu de marque.
+        # numéro en orange sur le bleu de marque. Le temps de lecture est poussé
+        # à droite par un flex à deux groupes, faute de la table qui s'en charge
+        # dans le courriel; l'ordre de lecture reste celui de la source, ce qui
+        # importe pour un importeur qui ignore la mise en page.
         f'<p style="margin:0 0 24px 0; padding:14px 20px; '
-        f'background-color:{MARQUE_BLEU}; {st(BLANC, 13, 24)}">'
+        f'background-color:{MARQUE_BLEU}; display:flex; align-items:baseline; '
+        f'justify-content:space-between; gap:12px; {st(BLANC, 13, 24)}">'
+        f'<span style="{st(BLANC, 13, 24)}">'
         f'<strong style="{st(MARQUE_ORANGE, 22, 24, "font-weight:700; ")}">'
         f'{c["numero"]}</strong>'
         f'<span style="{st(BLEU_PALE, 12, 24)}">&nbsp;/&nbsp;{c["total"]}</span>'
         f'<span style="{st(BLANC, 13, 24)}">&nbsp;&nbsp;&nbsp;PASTILLE IA'
         f'&nbsp;&nbsp;&middot;&nbsp;&nbsp;{_html.escape(fr_texte(c["rubrique"])).upper()}'
-        f'</span>'
-        f'<span style="{st(BLEU_PALE, 12, 24)}">&nbsp;&nbsp;&middot;&nbsp;&nbsp;'
+        f'</span></span>'
+        f'<span style="{st(BLEU_PALE, 12, 24, "white-space:nowrap; ")}">'
         f'{c["temps_lecture"]} de lecture</span></p>',
 
-        f'<h1 style="margin:0 0 20px 0; {st(MARQUE_BLEU, 26, 34, "font-weight:700; ")}">'
-        f'{_inline(c["titre"])}</h1>',
+        # Titre: présent dans le fichier, invisible au rendu. Le courriel ne
+        # l'affiche pas non plus, l'illustration le porte déjà; mais un import
+        # a besoin du h1 pour nommer sa page, et un lecteur d'écran pour
+        # annoncer le document. D'où la technique du masquage visuel plutôt
+        # qu'un display:none, qui l'aurait retiré aux deux.
+        f'<h1 style="position:absolute; width:1px; height:1px; margin:-1px; '
+        f'padding:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; '
+        f'border:0;">{_inline(c["titre"])}</h1>',
 
         f'<p style="margin:0 0 24px 0;">'
         f'<img src="{source_image_titre}" '
