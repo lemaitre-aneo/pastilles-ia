@@ -18,7 +18,7 @@
   ],
   "schema_apres": 3,
   "legende_schema": "Légende du schéma, une phrase qui dit ce qu'il faut y voir.",
-  "alt_schema": "Description de ce que montre le schéma, une phrase.",
+  "alt_schema": "Équivalent textuel du schéma, dérivé de l'aperçu des visuels: ce qui est dessiné, la forme et les libellés dans l'ordre de lecture, une à deux phrases. Ne recopiez pas la légende ici, elle dit ce qu'il faut retenir et non ce qui est montré.",
   "annexe": {
     "etiquette": "À essayer",
     "style": "essayer",

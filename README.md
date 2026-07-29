@@ -21,7 +21,9 @@ Ce qui reste ferme, parce que ce sont des contraintes de diffusion et non des go
 
 Un prompt est fait pour être collé, pas pour être lu, et c'est pourtant lui qu'il faudrait relire pour savoir ce que l'image va montrer. Le livrable porte donc, **à côté du bloc**, un aperçu en clair des deux images: le motif central et le titre exact rendu pour l'illustration; la forme retenue, le mécanisme qu'elle rend visible, la structure, les libellés et le format pour le schéma.
 
-Il sert trois lecteurs: l'**utilisateur**, qui peut contester une forme avant de payer une génération; les **relecteurs** de `review`, qui ne voient jamais les images et jugeaient un bloc de prompt à leur place; et la **reprise**, des mois plus tard, via le champ `apercu_visuels` du dossier incorporé à l'artefact HTML. À ne pas confondre avec ses deux voisins: la **légende** est publiée sous le visuel dans le courriel, le **texte alternatif** sert l'accessibilité, l'aperçu reste interne. Il ne se sépare jamais du prompt: dès qu'une ligne du prompt bouge, l'aperçu est réécrit avec elle, et une divergence est un défaut, le prompt faisant foi.
+Il sert quatre lecteurs: l'**utilisateur**, qui peut contester une forme avant de payer une génération; les **relecteurs** de `review`, qui ne voient jamais les images et jugeaient un bloc de prompt à leur place; la **reprise**, des mois plus tard, via le champ `apercu_visuels` du dossier incorporé à l'artefact HTML; et le **lecteur d'écran**, puisque le texte alternatif du schéma s'en dérive.
+
+Ses deux voisins ne font pas le même travail, et les confondre coûte au lecteur: la **légende** est publiée sous le visuel et dit ce qu'il faut en retenir; le **texte alternatif** est ce que reçoit un lecteur d'écran et dit ce qui est dessiné, la forme et les libellés dans l'ordre de lecture (`build.py` signale un alt qui recopie la légende); l'aperçu, lui, reste interne et porte en plus le pourquoi de la forme. L'alt du schéma est donc l'extrait lisible de l'aperçu, pas un texte écrit à côté de lui, et le schéma est le seul des deux visuels qui porte de l'information, celui de l'illustration-titre restant le titre exact. L'aperçu ne se sépare jamais du prompt: dès qu'une ligne du prompt bouge, l'aperçu est réécrit avec elle, et une divergence est un défaut, le prompt faisant foi.
 
 ## Le jeu d'angles du fan-out
 
@@ -58,6 +60,8 @@ Une seule fiche, un seul code de rendu, deux sorties et rien de plus:
 | `pastille NN accroche.html` | **importer dans Notion**, lire, conserver, **reprendre** | HTML sémantique aux teintes de la série, visuels **incorporés**, et le dossier complet de la pastille en commentaire |
 
 Le second fait quatre métiers à la fois, lire, importer, conserver et reprendre, ce qui a permis d'abandonner les variantes qui les séparaient: le Markdown, la copie fidèle du courriel, la version aux images voisines. L'archive d'une pastille, ce sont ce fichier et le dossier qui le contient, avec la fiche et les PNG d'origine.
+
+**Les deux sorties ne sont pas solidaires**: `build.py fiche.json --html "..."`, sans `--msg`, produit l'archive seule, et `verify.py --html "..."` la contrôle seule. Diffuser et conserver sont deux décisions distinctes, et une pastille reprise des mois plus tard, ou tirée d'un texte qui ne repartira pas, n'a pas à fabriquer un `.msg` que personne n'enverra. L'inverse ne vaut pas: un `.msg` sans artefact laisse la pastille sans archive.
 
 **Les deux fichiers portent le même nom**, à l'extension près, avec des espaces. Notion nomme la page importée d'après le nom du fichier, pas d'après le `h1` du document; et les tirets ne survivent pas à toutes les chaînes de téléchargement, qui les suppriment et recollent les mots. `build.py` calcule le nom depuis le titre, en gardant l'accroche jusqu'au deux-points, et le rappelle si celui reçu diffère: `pastille 7 les tokens.html`, `pastille 45 la chaine de pensee.html`.
 

@@ -3,10 +3,15 @@
 
     python3 verify.py pastille-13.msg [image-titre.png image-schema.png]
                       [--html "pastille 13 les tokens.html"]
+    python3 verify.py --html "pastille 13 les tokens.html"   (archive seule)
 
 Un parseur indépendant (olefile) rouvre le fichier: c'est le seul moyen de
 vérifier le conteneur sans Outlook. Le rendu visuel, lui, se contrôle avec
 l'artefact HTML et un navigateur.
+
+L'artefact se contrôle aussi seul, sans .msg: une pastille peut être archivée
+sans être rediffusée, et ses règles propres (se suffire à lui-même, pas de mise
+en page en tables, un dossier relisible) ne dépendent pas du courriel.
 """
 import hashlib
 import os
@@ -83,6 +88,16 @@ def controler_artefact(chemin, problemes):
                          "référence pour reprendre la pastille")
 
 
+def conclure(problemes):
+    print()
+    if problemes:
+        print("PROBLÈMES")
+        for p in problemes:
+            print(" -", p)
+        sys.exit(1)
+    print("aucun problème détecté")
+
+
 def main():
     argv = sys.argv[1:]
     # Attention au nom: `html` désigne plus bas le corps HTML lu dans le .msg.
@@ -94,8 +109,16 @@ def main():
             raise SystemExit("--html attend un chemin")
         del argv[i:i + 2]
     if not argv:
+        # Rien à rouvrir côté courriel: on contrôle l'archive seule, ce qui est le
+        # cas d'une pastille conservée sans être rediffusée.
+        if artefact:
+            problemes = []
+            controler_artefact(artefact, problemes)
+            return conclure(problemes)
         raise SystemExit('usage: verify.py fichier.msg [sources d\'images...] '
-                         '[--html "pastille NN accroche.html"]')
+                         '[--html "pastille NN accroche.html"]\n'
+                         '       verify.py --html "pastille NN accroche.html"'
+                         '   (archive seule)')
     chemin = argv[0]
     sources = argv[1:]
     if not olefile.isOleFile(chemin):
@@ -206,13 +229,7 @@ def main():
     if artefact:
         controler_artefact(artefact, problemes)
 
-    print()
-    if problemes:
-        print("PROBLÈMES")
-        for p in problemes:
-            print(" -", p)
-        sys.exit(1)
-    print("aucun problème détecté")
+    conclure(problemes)
 
 
 if __name__ == "__main__":

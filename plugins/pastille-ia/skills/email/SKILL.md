@@ -19,7 +19,7 @@ Les normes de la série vivent dans un fichier partagé, source unique commune a
 ## Entrées attendues
 Ce skill est autonome: il ne suppose pas qu'un autre skill vient de tourner. Le texte peut sortir d'une génération faite juste avant, d'un raffinement, ou d'un simple copier-coller de l'utilisateur quand la conversation d'origine est perdue. Ce qui compte est ce qui est présent maintenant.
 
-1. Le contenu de la pastille: titre retenu, les puces de « L'essentiel », les 3 ou 4 paragraphes, la légende du schéma, le texte alternatif du schéma, et le bloc annexe s'il y en a un. S'il vient d'être produit dans la conversation, reprends-le tel quel sans le réécrire. Sinon demande-le, ou demande à l'utilisateur de le recoller. Si la légende du schéma ou son texte alternatif manquent, demande-les: ne les invente pas, la légende dit ce qu'il faut voir dans un visuel que tu ne peux pas regarder. L'aperçu des visuels ne les remplace pas: il décrit l'intention, il est interne et il n'est jamais publié, là où la légende s'imprime sous l'image et le texte alternatif sert l'accessibilité.
+1. Le contenu de la pastille: titre retenu, les puces de « L'essentiel », les 3 ou 4 paragraphes, la légende du schéma, le texte alternatif du schéma, et le bloc annexe s'il y en a un. S'il vient d'être produit dans la conversation, reprends-le tel quel sans le réécrire. Sinon demande-le, ou demande à l'utilisateur de le recoller. Si la légende du schéma manque, demande-la: ne l'invente pas, elle dit ce qu'il faut retenir d'un visuel que tu ne peux pas regarder. Le texte alternatif se traite autrement quand l'aperçu des visuels est là: dérive-le de l'aperçu (ce qui est dessiné, la forme et les libellés dans l'ordre de lecture, une à deux phrases) et soumets-le, ce n'est pas de l'invention mais une extraction. Sans aperçu, demande-le comme la légende. Et ne recopie jamais l'une dans l'autre: la légende s'imprime sous l'image et dit quoi en retenir, l'alt est ce que reçoit un lecteur d'écran et dit ce qui est dessiné; `build.py` signale les deux textes identiques.
 2. Le numéro de diffusion. Il vient de l'utilisateur et prévaut toujours, même s'il contredit la liste des 45: cette liste est un inventaire de sujets, pas un ordre de diffusion. Si aucun numéro n'a été donné, propose la position du sujet dans la liste et demande confirmation avant de construire; ne la retiens pas en silence.
 3. Les deux images, illustration-titre puis schéma, collées dans la conversation ou déposées sur le disque.
 
@@ -79,6 +79,15 @@ python3 ${CLAUDE_SKILL_DIR}/scripts/verify.py "pastille NN accroche.msg" \
 ```
 
 Deux artefacts, tous deux issus de la même fiche et du même code de rendu: le `.msg` pour diffuser, le HTML pour importer, lire et conserver. Voir « Les deux artefacts ».
+
+Quand il n'y a rien à diffuser, l'archive se produit seule, sans fabriquer un `.msg` que personne n'enverra (une reprise qui ne repart pas, une pastille qu'on veut seulement conserver):
+
+```
+python3 ${CLAUDE_SKILL_DIR}/scripts/build.py fiche.json --html "pastille NN accroche.html"
+python3 ${CLAUDE_SKILL_DIR}/scripts/verify.py --html "pastille NN accroche.html"
+```
+
+Le contrôle porte alors sur les règles propres de l'artefact, qui ne dépendent pas du courriel: visuels incorporés, aucune référence `cid:` restante, une seule table, dossier relisible. Si une diffusion suit, refabrique les deux ensemble: un `.msg` sans artefact laisse la pastille sans archive.
 
 `build.py` écrit à côté de la fiche les deux PNG qu'il attache réellement, `pastille-NN-illustration-titre.png` et `pastille-NN-schema.png`. Ce sont eux qu'il faut passer à `verify.py`, et non les images d'origine: celles-ci ont pu être converties depuis le webp, aplaties ou rognées, auquel cas elles ne correspondent plus. Ce sont eux, aussi, qui sont incorporés dans le HTML.
 

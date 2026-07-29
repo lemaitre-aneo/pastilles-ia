@@ -125,7 +125,7 @@ Si l'utilisateur accepte: invoque le skill `review` via l'outil Skill, et passe-
 Puis applique: la revue rend des constats déjà dédoublonnés et arbitrés selon la spec partagée, section « Arbitrage des constats ». Réécris en une seule voix, une seule passe, sans boucler. Si un constat contredit une norme de la spec, écarte-le en le disant.
 
 ## Refabriquer les fichiers
-Une reprise ne s'arrête pas au texte affiché en conversation. Si tu es parti d'un artefact, ou si la pastille a déjà été diffusée, refabrique les deux fichiers avec le skill `email`: le `.msg` et l'artefact HTML, depuis la fiche retouchée. C'est ce qui garde le dossier, le texte et les visuels d'accord entre eux, et c'est ce qui fera de la prochaine reprise une lecture au lieu d'une reconstitution.
+Une reprise ne s'arrête pas au texte affiché en conversation. Si tu es parti d'un artefact, ou si la pastille a déjà été diffusée, refabrique les fichiers avec le skill `email` depuis la fiche retouchée. Quand une diffusion suit, ce sont les deux, le `.msg` et l'artefact HTML. Quand la reprise ne repart pas (une ancienne pastille qu'on remet au formalisme, une retouche d'archive), **l'artefact seul suffit**: `build.py fiche.json --html "..."` sans `--msg`, contrôlé par `verify.py --html "..."`. Inutile de fabriquer un courriel que personne n'enverra. C'est ce qui garde le dossier, le texte et les visuels d'accord entre eux, et c'est ce qui fera de la prochaine reprise une lecture au lieu d'une reconstitution.
 
 Deux cas à signaler franchement à l'utilisateur au moment de refabriquer:
 - **Le prompt d'images a changé**: les visuels du dossier sont périmés, il faut les régénérer dans Gemini avant de refabriquer, sinon l'artefact porterait un texte neuf et une image ancienne.

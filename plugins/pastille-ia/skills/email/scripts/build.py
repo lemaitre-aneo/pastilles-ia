@@ -70,6 +70,14 @@ def charger(chemin):
                   "étroit, et porte peut-être deux idées")
     if not 3 <= len(fiche["paragraphes"]) <= 4:
         raise SystemExit("la pastille compte 3 ou 4 paragraphes")
+    # L'alt et la légende ne font pas le même travail: l'alt décrit ce qui est
+    # dessiné, pour qui ne voit pas l'image, la légende dit ce qu'il faut en
+    # retenir. Recopier l'une dans l'autre prive le lecteur d'écran du contenu du
+    # schéma, le seul visuel de la pastille qui porte de l'information.
+    if fiche["alt_schema"].strip() == fiche["legende_schema"].strip():
+        print("attention: alt_schema reprend la légende mot pour mot; l'alt doit "
+              "dire ce que le schéma montre, sa structure et ses libellés, là où la "
+              "légende dit ce qu'il faut en retenir")
     # Rubrique et temps de lecture se déduisent, plutôt que d'être réclamés:
     # le numéro de diffusion, lui, ne se déduit de rien.
     if "rubrique" not in fiche:
@@ -203,15 +211,18 @@ def main():
         print("gabarit écrit:", args.gabarit)
         return
 
-    if not args.fiche or not args.msg:
+    # Le courriel n'est pas toujours demandé: archiver une pastille et la diffuser
+    # sont deux gestes distincts, et une reprise qui ne sera pas rediffusée n'a
+    # aucune raison de fabriquer un .msg que personne n'enverra. L'un des deux
+    # chemins de sortie suffit donc.
+    if not args.fiche or not (args.msg or args.html):
         raise SystemExit('usage: build.py fiche.json --msg "pastille NN accroche.msg" '
-                         '[--html "pastille NN accroche.html"]')
+                         '[--html "pastille NN accroche.html"]\n'
+                         '       build.py fiche.json --html "pastille NN accroche.html"'
+                         '   (archive seule, sans courriel)')
 
     fiche = charger(args.fiche)
     dossier = os.path.dirname(os.path.abspath(args.fiche))
-    corps = render.html_pastille(fiche)
-    document = render.document_html(fiche, corps)
-    texte = render.texte_pastille(fiche)
 
     images = []
     for cid, cle, base, court in (
@@ -227,28 +238,6 @@ def main():
                        "type_mime": "image/png", "fichier": produit,
                        "donnees": open(produit, "rb").read()})
 
-    objet = render.sujet(fiche)
-    msgfile.ecrire(args.msg, objet, document, texte, images)
-    print("msg écrit:", args.msg, os.path.getsize(args.msg), "octets")
-    print("sujet:", objet)
-
-    # Un objet entièrement décodable dans un codage sur deux octets sera affiché
-    # de travers: on le signale ici, à la fabrication, plutôt que de le découvrir
-    # dans la boîte de réception. C'est au préfixe de série de porter la rupture
-    # qui l'évite, puisqu'il est sur tous les courriels.
-    ambigus = dict(render.objet_ambigu(objet))
-    if render.CODAGE_CONSTATE in ambigus:
-        print(f"  ALERTE objet ambigu ({render.CODAGE_CONSTATE}): Outlook (new) "
-              "affichera")
-        print("   ", ambigus[render.CODAGE_CONSTATE])
-        print("    la rupture d'encodage entre le préfixe et le numéro a sauté")
-    hors = render.hors_cp1252(objet)
-    if hors:
-        print("  ALERTE l'objet porte",
-              ", ".join(f"U+{ord(c):04X}" for c in hors),
-              "hors cp1252: un client qui rabat l'objet en octets les remplacera "
-              "par des « ? » visibles")
-
     # Les deux fichiers portent le même nom, à l'extension près: l'accroche les
     # rend reconnaissables dans un dossier, et côté HTML c'est le nom du fichier
     # qui nomme la page importée, Notion ne lisant pas le h1 du document.
@@ -259,7 +248,33 @@ def main():
                   + (": c'est le nom du fichier qui nomme la page importée"
                      if extension == ".html" else ""))
 
-    rappeler_nom(args.msg, ".msg")
+    if args.msg:
+        corps = render.html_pastille(fiche)
+        document = render.document_html(fiche, corps)
+        texte = render.texte_pastille(fiche)
+        objet = render.sujet(fiche)
+        msgfile.ecrire(args.msg, objet, document, texte, images)
+        print("msg écrit:", args.msg, os.path.getsize(args.msg), "octets")
+        print("sujet:", objet)
+
+        # Un objet entièrement décodable dans un codage sur deux octets sera
+        # affiché de travers: on le signale ici, à la fabrication, plutôt que de
+        # le découvrir dans la boîte de réception. C'est au préfixe de série de
+        # porter la rupture qui l'évite, puisqu'il est sur tous les courriels.
+        ambigus = dict(render.objet_ambigu(objet))
+        if render.CODAGE_CONSTATE in ambigus:
+            print(f"  ALERTE objet ambigu ({render.CODAGE_CONSTATE}): Outlook (new) "
+                  "affichera")
+            print("   ", ambigus[render.CODAGE_CONSTATE])
+            print("    la rupture d'encodage entre le préfixe et le numéro a sauté")
+        hors = render.hors_cp1252(objet)
+        if hors:
+            print("  ALERTE l'objet porte",
+                  ", ".join(f"U+{ord(c):04X}" for c in hors),
+                  "hors cp1252: un client qui rabat l'objet en octets les remplacera "
+                  "par des « ? » visibles")
+
+        rappeler_nom(args.msg, ".msg")
 
     def sources_data(images):
         return [f'data:{img["type_mime"]};base64,'
