@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import msg as msgfile          # noqa: E402
 import render                  # noqa: E402
 
-OBLIGATOIRES = ("numero", "total", "titre", "prefixe_sujet", "essentiel",
+OBLIGATOIRES = ("numero", "total", "titre", "essentiel",
                 "paragraphes", "legende_schema", "alt_schema")
 
 # Les visuels ne sont obligatoires que pour le courriel. L'archive s'écrit sans
@@ -33,14 +33,12 @@ DEFAUTS = {
     "mention_ia": "Cette pastille peut contenir des traces d'IA. En cas de doute, "
                   "demandez à un humain.",
     "signature": "L'Alliance IA",
-    "prefixe_sujet": "[Pastille IA de l'été]",
     "total": 45,
 }
 
 GABARIT = {
     "numero": "NN", "total": 45, "rubrique": "Rubrique", "temps_lecture": "X min",
     "titre": "Titre exact de la pastille",
-    "prefixe_sujet": "[Pastille IA de l'été]",
     "essentiel": ["Puce 1. Une ligne, pas deux.", "Puce 2.",
                   "Puce 3. Trois puces au maximum."],
     "paragraphes": ["Paragraphe 1. 45 à 60 mots, 2 à 3 phrases, **gras** et "
@@ -90,6 +88,14 @@ def charger(chemin):
         fiche = json.load(f)
     for cle, valeur in DEFAUTS.items():
         fiche.setdefault(cle, valeur)
+    # Le préfixe du sujet est une norme de série, pas un réglage de pastille: il
+    # vit dans render.PREFIXE_SUJET. Les fiches et les dossiers d'avant le portent
+    # encore, on le retire donc ici plutôt que de le réécrire dans le dossier, ce
+    # qui le ferait passer pour configurable une fois de plus.
+    ancien = fiche.pop("prefixe_sujet", None)
+    if ancien is not None and ancien != render.PREFIXE_SUJET:
+        print(f"prefixe_sujet ignoré ({ancien!r}): le préfixe de la série n'est pas "
+              f"configurable, le sujet portera {render.PREFIXE_SUJET!r}")
     manquantes = [c for c in OBLIGATOIRES if c not in fiche]
     if manquantes:
         raise SystemExit("champs manquants dans la fiche: " + ", ".join(manquantes))

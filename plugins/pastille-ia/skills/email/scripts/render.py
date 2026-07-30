@@ -221,8 +221,15 @@ def image(cid, alt, largeur):
 
 # --- assemblage --------------------------------------------------------------
 
+# Le préfixe de la série, le même sur tous les courriels. Ce n'est pas un réglage
+# de pastille: il ne figure pas dans la fiche, il ne se demande pas à
+# l'utilisateur, et il vit ici pour n'avoir qu'un seul endroit à changer si la
+# série est un jour rebaptisée.
+PREFIXE_SUJET = "[Pastille IA de l'été]"
+
+
 def sujet(c):
-    """[Prefixe] #NN : Titre. Typographie appliquée au préfixe comme au titre,
+    """PREFIXE_SUJET #NN : Titre. Typographie appliquée au préfixe comme au titre,
     mais en espaces ordinaires: les insécables et la recherche des messageries
     font mauvais ménage.
 
@@ -236,7 +243,7 @@ def sujet(c):
     def ordinaire(texte):
         return sans_balises(texte).replace("\u00a0", " ")
 
-    return (ordinaire(c["prefixe_sujet"]) + "\u00a0"
+    return (ordinaire(PREFIXE_SUJET) + "\u00a0"
             + ordinaire(f'#{c["numero"]} : {c["titre"]}'))
 
 

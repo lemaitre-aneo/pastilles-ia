@@ -20,7 +20,7 @@ Les normes de la série vivent dans un fichier partagé, source unique commune a
 Ce skill est autonome: il ne suppose pas qu'un autre skill vient de tourner. Le texte peut sortir d'une génération faite juste avant, d'un raffinement, ou d'un simple copier-coller de l'utilisateur quand la conversation d'origine est perdue. Ce qui compte est ce qui est présent maintenant.
 
 1. Le contenu de la pastille: titre retenu, les puces de « L'essentiel », les 3 ou 4 paragraphes, la légende du schéma, le texte alternatif du schéma, et le bloc annexe s'il y en a un. S'il vient d'être produit dans la conversation, reprends-le tel quel sans le réécrire. Sinon demande-le, ou demande à l'utilisateur de le recoller. Si la légende du schéma manque, demande-la: ne l'invente pas, elle dit ce qu'il faut retenir d'un visuel que tu ne peux pas regarder. Le texte alternatif se traite autrement quand l'aperçu des visuels est là: dérive-le de l'aperçu (ce qui est dessiné, la forme et les libellés dans l'ordre de lecture, une à deux phrases) et soumets-le, ce n'est pas de l'invention mais une extraction. Sans aperçu, demande-le comme la légende. Et ne recopie jamais l'une dans l'autre: la légende s'imprime sous l'image et dit quoi en retenir, l'alt est ce que reçoit un lecteur d'écran et dit ce qui est dessiné; `build.py` signale les deux textes identiques.
-2. Le numéro de diffusion. Il vient de l'utilisateur et prévaut toujours, même s'il contredit la liste des 45: cette liste est un inventaire de sujets, pas un ordre de diffusion. Si aucun numéro n'a été donné, propose la position du sujet dans la liste et demande confirmation avant de construire; ne la retiens pas en silence.
+2. Le numéro de diffusion. Il vient de l'utilisateur et prévaut toujours, même s'il contredit la liste des 45: cette liste est un inventaire de sujets, pas un ordre de diffusion. Si aucun numéro n'a été donné, propose la position du sujet dans la liste et demande confirmation avant de construire; ne la retiens pas en silence. C'est **la seule valeur du sujet à demander**: le préfixe de saison, lui, n'est pas configurable et ne se demande jamais (voir « Le préfixe du sujet ne se demande pas »).
 3. La rubrique, quand elle a été décidée. Elle n'est pas un calcul: elle suit l'axe et le contenu de la pastille, et se lit dans le livrable de `generate` ou dans le dossier de l'artefact (voir la spec partagée, section « Numéro et rubrique »). Si tu l'as, écris-la en dur dans la fiche (champ `rubrique`). Si tu ne l'as pas, le script la déduit de la position du sujet dans la liste des 45 (champ `position_liste`), ce qui donne le classement d'inventaire: c'est un défaut raisonnable, pas une vérité, et il faut le confronter à ce que la pastille dit vraiment. Le cas à surveiller est celui d'une pastille dont l'axe a été déplacé en cours de route: le classement d'inventaire la range alors d'après un sujet qu'elle ne traite plus. Un doute se lève en une question à l'utilisateur, pas en laissant le défaut passer.
 4. Les deux images, illustration-titre puis schéma, collées dans la conversation ou déposées sur le disque.
 
@@ -59,7 +59,6 @@ Une fiche décrit la pastille, le script fait le reste. Les emphases s'écrivent
   "total": 45,
   "position_liste": 5,
   "titre": "Titre exact retenu, celui rendu dans l'illustration",
-  "prefixe_sujet": "[Pastille IA de l'été]",
   "essentiel": ["Puce 1.", "Puce 2.", "Puce 3."],
   "paragraphes": ["Paragraphe 1", "Paragraphe 2", "Paragraphe 3", "Paragraphe 4"],
   "schema_apres": 3,
@@ -159,7 +158,12 @@ Ces choix sont des corrections de défauts constatés dans Outlook, pas des pré
 - **Typographie française** appliquée par le code: espace insécable avant `:` `;` `!` `?`, apostrophes typographiques, dans le corps HTML comme dans la version texte.
 - **Corps en entités ASCII**, pour ne dépendre d'aucune détection d'encodage côté client.
 - **Images en ligne**, référencées par `cid:`, marquées `ATT_MHTML_REF` et masquées de la liste des pièces jointes. Si un client n'affiche pas les images dans le corps, c'est ce marquage qu'il faut basculer.
-- **Sujet** au format `[Prefixe] #NN : Titre`, en espaces ordinaires: les insécables et la recherche des messageries font mauvais ménage. Un titre qui contient déjà un deux-points en produit deux, c'est accepté.
+- **Sujet** au format `[Pastille IA de l'été] #NN : Titre`, en espaces ordinaires: les insécables et la recherche des messageries font mauvais ménage. Un titre qui contient déjà un deux-points en produit deux, c'est accepté.
+
+### Le préfixe du sujet ne se demande pas
+Le préfixe de saison est une norme de la série, pas un réglage de pastille: une seule valeur, `[Pastille IA de l'été]`, portée par `render.PREFIXE_SUJET` et posée sur tous les courriels. **Ne demande donc jamais à l'utilisateur quel préfixe il veut**, ne lui en propose pas de variante, et ne l'écris pas dans la fiche: le champ `prefixe_sujet` n'existe plus. Une question sur ce point donne à croire qu'il y a là un choix éditorial à faire courriel par courriel, alors que la constance du préfixe est justement ce qui fait reconnaître la série dans une boîte de réception.
+
+Deux conséquences pratiques. Les fiches et les dossiers d'avant portent encore ce champ: `build.py` le retire, et ne dit quelque chose que s'il portait une autre valeur que celle de la série, auquel cas le sujet ne changera pas pour autant. Et si la série est un jour rebaptisée, cela se fait en changeant cette constante, une fois pour toutes les pastilles, pas en interrogeant l'utilisateur à chaque diffusion.
 
 ## Gabarit partagé
 `plugins/pastille-ia/shared/template-pastille.html` est produit par le même code que le courriel réel, avec un contenu de remplacement:
