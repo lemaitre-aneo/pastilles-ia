@@ -92,17 +92,31 @@ def table(extra="", fond=None):
             f'mso-table-lspace:0pt; mso-table-rspace:0pt;{css}{extra}"><tr>\n')
 
 
-# La rubrique suit la position du sujet dans la liste des 45, jamais le numéro
-# de diffusion: les deux sont indépendants.
+# Le classement d'inventaire: la rubrique que la position du sujet dans la liste
+# des 45 laisse attendre. Ce n'est jamais le numéro de diffusion qui la donne,
+# les deux étant indépendants, mais ce n'est pas non plus la position qui la
+# décide: la rubrique suit l'axe traité et le contenu final, et se choisit à la
+# rédaction (voir la spec, section « Numéro et rubrique »). Elle est donc écrite
+# en clair dans la fiche dès qu'elle a été arbitrée, et ce tableau ne sert que de
+# défaut, pour une pastille qui couvre toute l'étendue de son titre canonique.
 RUBRIQUES = ((range(1, 10), "Comprendre"), (range(10, 15), "Limites"),
              (range(15, 16), "Risques et cadre"), (range(16, 23), "Prompting"),
              (range(23, 30), "Au travail"), (range(30, 39), "Agents et outils"),
              (range(39, 46), "Risques et cadre"))
 
+# Les six rubriques de la série, et il n'y en a pas de septième. Le champ n'étant
+# plus calculé dans le cas normal, il faut de quoi attraper la faute de frappe et
+# la rubrique inventée pour coller à un axe.
+RUBRIQUES_CONNUES = tuple(dict.fromkeys(nom for _, nom in RUBRIQUES))
+
 MOTS_PAR_MINUTE = 180
 
 
 def rubrique_pour(position):
+    """La rubrique d'inventaire d'un sujet, d'après sa position dans les 45.
+
+    Un défaut, pas une vérité: une pastille dont l'axe a déplacé le centre de
+    gravité porte la rubrique de ce qu'elle dit, pas celle de son thème."""
     for intervalle, nom in RUBRIQUES:
         if int(position) in intervalle:
             return nom
