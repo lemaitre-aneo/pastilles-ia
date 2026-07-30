@@ -113,15 +113,28 @@ def charger(chemin):
         print("attention: alt_schema reprend la légende mot pour mot; l'alt doit "
               "dire ce que le schéma montre, sa structure et ses libellés, là où la "
               "légende dit ce qu'il faut en retenir")
-    # Rubrique et temps de lecture se déduisent, plutôt que d'être réclamés:
-    # le numéro de diffusion, lui, ne se déduit de rien.
-    if "rubrique" not in fiche:
+    # La rubrique suit l'axe traité et le contenu, elle ne se calcule pas: elle est
+    # donc écrite dans la fiche dès qu'elle a été arbitrée, et seulement contrôlée
+    # ici. Faute de mieux, on retombe sur le classement d'inventaire, en disant que
+    # c'en est un: c'est le cas où une pastille dont l'axe a bougé se retrouve
+    # rangée d'après un sujet qu'elle ne traite plus.
+    if "rubrique" in fiche:
+        if fiche["rubrique"] not in render.RUBRIQUES_CONNUES:
+            raise SystemExit(f"rubrique inconnue: {fiche['rubrique']!r}; la série en "
+                             "compte six, " + ", ".join(render.RUBRIQUES_CONNUES))
+    else:
         position = fiche.get("position_liste")
         if not position:
-            raise SystemExit("indiquez rubrique, ou position_liste (place du sujet "
-                             "dans la liste des 45) pour la déduire")
+            raise SystemExit("indiquez rubrique (celle décidée sur l'axe et le "
+                             "contenu), ou position_liste (place du sujet dans la "
+                             "liste des 45) pour retomber sur le classement "
+                             "d'inventaire")
         fiche["rubrique"] = render.rubrique_pour(position)
-        print(f"rubrique déduite de la position {position}: {fiche['rubrique']}")
+        print(f"rubrique absente de la fiche: classement d'inventaire de la position "
+              f"{position} retenu par défaut, {fiche['rubrique']}"
+              "\n  (la rubrique suit l'axe et le contenu: vérifiez qu'elle "
+              "correspond encore à ce que la pastille dit)")
+    # Le temps de lecture, lui, se déduit vraiment. Le numéro de diffusion, jamais.
     if "temps_lecture" not in fiche:
         fiche["temps_lecture"] = render.temps_lecture(fiche)
         print("temps de lecture calculé:", fiche["temps_lecture"])
