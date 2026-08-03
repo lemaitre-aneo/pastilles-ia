@@ -23,6 +23,21 @@ import render                  # noqa: E402
 OBLIGATOIRES = ("numero", "total", "titre", "essentiel",
                 "paragraphes", "legende_schema", "alt_schema")
 
+# Le bloc annexe est systématique dans la série, mais son absence ne bloque pas
+# la fabrication: les fiches d'avant cette règle n'en portent pas, et une archive
+# ne se prend pas en otage pour un bloc de deux phrases. Le script le signale donc
+# et propose de quoi l'écrire, comme il le fait des visuels manquants; c'est au
+# skill, qui a le texte sous les yeux, de le rédiger et de le faire valider.
+PROPOSITION_ANNEXE = (
+    '  à ajouter dans la fiche, une seule des deux lignes, l\'étiquette se déduisant '
+    'du style:\n'
+    '    "annexe": {"style": "essayer", "texte": "le geste que le lecteur peut faire '
+    'aujourd\'hui, expliqué et non donné en prompt à recopier"}\n'
+    '    "annexe": {"style": "piege", "texte": "l\'erreur que le sujet rend facile, '
+    'et ce qui l\'évite"}\n'
+    "  une à deux phrases, cinquante mots au maximum, et rien qui redise l'enjeu "
+    "ni les puces")
+
 # Les visuels ne sont obligatoires que pour le courriel. L'archive s'écrit sans
 # eux, avec un emplacement décrit à leur place: une pastille peut être conservée
 # avant d'être illustrée, et une reprise ancienne les a parfois perdus. Le
@@ -50,8 +65,9 @@ GABARIT = {
     "legende_schema": "Légende du schéma, une phrase qui dit ce qu'il faut y voir.",
     "alt_schema": "Description du schéma, une phrase.",
     "annexe": {"etiquette": "À essayer", "style": "essayer",
-               "texte": "Bloc actionnable facultatif, un seul au maximum: "
-                        "À essayer, ou Le piège avec style piege."},
+               "texte": "Bloc de clôture, systématique et unique: À essayer pour un "
+                        "geste applicable tout de suite, ou Le piège avec style "
+                        "piege pour l'erreur que le sujet rend facile."},
     "image_titre": "illustration-titre.png", "image_schema": "schema.png",
 }
 
@@ -83,6 +99,39 @@ def caracteres_refuses(fiche):
     return sorted(trouves)
 
 
+def controler_annexe(fiche):
+    """Le bloc de clôture: signalé s'il manque, contrôlé s'il est là.
+
+    Absent ou vide, il n'arrête rien: le fichier se fabrique sans lui, avec de
+    quoi l'écrire. Présent, il tient dans l'une des deux catégories de la série,
+    et un style inconnu arrête, lui: ce n'est pas un héritage mais une faute de
+    saisie dans un champ qu'on vient d'écrire."""
+    annexe = fiche.get("annexe")
+    if not annexe or not annexe.get("texte", "").strip():
+        print("attention: " + ("bloc annexe vide, donc pas rendu" if annexe else
+                               "pas de bloc annexe")
+              + ', alors qu\'il ferme systématiquement la pastille (spec, section '
+                '"Le bloc annexe"); le fichier est produit sans lui\n'
+              + PROPOSITION_ANNEXE)
+        fiche.pop("annexe", None)
+        return
+    style = annexe.get("style", "essayer")
+    if style not in render.LIBELLES_ANNEXE:
+        raise SystemExit(f"style d'annexe inconnu: {style!r}; la série en compte deux, "
+                         + ", ".join(render.LIBELLES_ANNEXE))
+    # Le libellé fait partie de la catégorie: on le pose faute de mieux, et on
+    # signale toute variante, un libellé inventé cassant le repère de la série.
+    attendu = render.LIBELLES_ANNEXE[style]
+    annexe.setdefault("etiquette", attendu)
+    if annexe["etiquette"] != attendu:
+        print(f"attention: étiquette d'annexe {annexe['etiquette']!r} pour le style "
+              f"{style!r}; la série écrit {attendu!r}, sans variante")
+    mots = len(annexe["texte"].split())
+    if mots > 50:
+        print(f"attention: le bloc annexe fait {mots} mots (borne 50): c'est une prise "
+              "à donner en une ou deux phrases, pas un paragraphe de plus")
+
+
 def charger(chemin):
     with open(chemin, encoding="utf-8") as f:
         fiche = json.load(f)
@@ -99,6 +148,7 @@ def charger(chemin):
     manquantes = [c for c in OBLIGATOIRES if c not in fiche]
     if manquantes:
         raise SystemExit("champs manquants dans la fiche: " + ", ".join(manquantes))
+    controler_annexe(fiche)
     if len(fiche["essentiel"]) > 3:
         raise SystemExit("l'encadré L'essentiel est plafonné à trois puces")
     for i, puce in enumerate(fiche["essentiel"], 1):
