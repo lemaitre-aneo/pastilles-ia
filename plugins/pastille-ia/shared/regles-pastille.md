@@ -167,6 +167,8 @@ Les deux libellés s'écrivent exactement ainsi, sans variante: « À tester »,
 
 **Forme**: une à deux phrases, cinquante mots au maximum, en prose. Un prompt à copier peut occuper le bloc entier, guillemets compris; c'est le seul cas où le bloc n'est pas rédigé.
 
+**Ce que l'outillage en fait**: `build.py` signale l'absence du bloc et propose de quoi l'écrire, mais il fabrique quand même le fichier. C'est la même règle que pour les visuels d'une archive: la norme est ferme, l'outil ne prend pas une pastille en otage pour deux phrases, et les fiches antérieures à cette règle doivent pouvoir se refabriquer. L'absence se rattrape donc à la rédaction, pas au refus d'un script. Ce qui arrête vraiment la construction est plus étroit: une catégorie inventée, c'est-à-dire un `style` hors des deux, faute de saisie dans un champ que l'on vient d'écrire.
+
 **Le garde-fou**: si rien de concret ne vient, ne remplis pas le bloc pour le remplir. Un bloc annexe qui paraphrase le texte coûte de la place et n'apporte rien, et son vide dit quelque chose du texte: la pastille est restée trop abstraite pour qu'on puisse en faire quoi que ce soit. Reprends le corps plutôt que l'annexe.
 
 ## Règles du titre
