@@ -32,7 +32,7 @@ PROPOSITION_ANNEXE = (
     '  à ajouter dans la fiche, une seule des deux lignes, l\'étiquette se déduisant '
     'du style:\n'
     '    "annexe": {"style": "essayer", "texte": "le geste que le lecteur peut faire '
-    'aujourd\'hui, prompt à copier ou méthode courte"}\n'
+    'aujourd\'hui, expliqué et non donné en prompt à recopier"}\n'
     '    "annexe": {"style": "piege", "texte": "l\'erreur que le sujet rend facile, '
     'et ce qui l\'évite"}\n'
     "  une à deux phrases, cinquante mots au maximum, et rien qui redise l'enjeu "
