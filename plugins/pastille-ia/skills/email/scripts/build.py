@@ -20,8 +20,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import msg as msgfile          # noqa: E402
 import render                  # noqa: E402
 
-OBLIGATOIRES = ("numero", "total", "titre", "essentiel",
-                "paragraphes", "legende_schema", "alt_schema")
+OBLIGATOIRES = ("numero", "total", "titre", "essentiel", "paragraphes",
+                "legende_schema", "alt_schema", "annexe")
 
 # Les visuels ne sont obligatoires que pour le courriel. L'archive s'écrit sans
 # eux, avec un emplacement décrit à leur place: une pastille peut être conservée
@@ -50,8 +50,9 @@ GABARIT = {
     "legende_schema": "Légende du schéma, une phrase qui dit ce qu'il faut y voir.",
     "alt_schema": "Description du schéma, une phrase.",
     "annexe": {"etiquette": "À essayer", "style": "essayer",
-               "texte": "Bloc actionnable facultatif, un seul au maximum: "
-                        "À essayer, ou Le piège avec style piege."},
+               "texte": "Bloc de clôture, systématique et unique: À essayer pour un "
+                        "geste applicable tout de suite, ou Le piège avec style "
+                        "piege pour l'erreur que le sujet rend facile."},
     "image_titre": "illustration-titre.png", "image_schema": "schema.png",
 }
 
@@ -72,7 +73,7 @@ def caracteres_refuses(fiche):
     """Les caractères refusés présents dans le texte, avec leur libellé."""
     morceaux = ([fiche["titre"], fiche["legende_schema"], fiche["alt_schema"]]
                 + list(fiche["essentiel"]) + list(fiche["paragraphes"])
-                + ([fiche["annexe"]["texte"]] if fiche.get("annexe") else []))
+                + [fiche["annexe"]["texte"]])
     texte = " ".join(morceaux)
     trouves = {nom for c, nom in REFUSES.items() if c in texte}
     # Un accent décomposé se lit comme son équivalent composé mais sort de
@@ -98,7 +99,36 @@ def charger(chemin):
               f"configurable, le sujet portera {render.PREFIXE_SUJET!r}")
     manquantes = [c for c in OBLIGATOIRES if c not in fiche]
     if manquantes:
-        raise SystemExit("champs manquants dans la fiche: " + ", ".join(manquantes))
+        message = "champs manquants dans la fiche: " + ", ".join(manquantes)
+        # Le bloc annexe est systématique depuis que la spec l'exige, et c'est le
+        # champ qui manque aux fiches d'avant: on dit quoi écrire, plutôt que de
+        # laisser chercher dans le modèle.
+        if "annexe" in manquantes:
+            message += ("\n  annexe est le bloc de clôture, désormais obligatoire: "
+                        '{"etiquette": "À essayer", "style": "essayer", "texte": ...} '
+                        'pour un geste applicable tout de suite, ou {"etiquette": '
+                        '"Le piège", "style": "piege", "texte": ...} pour l\'erreur '
+                        "que le sujet rend facile, dite avec ce qui l'évite")
+        raise SystemExit(message)
+    annexe = fiche["annexe"]
+    style = annexe.get("style", "essayer")
+    if style not in render.LIBELLES_ANNEXE:
+        raise SystemExit(f"style d'annexe inconnu: {style!r}; la série en compte deux, "
+                         + ", ".join(render.LIBELLES_ANNEXE))
+    if not annexe.get("texte", "").strip():
+        raise SystemExit("le bloc annexe est vide: écrivez son texte, une à deux "
+                         "phrases, ou changez de catégorie si rien ne vient")
+    # Le libellé fait partie de la catégorie: on le pose faute de mieux, et on
+    # signale toute variante, un libellé inventé cassant le repère de la série.
+    attendu = render.LIBELLES_ANNEXE[style]
+    annexe.setdefault("etiquette", attendu)
+    if annexe["etiquette"] != attendu:
+        print(f"attention: étiquette d'annexe {annexe['etiquette']!r} pour le style "
+              f"{style!r}; la série écrit {attendu!r}, sans variante")
+    mots = len(annexe["texte"].split())
+    if mots > 50:
+        print(f"attention: le bloc annexe fait {mots} mots (borne 50): c'est une prise "
+              "à donner en une ou deux phrases, pas un paragraphe de plus")
     if len(fiche["essentiel"]) > 3:
         raise SystemExit("l'encadré L'essentiel est plafonné à trois puces")
     for i, puce in enumerate(fiche["essentiel"], 1):

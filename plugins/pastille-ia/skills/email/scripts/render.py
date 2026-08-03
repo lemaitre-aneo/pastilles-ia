@@ -67,6 +67,11 @@ BLEU_PALE = eclaircir(MARQUE_BLEU, 0.60)
 FOND_ESSENTIEL = eclaircir(MARQUE_BLEU, 0.96)
 BORDURE_ESSENTIEL = f"1px solid {MARQUE_BLEU}"
 
+# Bloc annexe: systématique, un seul, et deux catégories fermées. Le libellé fait
+# partie de la catégorie et ne se paraphrase pas, la constance de la place et du
+# mot étant tout ce qui en fait un repère pour le lecteur de la série.
+LIBELLES_ANNEXE = {"essayer": "À essayer", "piege": "Le piège"}
+
 ANNEXES = {
     "essayer": {"fond": eclaircir(MARQUE_ORANGE_CLAIR, 0.90),
                 "barre": MARQUE_ORANGE,

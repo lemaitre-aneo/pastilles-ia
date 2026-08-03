@@ -21,7 +21,7 @@
   "annexe": {
     "etiquette": "À essayer",
     "style": "essayer",
-    "texte": "Bloc actionnable facultatif, un seul au maximum: À essayer, ou Le piège en passant style à piege."
+    "texte": "Bloc de clôture, obligatoire et unique, une à deux phrases et cinquante mots au maximum. Deux catégories seulement: À essayer, un geste que le lecteur peut faire aujourd'hui (style essayer), ou Le piège, l'erreur que le sujet rend facile dite avec ce qui l'évite (étiquette Le piège, style piege). L'étiquette se déduit du style si vous l'omettez."
   },
   "image_titre": "illustration-titre.png",
   "image_schema": "schema.png",
