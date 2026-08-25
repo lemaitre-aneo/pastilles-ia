@@ -25,7 +25,8 @@ FACE = "Aptos, Calibri, Segoe UI, Helvetica, Arial"
 
 MAX_W = 1000        # plafond de la colonne de texte, en pixels
 W_TITRE = 600       # largeur fixe de l'illustration-titre
-W_SCHEMA = 560      # largeur fixe du schéma
+W_SCHEMA = 560      # largeur nominale du schéma
+H_SCHEMA = 600      # hauteur maximale du schéma, en pixels
 
 # --- palette -----------------------------------------------------------------
 # Les trois couleurs officielles sont la source; tout le reste en est dérivé par
@@ -224,6 +225,33 @@ def image(cid, alt, largeur):
             f'border:0; outline:none; text-decoration:none;">')
 
 
+def largeur_schema(c):
+    """Largeur d'affichage du schéma, réduite s'il le faut pour que sa hauteur
+    reste sous H_SCHEMA.
+
+    La forme du schéma est libre, du 4:3 au portrait 4:5, et la largeur nominale
+    seule ne suffit donc pas: un 4:5 affiché sur 560 pixels en fait près de 700
+    de haut, soit un visuel qui remplit l'écran d'un téléphone avant que le texte
+    ne reprenne. Le plafond ne peut pas être posé en CSS, pour deux raisons qui
+    se cumulent: `max-height` sur une image dont la largeur est fixée à 100%
+    écrase ses proportions au lieu de la réduire, et Word l'ignore de toute
+    façon, comme il ignore `max-width`. On le pose donc à la source, en calculant
+    la largeur depuis les proportions réelles du visuel, ce qui laisse le reste
+    du rendu intact: la légende suit ce même plafond et garde son bord gauche
+    aligné sur celui de l'image.
+
+    Sans dimensions connues (Pillow absent, gabarit de démonstration), on retombe
+    sur la largeur nominale, qui est la bonne pour un schéma en paysage.
+    """
+    dimensions = c.get("_dimensions_schema")
+    if not dimensions:
+        return W_SCHEMA
+    largeur, hauteur = dimensions
+    if not largeur or not hauteur:
+        return W_SCHEMA
+    return max(1, min(W_SCHEMA, round(H_SCHEMA * largeur / hauteur)))
+
+
 # --- assemblage --------------------------------------------------------------
 
 # Le préfixe de la série, le même sur tous les courriels. Ce n'est pas un réglage
@@ -366,12 +394,13 @@ def html_pastille(c):
     out.append(ligne(essentiel, "24px 20px 0 20px"))
 
     apres = c.get("schema_apres", len(c["paragraphes"]) - 1)
+    w_schema = largeur_schema(c)
     for i, p in enumerate(c["paragraphes"], start=1):
         out.append(ligne(para(p), f'{24 if i == 1 else 16}px 20px 0 20px'))
         if i == apres:
             out.append('<tr>\n<td align="center" style="padding:24px 20px 0 20px; '
                        'font-size:0; line-height:0;">\n'
-                       + image("IMAGE_SCHEMA", c["alt_schema"], W_SCHEMA)
+                       + image("IMAGE_SCHEMA", c["alt_schema"], w_schema)
                        + "\n</td>\n</tr>\n")
             # La légende se cale sur la largeur du schéma, pas sur celle de la
             # colonne: une phrase qui dépasse l'image qu'elle décrit ne se
@@ -380,10 +409,10 @@ def html_pastille(c):
             # max-width; la largeur reste fluide en dessous.
             legende = (
                 f'<!--[if mso]><table role="presentation" cellpadding="0" '
-                f'cellspacing="0" border="0" width="{W_SCHEMA}" align="center" '
-                f'style="width:{W_SCHEMA}px;"><tr><td style="padding:0;">'
+                f'cellspacing="0" border="0" width="{w_schema}" align="center" '
+                f'style="width:{w_schema}px;"><tr><td style="padding:0;">'
                 f'<![endif]-->\n'
-                + table(extra=f" max-width:{W_SCHEMA}px;")
+                + table(extra=f" max-width:{w_schema}px;")
                 + '<td style="padding:0;">\n'
                 + para(c["legende_schema"], GRIS, 13, 20, align=None)
                 + "\n</td>\n</tr>\n</table>\n"
@@ -649,6 +678,7 @@ def html_plat_pastille(c, source_image_titre, source_image_schema):
     out += ["</ul>", "</blockquote>"]
 
     apres = c.get("schema_apres", len(c["paragraphes"]) - 1)
+    w_schema = largeur_schema(c)
     for i, para_texte in enumerate(c["paragraphes"], start=1):
         out.append(f'<p style="{p_corps}">{_inline(para_texte)}</p>')
         if i == apres:
@@ -656,12 +686,12 @@ def html_plat_pastille(c, source_image_titre, source_image_schema):
                 # La figure porte le plafond de largeur, et non l'image seule:
                 # la légende se cale ainsi sur la largeur du schéma au lieu de
                 # s'étaler sur toute la colonne.
-                f'<figure style="max-width:{W_SCHEMA}px; margin:0 auto 16px auto;">',
+                f'<figure style="max-width:{w_schema}px; margin:0 auto 16px auto;">',
                 (f'<img src="{source_image_schema}" '
                  f'alt="{_html.escape(fr_texte(c["alt_schema"]))}" '
                  f'style="width:100%; height:auto; display:block;">'
                  if source_image_schema else
-                 attente("Schéma", c["alt_schema"], W_SCHEMA)),
+                 attente("Schéma", c["alt_schema"], w_schema)),
                 f'<figcaption style="margin:8px 0 0 0; {st(GRIS, 13, 20)}">'
                 f'{_inline(c["legende_schema"])}</figcaption>',
                 "</figure>"]

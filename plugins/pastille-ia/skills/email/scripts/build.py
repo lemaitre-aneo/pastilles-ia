@@ -293,6 +293,19 @@ def preparer_image(chemin, base, rognage=True):
     return sortie
 
 
+def dimensions(chemin):
+    """Dimensions du PNG produit, pour que le rendu sache de combien réduire un
+    schéma en portrait. Sans Pillow on ne sait rien en dire, et le rendu retombe
+    alors sur la largeur nominale: c'est la même dégradation que le rognage, qui
+    reprend l'image telle quelle plutôt que d'échouer."""
+    try:
+        from PIL import Image
+    except ImportError:
+        return None
+    with Image.open(chemin) as im:
+        return list(im.size)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("fiche", nargs="?", help="fiche JSON de la pastille")
@@ -354,6 +367,12 @@ def main():
         images.append({"cid": cid, "nom": base + ".png", "nom_court": court[:12],
                        "type_mime": "image/png", "fichier": produit,
                        "donnees": open(produit, "rb").read()})
+        # Le rendu plafonne la hauteur du schéma en réduisant sa largeur, ce
+        # qu'il ne peut faire qu'en connaissant ses proportions réelles, et donc
+        # après rognage. Champ dérivé, préfixé: il ne part pas dans le dossier
+        # incorporé à l'artefact, qui décrit la pastille et non son fichier.
+        if cid == "IMAGE_SCHEMA":
+            fiche["_dimensions_schema"] = dimensions(produit)
 
     # Les deux fichiers portent le même nom, à l'extension près: l'accroche les
     # rend reconnaissables dans un dossier, et côté HTML c'est le nom du fichier
