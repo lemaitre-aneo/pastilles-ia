@@ -567,12 +567,8 @@ def html_plat_pastille(c, source_image_titre, source_image_schema):
     Le courriel est bâti en tables imbriquées parce que Word ne sait rien faire
     d'autre; c'est précisément ce qu'un importeur aplatit mal. Ici chaque bloc
     est la balise qui le décrit: un titre est un h1, une synthèse est une
-    citation à puces, un schéma est une figure. Un import garde donc la
+    citation à puces, une légende est une figcaption. Un import garde donc la
     structure, et un navigateur retrouve l'allure du courriel.
-
-    Une exception, à contrecœur: la légende du schéma est un paragraphe et non
-    une figcaption, que Notion importe deux fois. Le détail est expliqué là où
-    le bloc se construit.
 
     Deux choix expliquent la forme du code:
 
@@ -686,33 +682,19 @@ def html_plat_pastille(c, source_image_titre, source_image_schema):
     for i, para_texte in enumerate(c["paragraphes"], start=1):
         out.append(f'<p style="{p_corps}">{_inline(para_texte)}</p>')
         if i == apres:
-            # La légende est un paragraphe frère de la figure, et non une
-            # figcaption, qui serait pourtant la balise juste: Notion importe
-            # une figcaption deux fois, une fois en paragraphe placé AVANT
-            # l'image (il aplatit la figure en collectant son contenu texte) et
-            # une fois en légende native sous l'image. Vérifié à l'import: le
-            # défaut tient à la figcaption elle-même, pas au balisage autour
-            # (sans blancs entre les balises, figure sans style, forme exacte de
-            # l'export Notion: tous dupliquent). Et il ne se contourne pas en la
-            # cachant, l'importeur ignorant le CSS dans les deux sens: un
-            # display:none n'empêche pas l'import, et une légende posée en CSS
-            # ::after depuis un attribut n'est pas importée du tout. Une figure
-            # sans figcaption, elle, arrive comme une simple image. On perd la
-            # légende native de Notion, la seule chose qui y ressortait en gris;
-            # on garde la phrase, une fois, et du vrai texte dans le navigateur.
             out += [
-                # La figure garde le plafond de largeur, que la légende reprend:
-                # elle se cale ainsi sur la largeur du schéma au lieu de s'étaler
-                # sur toute la colonne. La figure ne porte donc plus la marge
-                # basse, qui revient à la légende, désormais dernière du bloc.
-                (f'<figure style="max-width:{w_schema}px; margin:0 auto;">'
-                 f'<img src="{source_image_schema}" '
+                # La figure porte le plafond de largeur, et non l'image seule:
+                # la légende se cale ainsi sur la largeur du schéma au lieu de
+                # s'étaler sur toute la colonne.
+                f'<figure style="max-width:{w_schema}px; margin:0 auto 16px auto;">',
+                (f'<img src="{source_image_schema}" '
                  f'alt="{_html.escape(fr_texte(c["alt_schema"]))}" '
-                 f'style="width:100%; height:auto; display:block;"></figure>'
+                 f'style="width:100%; height:auto; display:block;">'
                  if source_image_schema else
                  attente("Schéma", c["alt_schema"], w_schema)),
-                f'<p style="max-width:{w_schema}px; margin:8px auto 16px auto; '
-                f'{st(GRIS, 13, 20)}">{_inline(c["legende_schema"])}</p>']
+                f'<figcaption style="margin:8px 0 0 0; {st(GRIS, 13, 20)}">'
+                f'{_inline(c["legende_schema"])}</figcaption>',
+                "</figure>"]
 
     if c.get("annexe"):
         a = c["annexe"]
