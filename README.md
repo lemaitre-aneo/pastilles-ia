@@ -124,6 +124,7 @@ Les dossiers `.claude/skills/generate`, `.claude/skills/refine`, `.claude/skills
 .claude/skills/review   -> ../../plugins/pastille-ia/skills/review     # skill projet (symlink) -> /review
 .claude/skills/email    -> ../../plugins/pastille-ia/skills/email      # skill projet (symlink) -> /email
 .claude-plugin/marketplace.json                                        # catalogue "alliance-ia" (pour Cowork / CLI)
+LICENSE                                                                # GNU AGPL v3 ou ultérieure (texte intégral)
 plugins/pastille-ia/
   .claude-plugin/plugin.json                                           # manifeste du plugin
   shared/regles-pastille.md                                            # LA source unique des normes (les 4 skills la lisent)
@@ -196,4 +197,13 @@ Les normes de la série sont centralisées dans `plugins/pastille-ia/shared/regl
 - **Le sujet du courriel est le seul texte accentué du fichier**, le corps partant en entités ASCII. Outlook (new) le rabat en octets cp1252 puis le relit dans un codage sur deux octets, ce qui avale les caractères deux par deux: sans précaution, 29 des 45 titres s'affichent `[Pastille IA de l掗t閉 #7 : ...`. Une seule séquence invalide fait échouer ce décodage et sauve le sujet entier par repli, d'où l'espace insécable que `render.sujet` place entre le préfixe et le numéro: octet `0xA0` suivi du dièse, invisible, indépendante du libellé du préfixe et du titre. `build.py` alerte et `verify.py` refuse le fichier si elle a sauté.
 - **Dépendances du skill `email`:** `olefile` (vérification) et `pillow` (conversion webp et aplatissement de la transparence). Le conteneur `.msg` lui-même est écrit sans aucune dépendance.
 - **Nom de marketplace vs dépôt:** la marketplace s'appelle `alliance-ia`, le dépôt GitHub `pastilles-ia`; les installations lisent `pastille-ia@alliance-ia`.
-```
+
+## Licence
+
+Ce dépôt est publié sous **GNU Affero General Public License, version 3 ou toute version ultérieure** (`AGPL-3.0-or-later`). Le texte intégral de la licence est dans [`LICENSE`](LICENSE).
+
+Copyright (C) 2026 ANEO, Florian Lemaitre.
+
+Ce programme est un logiciel libre: vous pouvez le redistribuer et le modifier selon les termes de cette licence. Il est distribué dans l'espoir qu'il sera utile, mais **sans aucune garantie**, sans même la garantie implicite de qualité marchande ou d'adéquation à un usage particulier. En pratique, l'AGPL demande à qui diffuse une version modifiée de publier ses modifications sous la même licence, y compris lorsque le logiciel n'est pas distribué mais seulement mis à disposition par le réseau (article 13).
+
+Les scripts Python portent l'en-tête de licence recommandé par la FSF, avec l'identifiant `SPDX-License-Identifier: AGPL-3.0-or-later`.
