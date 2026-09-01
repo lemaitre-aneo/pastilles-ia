@@ -202,7 +202,7 @@ Les normes de la série sont centralisées dans `plugins/pastille-ia/shared/regl
 
 Ce dépôt est publié sous **GNU Affero General Public License, version 3 ou toute version ultérieure** (`AGPL-3.0-or-later`). Le texte intégral de la licence est dans [`LICENSE`](LICENSE).
 
-Copyright (C) 2026 ANEO, Florian Lemaitre.
+Copyright (C) 2026 ANEO.
 
 Ce programme est un logiciel libre: vous pouvez le redistribuer et le modifier selon les termes de cette licence. Il est distribué dans l'espoir qu'il sera utile, mais **sans aucune garantie**, sans même la garantie implicite de qualité marchande ou d'adéquation à un usage particulier. En pratique, l'AGPL demande à qui diffuse une version modifiée de publier ses modifications sous la même licence, y compris lorsque le logiciel n'est pas distribué mais seulement mis à disposition par le réseau (article 13).
 

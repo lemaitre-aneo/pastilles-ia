@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # pastille-ia: outils multi-agents pour les pastilles pédagogiques sur les LLM.
-# Copyright (C) 2026 ANEO, Florian Lemaitre
+# Copyright (C) 2026 ANEO
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
