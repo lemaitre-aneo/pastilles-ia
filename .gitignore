@@ -7,3 +7,9 @@ sorties/
 
 # Dossier de travail de la reprise des pastilles deja diffusees.
 work/
+
+# Captures de controle du rendu, prises pastille par pastille puis jetees:
+# elles ne font pas partie de l'archive, et deux d'entre elles sont entrees
+# dans l'historique pour avoir ete indexees pendant qu'un agent travaillait.
+archives/*/apercu-*.png
+archives/*/crop-*.png
