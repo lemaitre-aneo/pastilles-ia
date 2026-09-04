@@ -1,0 +1,51 @@
+{
+  "numero": 2,
+  "total": 45,
+  "position_liste": 16,
+  "rubrique": "Prompting",
+  "titre": "Anatomie d'un bon prompt : la recette de base",
+  "essentiel": [
+    "Un bon prompt combine rôle, contexte, tâche et contraintes.",
+    "Sans ces repères, l'IA livre une réponse générique et floue.",
+    "Ce cadrage évite les allers-retours et fait gagner du temps."
+  ],
+  "paragraphes": [
+    "Quand vous échangez avec une intelligence artificielle, vous lui envoyez des messages sous forme de questions, de consignes ou de demandes : c'est ce qu'on appelle le **prompt**. *C'est le point de départ de votre discussion*. L'erreur la plus courante est de penser que l'IA est capable de deviner vos intentions magiquement. Si vous lui jetez un laconique « rédige un message », le résultat sera souvent tiède, trop long ou à côté de la plaque, car la machine manque cruellement de repères.",
+    "Pour obtenir une réponse idéale du premier coup, il existe une structure de base incontournable, une sorte de recette en quatre ingrédients. Le premier est le **rôle** : vous demandez à l'IA de se glisser dans la peau d'un personnage (par exemple, un conseiller client ou un relecteur pointilleux). Le deuxième est le **contexte** : vous lui expliquez la situation (le profil du destinataire, le projet concerné). Le troisième est la **tâche**, c'est-à-dire l'action précise à réaliser. Enfin, le quatrième ingrédient regroupe vos **contraintes**, comme le ton à employer ou le format visuel attendu.",
+    "En adoptant ce réflexe, vous transformez un outil généraliste en un assistant sur mesure pour votre quotidien. Vous n'avez plus besoin de passer de longues minutes à faire des allers-retours ou à corriger un texte qui ne vous convient pas. Prendre le temps de bien composer sa demande initiale est le moyen le plus simple et le plus rapide de gagner en efficacité et de faire de l'IA un véritable allié de travail."
+  ],
+  "schema_apres": 2,
+  "legende_schema": "Les quatre ingrédients du prompt, du rôle à la réponse précise qu'ils permettent d'obtenir.",
+  "alt_schema": "Schéma en quatre étapes menant à une réponse précise : 1. Le rôle (Qui parle ? ex: Expert, Critique), 2. Le contexte (De quoi s'agit-il ? Sujet, Public), 3. La tâche (Qu'attend-on ? Action précise), 4. Les contraintes (Comment le veut-on ? Ton, Format).",
+  "image_titre": "illustration-titre.png",
+  "image_schema": "schema.png",
+  "sources": [
+    {
+      "titre": "Prompt engineering, \"Be clear and direct\" (Claude Docs, Anthropic)",
+      "url": "https://docs.anthropic.com/en/docs/be-clear-direct"
+    },
+    {
+      "titre": "Best practices for prompt engineering with the OpenAI API (OpenAI Help Center)",
+      "url": "https://help.openai.com/en/articles/6654000-best-practices-for-prompt-engineering-with-the-openai-api"
+    },
+    {
+      "titre": "Prompt design strategies (Gemini API, Google AI for Developers)",
+      "url": "https://ai.google.dev/gemini-api/docs/prompting-strategies"
+    }
+  ],
+  "titre_canonique": "Anatomie d'un bon prompt : la recette de base",
+  "axe": "La structure de base d'un prompt efficace en quatre ingrédients : rôle, contexte, tâche et contraintes, plutôt qu'une demande lancée sans repères.",
+  "prompt_image": "Prépares-toi à générer deux images séparées, dans deux fichiers distincts. Les deux partagent cette charte graphique : Style propre, moderne et professionnel, fond blanc. Palette : orange vif et bleu corporate foncé en dominantes, blanc et gris pour les respirations, accents multiculturels discrets (rouge, vert, jaune, bleu) reprenant subtilement un motif de couleurs de logo. Superpositions graphiques épurées : motifs géométriques abstraits, quartiers de cercle, lignes claires. Composition aérée, jamais surchargée. Typographie sans serif, propre et corporate. Tout texte affiché dans les images est en français.\nContexte pour comprendre le sujet, à NE PAS afficher dans les images : Quand vous échangez avec une intelligence artificielle, vous lui envoyez des messages sous forme de questions, de consignes ou de demandes : c'est ce qu'on appelle le prompt. C'est le point de départ de votre discussion. L'erreur la plus courante est de penser que l'IA est capable de deviner vos intentions magiquement. Si vous lui jetez un laconique « rédige un message », le résultat sera souvent tiède, trop long ou à côté de la plaque, car la machine manque cruellement de repères. Pour obtenir une réponse idéale du premier coup, il existe une structure de base incontournable, une sorte de recette en quatre ingrédients. Le premier est le rôle : vous demandez à l'IA de se glisser dans la peau d'un personnage (par exemple, un conseiller client ou un relecteur pointilleux). Le deuxième est le contexte : vous lui expliquez la situation (le profil du destinataire, le projet concerné). Le troisième est la tâche, c'est-à-dire l'action précise à réaliser. Enfin, le quatrième ingrédient regroupe vos contraintes, comme le ton à employer ou le format visuel attendu. En adoptant ce réflexe, vous transformez un outil généraliste en un assistant sur mesure pour votre quotidien. Vous n'avez plus besoin de passer de longues minutes à faire des allers-retours ou à corriger un texte qui ne vous convient pas. Prendre le temps de bien composer sa demande initiale est le moyen le plus simple et le plus rapide de gagner en efficacité et de faire de l'IA un véritable allié de travail.\nImage 1, illustration-titre : composition épurée et moderne, focus graphique central iconique qui illustre le sujet : un personnage qui compose une recette (livre de recette, ustensiles, ingrédients graphiques stylisés) en écho à l'idée de \"recette de base\" du prompt. Ce n'est pas un schéma de processus. Seul texte à afficher : le titre, en en-tête, sans faute d'orthographe, police sans serif corporate, sans sous-titre ni texte secondaire. Le titre exact : \"Anatomie d'un bon prompt : la recette de base\". Format 16:9.\nImage 2, schéma explicatif, distincte et cohérente avec l'image 1 : diagramme d'entreprise propre et net de type processus, présentant quatre étapes qui s'enchaînent de gauche à droite jusqu'à un résultat final. Libellés exacts à afficher en français : \"1. Le rôle : Qui parle ? (ex: Expert, Critique)\", \"2. Le contexte : De quoi s'agit-il ? (Sujet, Public)\", \"3. La tâche : Qu'attend-on ? (Action précise)\", \"4. Les contraintes : Comment le veut-on ? (Ton, Format)\", puis un bloc final \"Réponse précise\". Très peu de fioritures, focus sur la clarté, n'inclus pas le titre. Format 4:3, cinq blocs au maximum, libellés assez grands pour rester lisibles une fois l'image réduite à 560 pixels de large.\nGénère dans un premier temps seulement la première image (l'illustration-titre), et attends les instructions de l'utilisateur pour générer la 2e image.",
+  "apercu_visuels": "Illustration-titre : un homme en costume, tablier noué, fouette le contenu d'une marmite tout en tenant un livre ouvert intitulé « Le Guide de la Recette », entouré de formes géométriques stylisées flottantes ; à droite, un écran affiche une interface de chat avec l'IA. La métaphore de la recette de cuisine porte l'idée d'une « recette de base » pour construire un prompt. Titre exact rendu : \"Anatomie d'un bon prompt : la recette de base\". Schéma : forme en flux/processus (justifiée, le mécanisme est bien un enchaînement ordonné), qui rend visible la construction d'un prompt en quatre étapes menant à une réponse. Structure dans l'ordre de lecture, gauche à droite : quatre cartes reliées par des flèches, \"1. LE RÔLE\" (Qui parle ? ex: Expert, Critique), \"2. LE CONTEXTE\" (De quoi s'agit-il ? Sujet, Public), \"3. LA TÂCHE\" (Qu'attend-on ? Action précise), \"4. LES CONTRAINTES\" (Comment le veut-on ? Ton, Format), puis une flèche vers un écran marqué \"RÉPONSE PRÉCISE\" avec une coche verte. Format réel : 1024x559 (ratio 1,83:1, proche du 16:9) : hors norme actuelle pour un schéma, qui va du 4:3 au portrait 4:5 ; propriété du visuel déjà diffusé, non corrigée ici.",
+  "notes": [
+    "Pastille deja diffusee, reprise au gabarit actuel: le corps du texte est inchange, seuls les cadres, les textes alternatifs, les sources et le prompt d'images ont ete produits a la reprise.",
+    "Aucun chiffre ni date à vérifier dans le texte gelé : la pastille décrit une structure conceptuelle (rôle, contexte, tâche, contraintes), que les trois sources ci-dessus corroborent sous des intitulés proches (rôle/persona, contexte, tâche, format/ton). Rien à corriger.",
+    "Titre de l'image identique au titre canonique et au sujet du courriel d'origine : aucun écart à signaler.",
+    "Format d'origine des images (512x279, ratio proche de 16:9 mais pas un schéma en 4:3 strict pour image-2) : le prompt image régénéré redemande un format 4:3 conforme au gabarit actuel, ce qui donnera un schéma légèrement différent en proportions de l'original, mais fidèle à ses libellés et à sa logique."
+  ],
+  "annexe": {
+    "etiquette": "À essayer",
+    "style": "essayer",
+    "texte": "Copiez ce squelette et remplissez les quatre blancs avant d'envoyer votre prochain prompt : \"Tu es [rôle]. Contexte : [situation, destinataire]. Tâche : [action précise]. Contraintes : [ton, longueur, format].\""
+  }
+}

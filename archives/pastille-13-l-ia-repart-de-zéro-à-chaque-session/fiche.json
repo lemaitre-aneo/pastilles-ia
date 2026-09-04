@@ -1,0 +1,57 @@
+{
+  "numero": 13,
+  "total": 45,
+  "position_liste": 5,
+  "rubrique": "Comprendre",
+  "titre": "L'IA repart de zéro à chaque session : on lui rappelle tout",
+  "essentiel": [
+    "**Aucune mémoire interne : rien ne survit d’un échange à l’autre.**",
+    "**La continuité vient du rejeu de l’historique et de notes réinjectées.**",
+    "**Une note ne vaut que si on la relit et la nettoie.**"
+  ],
+  "paragraphes": [
+    "Imaginez un consultant brillant, mais amnésique : à chaque réunion il arrive les mains vides, et commence par relire le carnet posé sur la table. Un modèle de langage fonctionne exactement ainsi, et ce n’est pas un défaut mais sa nature. Il est **sans état** : il lit tout ce qu’on lui donne, produit sa réponse, puis ne conserve rien.",
+    "S’il semble suivre la conversation, c’est que l’application lui **rejoue tout l’historique** à chaque tour : vous tapez une phrase, et c’est l’échange complet qui repart, parfois résumé. Un cache accélère le calcul, il ne retient rien. Le modèle, lui, ne change pas d’un iota : s’adapter à un exemple posé dans le prompt, ce n’est pas apprendre.",
+    "Et la fameuse **mémoire** des assistants ? C’est une couche externe, pas une faculté du modèle : quelques faits courts et des résumés de vos échanges, stockés à part. L’application les *réinjecte* en tête de conversation, comme une note glissée dans le carnet avant la réunion ; ces notes se consultent, se corrigent, se désactivent.",
+    "Nouvelle conversation, page blanche ou presque : ce qui n’est pas réinjecté n’existe pas. Tout ce qui doit survivre à la session, décisions, contraintes et contexte du dossier, s’**écrit quelque part**. Et relisez ce que la mémoire a retenu, car un fait périmé se traîne d’une session à l’autre : *le carnet, c’est vous qui le tenez*."
+  ],
+  "schema_apres": 3,
+  "legende_schema": "Dans une même session, tout est rejoué à chaque tour ; à la session suivante, la page est blanche, sauf ce que les notes de mémoire réinjectent.",
+  "alt_schema": "Schéma en deux panneaux : dans une même session, le message et l'historique rejoué passent par un modèle sans état qui répond puis oublie ; à la session suivante, des notes de mémoire externes sont réinjectées dans une nouvelle session qui repart d'une page blanche",
+  "image_titre": "illustration-titre.png",
+  "image_schema": "schema.png",
+  "sources": [
+    {
+      "titre": "OpenAI, \"Conversation state\" (documentation officielle de l'API) : confirme que l'API est sans état et que l'historique complet de la conversation doit être renvoyé à chaque requête pour simuler la continuité.",
+      "url": "https://developers.openai.com/api/docs/guides/conversation-state"
+    },
+    {
+      "titre": "OpenAI Help Center, \"Memory FAQ\" : décrit la mémoire de ChatGPT comme une couche distincte du modèle (faits enregistrés et résumés d'historique), réinjectée dans le contexte à chaque réponse, consultable et supprimable par l'utilisateur.",
+      "url": "https://help.openai.com/en/articles/8590148-memory-faq"
+    },
+    {
+      "titre": "Anthropic, \"Memory tool\" (documentation officielle de la plateforme Claude) : l'outil de mémoire permet à Claude de lire et d'écrire des fichiers qui persistent d'une session à l'autre, précisément parce que le modèle lui-même ne conserve rien entre deux appels.",
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/memory-tool"
+    },
+    {
+      "titre": "Anthropic Help Center, \"Use Claude's chat search and memory to build on previous context\" : explique le fonctionnement de la mémoire côté application grand public, construite sur des résumés d'échanges passés réinjectés en contexte.",
+      "url": "https://support.claude.com/en/articles/11817273-use-claude-s-chat-search-and-memory-to-build-on-previous-context"
+    }
+  ],
+  "titre_canonique": "Pourquoi l'IA oublie : la vérité sur la mémoire d'une session à l'autre",
+  "axe": "",
+  "prompt_image": "Prépares-toi à générer deux images séparées, dans deux fichiers distincts. Les deux partagent cette charte graphique : style propre, moderne et professionnel, fond blanc. Palette : orange vif et bleu corporate foncé en dominantes, blanc et gris pour les respirations, accents multiculturels discrets (rouge, vert, jaune, bleu) reprenant subtilement un motif de couleurs de logo. Superpositions graphiques épurées : motifs géométriques abstraits, quartiers de cercle, lignes claires. Composition aérée, jamais surchargée. Typographie sans serif, propre et corporate. Tout texte affiché dans les images est en français.\nContexte pour comprendre le sujet, à NE PAS afficher dans les images : un modèle de langage n'a aucune mémoire interne, comme un consultant amnésique qui relit son carnet à chaque réunion. Il lit tout ce qu'on lui donne, produit sa réponse, puis ne conserve rien. Ce qui donne l'illusion qu'il suit la conversation, c'est que l'application lui rejoue tout l'historique à chaque tour ; un cache accélère ce calcul mais ne retient rien, et le modèle ne change jamais lui-même. La mémoire des assistants est une couche externe : des faits courts et des résumés stockés à part, réinjectés en tête de conversation comme une note glissée dans le carnet, que l'on peut consulter, corriger ou désactiver. À la session suivante, la page est blanche : seul ce qui a été réinjecté existe, donc décisions et contraintes doivent être notées quelque part, et relues car un fait périmé peut s'y traîner.\nImage 1, illustration-titre : composition épurée et moderne, focus graphique central iconique qui illustre le sujet. Ce n'est pas un schéma de processus. Seul texte à afficher : le titre, en en-tête, sans faute d'orthographe, police sans serif corporate, sans sous-titre ni texte secondaire. Le titre exact : \"L'IA repart de zéro à chaque session : on lui rappelle tout\". Format 16:9.\nImage 2, schéma explicatif, distincte et cohérente avec l'image 1 : diagramme d'entreprise propre et net en deux panneaux empilés. Panneau du haut, intitulé \"Dans une même session\" : trois blocs reliés par des flèches, dans l'ordre \"Message et historique rejoué\", puis \"Modèle sans état\", puis \"Réponse, puis oubli\". Panneau du bas, intitulé \"À la session suivante\" : un bloc \"Notes de mémoire externes\" relié par une flèche portant la mention \"réinjectées\" vers un bloc \"Nouvelle session : page blanche\". Libellés exacts à afficher en français : \"Dans une même session\", \"Message et historique rejoué\", \"Modèle sans état\", \"Réponse, puis oubli\", \"À la session suivante\", \"Notes de mémoire externes\", \"réinjectées\", \"Nouvelle session : page blanche\". Très peu de fioritures, focus sur la clarté, n'inclus pas le titre. Format 4:3, cinq blocs au maximum, libellés assez grands pour rester lisibles une fois l'image réduite à 560 pixels de large.\nGénère dans un premier temps seulement la première image (l'illustration-titre), et attends les instructions de l'utilisateur pour générer la 2e image.",
+  "apercu_visuels": "",
+  "notes": [
+    "Pastille deja diffusee, reprise au gabarit actuel: le corps du texte est inchange, seuls les cadres, les textes alternatifs, les sources et le prompt d'images ont ete produits a la reprise.",
+    "Aucune non-conformité constatée sur les éléments gelés : les 3 puces de L'essentiel respectent la limite (2 à 3), et un seul bloc annexe (\"À essayer\") est présent dans le courriel d'origine.",
+    "Le texte alternatif que j'ai rédigé pour le schéma diverge légèrement de celui déjà diffusé (formulation resynthétisée plutôt que copiée), mais décrit le même contenu visuel ; les deux sont fidèles à l'image observée.",
+    "La phrase \"Un cache accélère le calcul, il ne retient rien\" fait probablement référence au cache de préfixe de prompt (prompt caching / KV-cache) : les sources consultées ne le documentent pas explicitement dans ce vocabulaire, mais rien ne le contredit non plus ; c'est une simplification correcte du mécanisme.",
+    "Rien d'autre à signaler : les affirmations du texte gelé (absence de mémoire interne, rejeu de l'historique, mémoire externe consultable/corrigible/désactivable) sont corroborées par les sources ci-dessus."
+  ],
+  "annexe": {
+    "etiquette": "À essayer",
+    "style": "essayer",
+    "texte": "Le plus simple : ne refermez pas une session encore utile, la continuité y est gratuite. Sinon, demandez un récapitulatif court des décisions et des contraintes, et collez-le en tête de la prochaine conversation ou dans les consignes du projet. C’est la mémoire dont vous maîtrisez chaque mot."
+  }
+}

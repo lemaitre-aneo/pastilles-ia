@@ -1,0 +1,54 @@
+{
+  "numero": 7,
+  "total": 45,
+  "position_liste": 39,
+  "rubrique": "Risques et cadre",
+  "titre": "Responsabilité : vous êtes le seul signataire de ce que produit l'IA",
+  "essentiel": [
+    "L'IA prédit du texte plausible, elle ne vérifie jamais si c'est vrai.",
+    "Elle n'a aucune personnalité juridique : la responsabilité reste toujours humaine.",
+    "Vous signez tout livrable transmis, donc la relecture critique est incontournable."
+  ],
+  "paragraphes": [
+    "L'utilisation des modèles de langage au quotidien ressemble parfois à la collaboration avec un assistant ultra-rapide mais occasionnellement fantaisiste. Sur le plan technique, ces outils fonctionnent par *prédictions probabilistes* : ils assemblent des mots pour qu'ils soient fluides et *statistiquement pertinents*, sans jamais vérifier si l'information est vraie ou conforme à la réalité de votre entreprise. L'IA produit du contenu à la chaîne, mais elle ne comprend pas l'impact de ce qu'elle écrit.",
+    "Face à cette prouesse technologique, une *fausse sécurité* pousse parfois à copier-coller les résultats les yeux fermés. Pourtant, l'erreur serait de croire que la responsabilité d'un texte erroné incombe à la machine ou à ses concepteurs. Une intelligence artificielle ne possède ni *personnalité juridique* ni *responsabilité professionnelle*. Que ce soit pour un courriel de projet, un rapport budgétaire ou un conseil technique, l'algorithme n'est qu'un crayon perfectionné.",
+    "C'est pourquoi vous restez le **seul et unique signataire** de tout document qui sort de votre poste. Dès lors que vous transmettez ou vendez un livrable généré par une IA, vous en assumez la **pleine paternité** et toutes les conséquences professionnelles ou commerciales. La *relecture critique* et systématique n'est pas une perte de temps, c'est le rouage indispensable pour transformer des statistiques automatisées en un **acte professionnel** fiable et sécurisé."
+  ],
+  "schema_apres": 2,
+  "legende_schema": "Le circuit qui mène d'une génération automatique par l'IA à la validation finale, en passant par un contrôle humain obligatoire.",
+  "alt_schema": "Schéma en trois étapes : Génération initiale par l'IA (Calculs probabilistes), puis Relecture et Correction (Contrôle humain obligatoire), puis Validation Finale (Signature et Responsabilité de l'utilisateur).",
+  "image_titre": "illustration-titre.png",
+  "image_schema": "schema.png",
+  "sources": [
+    {
+      "titre": "Les questions-réponses de la CNIL sur l'utilisation d'un système d'IA générative",
+      "url": "https://www.cnil.fr/fr/les-questions-reponses-de-la-cnil-sur-lutilisation-dun-systeme-dia-generative"
+    },
+    {
+      "titre": "How ChatGPT and our foundation models are developed (OpenAI Help Center)",
+      "url": "https://help.openai.com/en/articles/7842364-how-chatgpt-and-our-foundation-models-are-developed"
+    },
+    {
+      "titre": "Accountability (OECD AI Principle)",
+      "url": "https://oecd.ai/en/dashboards/ai-principles/P9"
+    },
+    {
+      "titre": "Article 26 : Obligations of Deployers of High-Risk AI Systems (EU AI Act)",
+      "url": "https://artificialintelligenceact.eu/article/26/"
+    }
+  ],
+  "titre_canonique": "Responsabilité : vous êtes le seul signataire de ce que produit l'IA",
+  "axe": "",
+  "prompt_image": "Prépares-toi à générer deux images séparées, dans deux fichiers distincts. Les deux partagent cette charte graphique : style propre, moderne et professionnel, fond blanc. Palette : orange vif et bleu corporate foncé en dominantes, blanc et gris pour les respirations, accents multiculturels discrets (rouge, vert, jaune, bleu) reprenant subtilement un motif de couleurs de logo. Superpositions graphiques épurées : motifs géométriques abstraits, quartiers de cercle, lignes claires. Composition aérée, jamais surchargée. Typographie sans serif, propre et corporate. Tout texte affiché dans les images est en français.\nContexte pour comprendre le sujet, à NE PAS afficher dans les images : L'utilisation des modèles de langage au quotidien ressemble parfois à la collaboration avec un assistant ultra-rapide mais occasionnellement fantaisiste. Sur le plan technique, ces outils fonctionnent par prédictions probabilistes : ils assemblent des mots pour qu'ils soient fluides et statistiquement pertinents, sans jamais vérifier si l'information est vraie ou conforme à la réalité de votre entreprise. L'IA produit du contenu à la chaîne, mais elle ne comprend pas l'impact de ce qu'elle écrit. Face à cette prouesse technologique, une fausse sécurité pousse parfois à copier-coller les résultats les yeux fermés. Pourtant, l'erreur serait de croire que la responsabilité d'un texte erroné incombe à la machine ou à ses concepteurs. Une intelligence artificielle ne possède ni personnalité juridique ni responsabilité professionnelle. Que ce soit pour un courriel de projet, un rapport budgétaire ou un conseil technique, l'algorithme n'est qu'un crayon perfectionné. C'est pourquoi vous restez le seul et unique signataire de tout document qui sort de votre poste. Dès lors que vous transmettez ou vendez un livrable généré par une IA, vous en assumez la pleine paternité et toutes les conséquences professionnelles ou commerciales. La relecture critique et systématique n'est pas une perte de temps, c'est le rouage indispensable pour transformer des statistiques automatisées en un acte professionnel fiable et sécurisé.\nImage 1, illustration-titre : composition épurée et moderne, focus graphique central iconique qui illustre l'idée d'une signature humaine engagée sur un document produit avec l'aide de l'IA. Ce n'est pas un schéma de processus. Seul texte à afficher : le titre, en en-tête, sans faute d'orthographe, police sans serif corporate, sans sous-titre ni texte secondaire. Le titre exact : \"Responsabilité : vous êtes le seul signataire de ce que produit l'IA\". Format 16:9.\nImage 2, schéma explicatif, distinct et cohérent avec l'image 1 : diagramme de type flowchart en trois blocs reliés par des flèches, présentant le circuit d'un livrable assisté par IA, de sa génération jusqu'à sa validation par un humain. Libellés exacts à afficher en français : \"Génération initiale par l'IA (Calculs probabilistes)\", \"Relecture et Correction (Contrôle humain obligatoire)\", \"Validation Finale (Signature et Responsabilité de l'utilisateur)\". Très peu de fioritures, focus sur la clarté, n'inclus pas le titre. Format 4:3, cinq blocs au maximum, libellés assez grands pour rester lisibles une fois l'image réduite à 560 pixels de large.\nGénère dans un premier temps seulement la première image (l'illustration-titre), et attends les instructions de l'utilisateur pour générer la 2e image.",
+  "apercu_visuels": "",
+  "notes": [
+    "Pastille deja diffusee, reprise au gabarit actuel: le corps du texte est inchange, seuls les cadres, les textes alternatifs, les sources et le prompt d'images ont ete produits a la reprise.",
+    "Le texte gelé affirme qu'une IA \"ne possède ni personnalité juridique ni responsabilité professionnelle\". C'est exact en l'état actuel du droit (aucune juridiction ne reconnaît de personnalité juridique à un système d'IA), mais aucune des sources trouvées ne formule l'absence de personnalité juridique de façon aussi explicite et générale : c'est une déduction correcte du cadre juridique actuel plutôt qu'une citation directe. Rien à corriger, juste à garder en tête si le texte est un jour retouché.",
+    "Aucun autre chiffre daté ni nom d'entreprise ne figure dans le texte gelé : rien d'autre à signaler."
+  ],
+  "annexe": {
+    "etiquette": "Le piège",
+    "style": "piege",
+    "texte": "Les conditions d'utilisation des IA génératives excluent presque toujours la responsabilité de l'éditeur sur l'exactitude des réponses. Préciser \"généré par IA\" ne vous décharge de rien : le risque juridique retombe entièrement sur celui qui utilise et diffuse le contenu."
+  }
+}
