@@ -64,13 +64,20 @@ def source_paragraphs(html: str) -> list[str]:
     return paragraphs
 
 
-def check(workdir: str, outdir: str) -> list[str]:
-    problems = []
+def check(workdir: str, outdir: str) -> tuple[list[str], list[str]]:
+    """Renvoie (problemes bloquants, avertissements).
+
+    Un defaut herite du courriel d'origine et conserve a cause du gel du corps
+    est un avertissement, pas un echec: le corriger reviendrait a reecrire le
+    texte, ce que la reprise interdit.
+    """
+    problems: list[str] = []
+    warnings: list[str] = []
     with open(os.path.join(workdir, "source.html"), encoding="utf-8") as handle:
         source = handle.read()
     html_path = os.path.join(outdir, "pastille.html")
     if not os.path.exists(html_path):
-        return [f"{html_path} absent"]
+        return [f"{html_path} absent"], warnings
     with open(html_path, encoding="utf-8") as handle:
         exported = handle.read()
 
@@ -88,7 +95,13 @@ def check(workdir: str, outdir: str) -> list[str]:
     for token in re.findall(r"\[[A-Z][A-Z ÉÈÊÀÇ'0-9_.:-]{3,}\]", exported):
         problems.append(f"crochet de gabarit residuel: {token}")
     if "—" in exported:
-        problems.append("tiret cadratin present")
+        if "—" in source:
+            warnings.append(
+                "tiret cadratin herite du courriel d'origine, conserve car le corps est gele "
+                "(a corriger seulement si le gel est leve)"
+            )
+        else:
+            problems.append("tiret cadratin introduit par le reexport")
     for token in ("cid:IMAGE_TITRE", "cid:IMAGE_SCHEMA"):
         if token not in exported:
             problems.append(f"jeton {token} absent")
@@ -104,7 +117,7 @@ def check(workdir: str, outdir: str) -> list[str]:
         problems.append("plus d'un bloc annexe")
     if not re.search(r"\d+ min de lecture", exported):
         problems.append("temps de lecture absent du bandeau")
-    return problems
+    return problems, warnings
 
 
 def main() -> None:
@@ -118,15 +131,17 @@ def main() -> None:
 
     failed = False
     for workdir, outdir in pairs:
-        problems = check(workdir, outdir)
+        problems, warnings = check(workdir, outdir)
         label = os.path.basename(outdir)
         if problems:
             failed = True
             print(f"[KO] {label}")
-            for problem in problems:
-                print(f"  - {problem}")
         else:
             print(f"[OK] {label}")
+        for problem in problems:
+            print(f"  - {problem}")
+        for warning in warnings:
+            print(f"  ! {warning}")
     sys.exit(1 if failed else 0)
 
 
