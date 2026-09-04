@@ -186,25 +186,27 @@ Puis `/pastille-ia:generate`, `/pastille-ia:refine`, `/pastille-ia:review` ou `/
 
 ## Reprise des pastilles déjà diffusées
 
-Les pastilles envoyées avant la mise en place du gabarit actuel vivent dans `emails/` (les `.eml` d'origine) et sont reprises dans `pastilles/`, un dossier par pastille. Le corps du texte y est **inchangé**: la reprise ajoute seulement ce que le gabarit impose (bandeau de série, encadré "L'essentiel", légende du schéma, bloc annexe), les textes alternatifs rédigés d'après les visuels, les sources qui corroborent le message et un prompt image régénéré. Voir `pastilles/README.md` pour l'index et les points de vigilance relevés.
+Les pastilles envoyées avant la mise en place du gabarit actuel vivent dans `emails/` (les `.eml` d'origine) et sont reprises dans `archives/`, un dossier par pastille. Le corps du texte y est **inchangé**: la reprise ne fait qu'ajouter ce que la série impose et que ces courriels n'avaient pas (encadré "L'essentiel", légende du schéma, bloc annexe, textes alternatifs rédigés d'après les visuels, sources, prompt d'images) puis passer par la chaîne officielle du skill `email`, qui produit le `.msg` et le HTML d'archive.
 
-Trois outils, dans `tools/`:
+Le bandeau porte le numéro d'**envoi**, pas le rang du sujet dans la liste des 45: cette liste est un inventaire de sujets, pas un ordre de diffusion. La rubrique, elle, suit le sujet réel.
+
+Deux outils complètent la chaîne officielle, dans `tools/`:
 
 | Outil | Rôle |
 | --- | --- |
-| `import_emails.py` | éclate chaque `.eml` vers `work/<slug>/`: texte brut, HTML porteur des emphases d'origine, images liées dans leur ordre d'apparition |
-| `build_eml.py` | reconstruit un `.eml` diffusable à partir du gabarit HTML rempli et des deux visuels, en résolvant `cid:IMAGE_TITRE` et `cid:IMAGE_SCHEMA` |
-| `check_pastille.py` | compare le corps réexporté au courriel d'origine caractère par caractère, et vérifie les contraintes du gabarit (crochets résiduels, tiret cadratin, textes alternatifs, jetons `cid`, blocs, temps de lecture) |
+| `import_emails.py` | éclate chaque `.eml` vers `work/<slug>/`: texte brut, HTML porteur des emphases d'origine, images liées dans leur ordre d'apparition. Complète `extract_images.py`, qui lit le transcript de session et non un courriel archivé |
+| `verifie_gel.py` | compare le corps de la fiche au courriel d'origine, en ignorant ce que la chaîne normalise légitimement (emphases, apostrophes, espaces insécables) et rien d'autre. Signale aussi une perte d'accents, que `build.py` et `verify.py` ne voient pas: ils contrôlent les caractères refusés par la spec, pas les caractères manquants |
 
 ```
 python3 tools/import_emails.py emails work     # importer les .eml
-python3 tools/check_pastille.py --all          # verifier les 13 reprises
-python3 tools/normalize_meta.py                # normaliser les meta.json et regenerer l'index
+python3 tools/verifie_gel.py --tous            # verifier le gel du corps et les accents
 ```
 
-Le corps gelé fait que certains défauts hérités (paragraphes de plus de 60 mots, emphases surabondantes, artefacts de mise en forme Outlook) subsistent volontairement: ils sont remontés dans les points de vigilance plutôt que corrigés. Une dérogation assumée au gel se déclare dans `pastilles/<slug>/gel-exceptions.json`, que le vérificateur applique avant comparaison puis rappelle en avertissement, pour qu'elle ne passe ni pour une modification silencieuse ni pour un échec.
+Une dérogation assumée au gel se déclare dans `archives/<dossier>/gel-exceptions.json`, que `verifie_gel.py` applique au texte d'origine avant comparaison puis rappelle en avertissement: une correction décidée ne passe ainsi ni pour une modification silencieuse, ni pour un échec.
 
-Le dossier `work/` est un intermédiaire, hors dépôt.
+Le gel laisse en place des défauts hérités, remontés dans le champ `notes` de chaque fiche plutôt que corrigés: paragraphes de plus de 60 mots, emphases surabondantes, et surtout des schémas en 16:9, format que la norme actuelle réserve à l'illustration-titre. Les corriger demanderait de régénérer les visuels dans Gemini.
+
+Le dossier `work/` est un intermédiaire, hors dépôt. Le dossier `archives/` est en revanche versionné, par exception à la règle qui garde les pastilles diffusées hors du dépôt: une session cloud est éphémère, et git y est le seul canal durable.
 
 ## Développement
 
