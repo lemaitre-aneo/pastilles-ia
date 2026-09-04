@@ -1,11 +1,14 @@
 {
-  "sujet": "[Pastille IA de l'été] #12 : Confidentialité : où vont vraiment les données que vous tapez ?",
   "slug": "12-confidentialite-ou-vont-vraiment-les-donnees-que-vous-tapez",
-  "numero_envoi": "12/45",
+  "sujet": "[Pastille IA de l'été] #12 : Confidentialité : où vont vraiment les données que vous tapez ?",
+  "numero_envoi": 12,
+  "total_serie": 45,
   "position_canonique": 40,
   "titre_canonique": "Confidentialité : où vont vraiment les données que vous tapez ?",
   "titre_retenu": "Confidentialité : où vont vraiment les données que vous tapez ?",
   "rubrique": "Risques et cadre",
   "temps_de_lecture": "2 min de lecture",
-  "bloc_annexe": "Le piege"
+  "bloc_annexe": "Le piège",
+  "texte_alternatif_schema": "Schéma comparant le canal grand public, où les échanges rejoignent des serveurs externes avant conservation et entraînement, et le canal entreprise protégé, où le chiffrement API mène à un espace isolé à zéro rétention.",
+  "gel_du_corps": "integral"
 }

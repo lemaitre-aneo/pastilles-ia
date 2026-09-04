@@ -1,12 +1,14 @@
 {
-  "sujet": "[Pastille IA de l'été] #1 : Au fait, c'est quoi un LLM ?",
   "slug": "01-au-fait-c-est-quoi-un-llm",
+  "sujet": "[Pastille IA de l'été] #1 : Au fait, c'est quoi un LLM ?",
   "numero_envoi": 1,
-  "numero_diffusion": "1 / 45",
+  "total_serie": 45,
   "position_canonique": 1,
   "titre_canonique": "Au fait, c'est quoi un LLM ?",
   "titre_retenu": "Au fait, c'est quoi un LLM ?",
   "rubrique": "Comprendre",
   "temps_de_lecture": "2 min de lecture",
-  "bloc_annexe": "Le piège"
+  "bloc_annexe": "Le piège",
+  "texte_alternatif_schema": "Schéma du cycle de prédiction du mot suivant : à partir de 'Le chat dort sur le ...', le modèle calcule des probabilités pour les mots candidats (canapé 62 %, tapis 21 %, toit 9 %, vélo 1 %), choisit 'canapé', puis recommence avec 'Le chat dort sur le canapé'.",
+  "gel_du_corps": "integral"
 }

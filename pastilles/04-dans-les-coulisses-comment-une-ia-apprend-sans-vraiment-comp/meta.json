@@ -1,11 +1,14 @@
 {
-  "sujet": "[Pastille IA de l'été] #4 : Dans les coulisses : comment une IA apprend (sans vraiment comprendre)",
   "slug": "04-dans-les-coulisses-comment-une-ia-apprend-sans-vraiment-comp",
-  "numero_envoi": "4/45",
+  "sujet": "[Pastille IA de l'été] #4 : Dans les coulisses : comment une IA apprend (sans vraiment comprendre)",
+  "numero_envoi": 4,
+  "total_serie": 45,
   "position_canonique": 3,
   "titre_canonique": "Dans les coulisses : comment une IA apprend (sans vraiment comprendre)",
   "titre_retenu": "Dans les coulisses : comment une IA apprend (sans vraiment comprendre)",
   "rubrique": "Comprendre",
   "temps_de_lecture": "2 min de lecture",
-  "bloc_annexe": "Le piege"
+  "bloc_annexe": "Le piège",
+  "texte_alternatif_schema": "Schéma en deux étapes : étape 1, Auto-apprentissage sur du texte, avec le cycle Deviner le mot suivant, Comparer au vrai mot (écart), Ajuster les milliards de réglages, Répété des milliards de fois ; étape 2, Mise au point avec des humains, avec Exemples de bonnes réponses et Noter ses essais menant à Assistant serviable.",
+  "gel_du_corps": "integral"
 }

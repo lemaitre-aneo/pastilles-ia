@@ -1,11 +1,14 @@
 {
-  "sujet": "[Pastille IA de l'été] #8 : Le contexte : la \"mémoire vive\" de l'IA (ce qu'elle voit à un instant T)",
   "slug": "08-le-contexte-la-memoire-vive-de-l-ia-ce-qu-elle-voit-a-un-ins",
-  "numero_envoi": "8/45",
+  "sujet": "[Pastille IA de l'été] #8 : Le contexte : la \"mémoire vive\" de l'IA (ce qu'elle voit à un instant T)",
+  "numero_envoi": 8,
+  "total_serie": 45,
   "position_canonique": 4,
   "titre_canonique": "Le contexte : la \"mémoire vive\" de l'IA (ce qu'elle voit à un instant T)",
   "titre_retenu": "Le contexte : la \"mémoire vive\" de l'IA (ce qu'elle voit à un instant T)",
   "rubrique": "Comprendre",
   "temps_de_lecture": "2 min de lecture",
-  "bloc_annexe": "Le piege"
+  "bloc_annexe": "Le piège",
+  "texte_alternatif_schema": "Schéma du fonctionnement de la fenêtre de contexte : les entrées utilisateur et documents alimentent la fenêtre de contexte active (zone d'attention), qui bascule les données les plus anciennes vers les données archivées, hors de vue de l'IA, une fois saturée.",
+  "gel_du_corps": "integral"
 }

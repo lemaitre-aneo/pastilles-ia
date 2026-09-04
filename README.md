@@ -61,6 +61,28 @@ Customize > Plugins > **Add from a repository**, puis l'URL du dépôt (`https:/
 
 Puis `/pastille-ia:generate` ou `/pastille-ia:refine`.
 
+## Reprise des pastilles déjà diffusées
+
+Les pastilles envoyées avant la mise en place du gabarit actuel vivent dans `emails/` (les `.eml` d'origine) et sont reprises dans `pastilles/`, un dossier par pastille. Le corps du texte y est **inchangé**: la reprise ajoute seulement ce que le gabarit impose (bandeau de série, encadré "L'essentiel", légende du schéma, bloc annexe), les textes alternatifs rédigés d'après les visuels, les sources qui corroborent le message et un prompt image régénéré. Voir `pastilles/README.md` pour l'index et les points de vigilance relevés.
+
+Trois outils, dans `tools/`:
+
+| Outil | Rôle |
+| --- | --- |
+| `import_emails.py` | éclate chaque `.eml` vers `work/<slug>/`: texte brut, HTML porteur des emphases d'origine, images liées dans leur ordre d'apparition |
+| `build_eml.py` | reconstruit un `.eml` diffusable à partir du gabarit HTML rempli et des deux visuels, en résolvant `cid:IMAGE_TITRE` et `cid:IMAGE_SCHEMA` |
+| `check_pastille.py` | compare le corps réexporté au courriel d'origine caractère par caractère, et vérifie les contraintes du gabarit (crochets résiduels, tiret cadratin, textes alternatifs, jetons `cid`, blocs, temps de lecture) |
+
+```
+python3 tools/import_emails.py emails work     # importer les .eml
+python3 tools/check_pastille.py --all          # verifier les 13 reprises
+python3 tools/normalize_meta.py                # normaliser les meta.json et regenerer l'index
+```
+
+Le corps gelé fait que certains défauts hérités (paragraphes de plus de 60 mots, emphases surabondantes, artefacts de mise en forme Outlook) subsistent volontairement: ils sont remontés dans les points de vigilance plutôt que corrigés. Une dérogation assumée au gel se déclare dans `pastilles/<slug>/gel-exceptions.json`, que le vérificateur applique avant comparaison puis rappelle en avertissement, pour qu'elle ne passe ni pour une modification silencieuse ni pour un échec.
+
+Le dossier `work/` est un intermédiaire, hors dépôt.
+
 ## Développement
 
 Les normes de la série sont centralisées dans `plugins/pastille-ia/shared/regles-pastille.md`: modifiez-les là, et les deux skills en héritent (pas de duplication à synchroniser). Les processus propres à chaque skill vivent dans leur `SKILL.md`. En ouvrant le dépôt, `/generate` et `/refine` pointent (via les symlinks) directement sur ces fichiers: vos modifications sont prises en compte tout de suite, `/reload-plugins` recharge après édition. Pour publier vers Cowork et les autres postes, poussez sur GitHub (ils rafraîchissent ensuite la marketplace).

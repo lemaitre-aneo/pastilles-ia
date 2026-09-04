@@ -1,11 +1,14 @@
 {
-  "sujet": "[Pastille IA de l'été] #3 : Dites adieu au syndrome de la page blanche : rédiger et reformuler ses mails ou CR",
   "slug": "03-dites-adieu-au-syndrome-de-la-page-blanche-rediger-et-reform",
-  "numero_envoi": "3/45",
+  "sujet": "[Pastille IA de l'été] #3 : Dites adieu au syndrome de la page blanche : rédiger et reformuler ses mails ou CR",
+  "numero_envoi": 3,
+  "total_serie": 45,
   "position_canonique": 23,
   "titre_canonique": "Zéro syndrome de la page blanche : rédiger et reformuler ses mails ou CR",
   "titre_retenu": "Dites adieu au syndrome de la page blanche : rédiger et reformuler ses mails ou CR",
   "rubrique": "Au travail",
   "temps_de_lecture": "2 min de lecture",
-  "bloc_annexe": "A essayer"
+  "bloc_annexe": "À essayer",
+  "texte_alternatif_schema": "Schéma en trois étapes : saisie des notes en vrac, structuration par l'IA (résumé, structure, diplomatie), puis relecture et envoi, avec une boucle d'itération pour raccourcir ou adoucir le texte.",
+  "gel_du_corps": "integral"
 }

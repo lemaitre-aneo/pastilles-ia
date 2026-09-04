@@ -1,6 +1,6 @@
 # L'IA repart de zéro à chaque session : on lui rappelle tout
 
-13 / 45 · PASTILLE IA · COMPRENDRE · 2 min de lecture
+13 / 45 · PASTILLE IA · Comprendre · 2 min de lecture
 
 ## L'essentiel
 

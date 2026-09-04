@@ -1,10 +1,14 @@
 {
-  "sujet": "[Pastille IA de l’été] #13 : L’IA repart de zéro à chaque session : on lui rappelle tout",
   "slug": "13-l-ia-repart-de-zero-a-chaque-session-on-lui-rappelle-tout",
-  "numero_diffusion": "13",
+  "sujet": "[Pastille IA de l’été] #13 : L’IA repart de zéro à chaque session : on lui rappelle tout",
+  "numero_envoi": 13,
+  "total_serie": 45,
   "position_canonique": 5,
   "titre_canonique": "Pourquoi l'IA oublie : la vérité sur la mémoire d'une session à l'autre",
   "titre_retenu": "L'IA repart de zéro à chaque session : on lui rappelle tout",
   "rubrique": "Comprendre",
-  "temps_de_lecture": "2 min de lecture"
+  "temps_de_lecture": "2 min de lecture",
+  "bloc_annexe": "À essayer",
+  "texte_alternatif_schema": "Schéma en deux panneaux : dans une même session, le message et l'historique rejoué passent par un modèle sans état qui répond puis oublie ; à la session suivante, des notes de mémoire externes sont réinjectées dans une nouvelle session qui repart d'une page blanche",
+  "gel_du_corps": "integral"
 }

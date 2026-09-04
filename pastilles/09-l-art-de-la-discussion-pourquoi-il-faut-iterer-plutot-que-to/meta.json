@@ -1,10 +1,14 @@
 {
-  "sujet": "[Pastille IA de l'été] #9 : L'art de la discussion : pourquoi il faut itérer plutôt que tout demander d'un coup",
   "slug": "09-l-art-de-la-discussion-pourquoi-il-faut-iterer-plutot-que-to",
-  "numero_diffusion": "9",
-  "total_serie": "45",
-  "rubrique": "Prompting",
+  "sujet": "[Pastille IA de l'été] #9 : L'art de la discussion : pourquoi il faut itérer plutôt que tout demander d'un coup",
+  "numero_envoi": 9,
+  "total_serie": 45,
+  "position_canonique": 18,
+  "titre_canonique": "L'art de la discussion : pourquoi il faut itérer plutôt que tout demander d'un coup",
   "titre_retenu": "L'art de la discussion : pourquoi il faut itérer plutôt que tout demander d'un coup",
-  "temps_lecture": "2 min de lecture",
-  "bloc_annexe": "A ESSAYER"
+  "rubrique": "Prompting",
+  "temps_de_lecture": "2 min de lecture",
+  "bloc_annexe": "À essayer",
+  "texte_alternatif_schema": "Schema en boucle des quatre etapes de l'iteration avec une IA : prompt initial cible, reponse de l'IA, raffinement ou correction par l'humain, puis nouvelle reponse enrichie qui relance le cycle.",
+  "gel_du_corps": "integral"
 }

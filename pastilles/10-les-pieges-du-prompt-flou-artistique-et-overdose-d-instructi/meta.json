@@ -1,10 +1,14 @@
 {
-  "sujet": "[Pastille IA de l'été] #10 : Les pièges du prompt : flou artistique et overdose d'instructions",
   "slug": "10-les-pieges-du-prompt-flou-artistique-et-overdose-d-instructi",
-  "numero_diffusion": "10",
-  "total_serie": "45",
-  "rubrique": "Prompting",
+  "sujet": "[Pastille IA de l'été] #10 : Les pièges du prompt : flou artistique et overdose d'instructions",
+  "numero_envoi": 10,
+  "total_serie": 45,
+  "position_canonique": 17,
+  "titre_canonique": "Les pièges du prompt : flou artistique et overdose d'instructions",
   "titre_retenu": "Les pièges du prompt : flou artistique et overdose d'instructions",
-  "temps_lecture": "2 min de lecture",
-  "bloc_annexe": "A ESSAYER"
+  "rubrique": "Prompting",
+  "temps_de_lecture": "2 min de lecture",
+  "bloc_annexe": "À essayer",
+  "texte_alternatif_schema": "Schéma montrant l'axe du niveau de détail du prompt, entre trop vague (flou) à gauche et trop complexe (overdose) à droite, avec au centre la zone d'impact : équilibre sobre (rôle clair, tâche principale simple, contexte strictement nécessaire, format attendu), menant à un résultat optimal et gagné en efficacité.",
+  "gel_du_corps": "integral"
 }

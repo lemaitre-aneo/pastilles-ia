@@ -37,7 +37,7 @@ Génère dans un premier temps seulement la première image (l'illustration-titr
 
 ## Sources
 - [Giving Claude a role with a system prompt – Claude Docs (Anthropic)](https://docs.claude.com/en/docs/build-with-claude/prompt-engineering/system-prompts) : documentation officielle d'Anthropic sur le "role prompting", qui corrobore l'idée qu'assigner une identité précise au modèle (ex. "un data scientist chevronné") oriente son vocabulaire et sa posture, comme décrit au paragraphe 1.
-- [Ask the model to adopt a persona – OpenAI Platform docs](https://platform.openai.com/docs/guides/gpt-best-practices/tactic-ask-the-model-to-adopt-a-persona) : documentation officielle d'OpenAI présentant la même tactique (donner un rôle au modèle) pour orienter ses réponses vers un profil donné.
+- [Instructions systeme (Vertex AI, Google Cloud)](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/prompts/system-instructions) : documentation officielle qui liste la definition d'un role ou d'une persona comme premier cas d'usage des instructions systeme, exactement le mecanisme du prompt de role decrit ici.
 - [Writing effective AI prompts for business – Gemini for Google Workspace](https://workspace.google.com/resources/ai/writing-effective-prompts/) : guide officiel de Google indiquant que le "persona / rôle" est l'un des quatre éléments d'un bon prompt ("Act as..."), ce qui corrobore l'usage du role-playing pour cadrer une simulation d'entretien.
 
 ## Points de vigilance

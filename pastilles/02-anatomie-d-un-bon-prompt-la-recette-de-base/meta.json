@@ -1,12 +1,14 @@
 {
-  "sujet": "[Pastille IA de l'été] #2 : Anatomie d'un bon prompt : la recette de base",
   "slug": "02-anatomie-d-un-bon-prompt-la-recette-de-base",
+  "sujet": "[Pastille IA de l'été] #2 : Anatomie d'un bon prompt : la recette de base",
   "numero_envoi": 2,
-  "numero_envoi_sur": 45,
+  "total_serie": 45,
   "position_canonique": 16,
   "titre_canonique": "Anatomie d'un bon prompt : la recette de base",
   "titre_retenu": "Anatomie d'un bon prompt : la recette de base",
   "rubrique": "Prompting",
-  "temps_lecture": "1 min de lecture",
-  "bloc_annexe": "A ESSAYER"
+  "temps_de_lecture": "2 min de lecture",
+  "bloc_annexe": "À essayer",
+  "texte_alternatif_schema": "Schéma en quatre étapes menant à une réponse précise : 1. Le rôle (Qui parle ? ex: Expert, Critique), 2. Le contexte (De quoi s'agit-il ? Sujet, Public), 3. La tâche (Qu'attend-on ? Action précise), 4. Les contraintes (Comment le veut-on ? Ton, Format).",
+  "gel_du_corps": "integral"
 }

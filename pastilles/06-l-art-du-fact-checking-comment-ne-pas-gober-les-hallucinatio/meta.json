@@ -1,11 +1,14 @@
 {
-  "sujet": "[Pastille IA de l'été] #6 : L'art du Fact-Checking : comment ne pas gober les hallucinations de l'IA",
   "slug": "06-l-art-du-fact-checking-comment-ne-pas-gober-les-hallucinatio",
-  "numero_envoi": "6/45",
+  "sujet": "[Pastille IA de l'été] #6 : L'art du Fact-Checking : comment ne pas gober les hallucinations de l'IA",
+  "numero_envoi": 6,
+  "total_serie": 45,
   "position_canonique": 14,
   "titre_canonique": "L'art du Fact-Checking : comment ne pas gober les hallucinations de l'IA",
-  "titre_retenu": "L'art du Fact-Checking : comment ne pas gober les hallucinations de l'IA",
+  "titre_retenu": "L’art du Fact-Checking : comment ne pas gober les hallucinations de l’IA",
   "rubrique": "Limites",
   "temps_de_lecture": "2 min de lecture",
-  "bloc_annexe": "A essayer"
+  "bloc_annexe": "À essayer",
+  "texte_alternatif_schema": "Schema du circuit de verification : reponse + sources citees = brouillon, puis reperage des points a enjeu (chiffres, citations, dates, liens), recoupement dans une source independante (publication d'origine, documentation officielle), pour aboutir a confirme ou a faux ou deforme, a corriger ; a l'ecart, la boucle tu es sur ? : fausse verification.",
+  "gel_du_corps": "integral"
 }
