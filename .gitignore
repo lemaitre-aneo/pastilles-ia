@@ -1,1 +1,9 @@
+__pycache__/
+*.pyc
+
+# Sorties des pastilles: artefacts produits (msg, html, markdown, visuels).
+# Ce dépôt porte l'outillage, pas les pastilles diffusées.
+sorties/
+
+# Dossier de travail de la reprise des pastilles deja diffusees.
 work/
