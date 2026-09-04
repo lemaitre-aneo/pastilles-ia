@@ -17,6 +17,7 @@ Usage: python3 tools/check_pastille.py work/<slug> pastilles/<slug>
 from __future__ import annotations
 
 import difflib
+import json
 import os
 import re
 import sys
@@ -67,9 +68,9 @@ def source_paragraphs(html: str) -> list[str]:
 def check(workdir: str, outdir: str) -> tuple[list[str], list[str]]:
     """Renvoie (problemes bloquants, avertissements).
 
-    Un defaut herite du courriel d'origine et conserve a cause du gel du corps
-    est un avertissement, pas un echec: le corriger reviendrait a reecrire le
-    texte, ce que la reprise interdit.
+    Une derogation au gel du corps tracee dans `gel-exceptions.json` a cote du
+    livrable n'est pas un echec: elle est appliquee au texte d'origine avant
+    comparaison, puis rappelee en avertissement pour rester visible.
     """
     problems: list[str] = []
     warnings: list[str] = []
@@ -82,7 +83,21 @@ def check(workdir: str, outdir: str) -> tuple[list[str], list[str]]:
         exported = handle.read()
 
     rendered = render_text(exported)
+
+    # Derogations au gel du corps, decidees explicitement et tracees a cote du
+    # livrable. Elles sont appliquees au texte d'origine avant comparaison, et
+    # rappelees en avertissement pour rester visibles a la relecture.
+    exceptions = []
+    exceptions_path = os.path.join(outdir, "gel-exceptions.json")
+    if os.path.exists(exceptions_path):
+        with open(exceptions_path, encoding="utf-8") as handle:
+            exceptions = json.load(handle)
+        for entry in exceptions:
+            warnings.append(f"derogation au gel: {entry['raison']}")
+
     for index, paragraph in enumerate(source_paragraphs(source), start=1):
+        for entry in exceptions:
+            paragraph = paragraph.replace(entry["origine"], entry["reexport"])
         if paragraph in rendered:
             continue
         best = difflib.get_close_matches(paragraph, re.split(r"(?<=[.!?]) ", rendered), n=1)
@@ -95,13 +110,10 @@ def check(workdir: str, outdir: str) -> tuple[list[str], list[str]]:
     for token in re.findall(r"\[[A-Z][A-Z ÉÈÊÀÇ'0-9_.:-]{3,}\]", exported):
         problems.append(f"crochet de gabarit residuel: {token}")
     if "—" in exported:
-        if "—" in source:
-            warnings.append(
-                "tiret cadratin herite du courriel d'origine, conserve car le corps est gele "
-                "(a corriger seulement si le gel est leve)"
-            )
-        else:
-            problems.append("tiret cadratin introduit par le reexport")
+        problems.append(
+            "tiret cadratin present: le remplacer par des parentheses ou des virgules, et tracer "
+            "la correction dans gel-exceptions.json si elle touche le corps gele"
+        )
     for token in ("cid:IMAGE_TITRE", "cid:IMAGE_SCHEMA"):
         if token not in exported:
             problems.append(f"jeton {token} absent")
