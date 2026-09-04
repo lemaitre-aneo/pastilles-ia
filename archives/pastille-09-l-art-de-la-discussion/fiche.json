@@ -15,8 +15,8 @@
     "D'un point de vue technique, cette méthode tire pleinement parti de la **mémoire de session** du modèle. Pendant une discussion, le LLM \"relit\" l'ensemble des échanges précédents pour formuler sa nouvelle réponse. En itérant, vous ne repartez pas de zéro ; vous affinez une **base de connaissances partagée** et précise, brique par brique. Cela permet à l'IA de mieux \"raisonner\" sur votre problème et de corriger ses erreurs immédiatement. Au final, cette stratégie de **contrôle continu** est bien plus efficace pour obtenir un résultat fiable, nuancé et directement utilisable, tout en **économisant du temps sur le long terme.**"
   ],
   "schema_apres": 2,
-  "legende_schema": "Le cycle tourne en boucle : un prompt cible declenche une reponse, l'humain la corrige, et la version enrichie relance un nouveau tour.",
-  "alt_schema": "Schema en boucle des quatre etapes de l'iteration avec une IA : prompt initial cible, reponse de l'IA, raffinement ou correction par l'humain, puis nouvelle reponse enrichie qui relance le cycle.",
+  "legende_schema": "Le cycle tourne en boucle : un prompt ciblé déclenche une réponse, l'humain la corrige, et la version enrichie relance un nouveau tour.",
+  "alt_schema": "Schéma en boucle des quatre étapes de l'itération avec une IA : prompt initial ciblé, réponse de l'IA, raffinement ou correction par l'humain, puis nouvelle réponse enrichie qui relance le cycle.",
   "image_titre": "illustration-titre.png",
   "image_schema": "schema.png",
   "sources": [
@@ -45,6 +45,6 @@
   "annexe": {
     "etiquette": "À essayer",
     "style": "essayer",
-    "texte": "Sur votre prochaine demande complexe, decoupez-la en trois messages : d'abord un plan court a valider, puis une premiere section a rediger, enfin une relance \"corrige ce point et enrichis la suite\" avant de passer a la partie suivante."
+    "texte": "Sur votre prochaine demande complexe, découpez-la en trois messages : d'abord un plan court à valider, puis une première section à rédiger, enfin une relance \"corrige ce point et enrichis la suite\" avant de passer à la partie suivante."
   }
 }

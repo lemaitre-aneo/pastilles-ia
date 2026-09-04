@@ -29,6 +29,29 @@ from email import policy
 BLOCK_TAGS = "div|p|br|tr|td|th|table|tbody|ul|ol|li|h[1-6]|blockquote|hr|img"
 MIN_MOTS_CORPS = 25
 
+# Mots que le francais accentue toujours. Leur forme nue dans un champ de la
+# fiche trahit une perte d'accents, defaut que ni build.py ni verify.py ne
+# voient (ils controlent les caracteres refuses, pas les caracteres manquants)
+# et qui a effectivement traverse la premiere passe de reprise.
+MOTS_ACCENTUES = (
+    "reponse", "reponses", "etape", "etapes", "memoire", "generique", "generiques",
+    "verite", "modele", "modeles", "donnee", "donnees", "resultat", "resultats",
+    "precis", "precise", "apres", "tres", "deja", "meme", "schema", "legende",
+    "requete", "cle", "cles", "verification", "verifiez", "verifier", "citees",
+    "reperage", "independante", "independant", "confirme", "deforme", "chiffree",
+    "datee", "laterale", "sourcee", "iteration", "cible", "declenche", "decoupez",
+    "rediger", "premiere", "securite", "confidentialite", "responsabilite",
+    "controle", "procede", "frequent", "complet", "concret", "enonce", "genere",
+)
+
+
+def accents_manquants(texte: str) -> list[str]:
+    """Les mots du texte qui devraient porter un accent et n'en portent pas."""
+    if any(unicodedata.combining(c) for c in unicodedata.normalize("NFD", texte)):
+        return []
+    mots = set(re.findall(r"[a-zA-Z'-]+", texte.lower()))
+    return sorted(mot for mot in MOTS_ACCENTUES if mot in mots)
+
 
 def normalise(texte: str) -> str:
     """Reduit un texte a ce que la chaine officielle ne doit pas changer."""
@@ -106,6 +129,18 @@ def verifie(fiche_chemin: str, eml_chemin: str) -> list[str]:
     problemes = []
     for entree in derogations:
         problemes.append(f"! derogation au gel: {entree['raison']}")
+
+    champs = {"legende_schema": fiche.get("legende_schema", ""),
+              "alt_schema": fiche.get("alt_schema", ""),
+              "annexe": fiche.get("annexe", {}).get("texte", ""),
+              "axe": fiche.get("axe", ""),
+              "apercu_visuels": fiche.get("apercu_visuels", "")}
+    for rang, puce in enumerate(fiche.get("essentiel", []), start=1):
+        champs[f"essentiel[{rang}]"] = puce
+    for nom, texte in champs.items():
+        manquants = accents_manquants(texte)
+        if manquants:
+            problemes.append(f"accents perdus dans {nom}: {', '.join(manquants[:5])}")
     for rang, paragraphe in enumerate(obtenus, start=1):
         if paragraphe in attendus:
             continue
