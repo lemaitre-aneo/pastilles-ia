@@ -1,0 +1,51 @@
+# Le contexte : la "mémoire vive" de l'IA (ce qu'elle voit à un instant T)
+
+**Bandeau** : 8 / 45 · PASTILLE IA · Comprendre · 2 min de lecture
+
+## L'essentiel
+- Le modèle ne voit que ce que contient sa fenêtre de contexte, pas un souvenir permanent des échanges passés.
+- Une fenêtre saturée fait disparaître les messages les plus anciens, d'où l'impression que l'IA oublie vos consignes.
+- Plus la fenêtre est chargée, plus le calcul est lourd et plus l'attention du modèle se dilue sur les détails du milieu.
+
+## Corps
+
+Le contexte d'une intelligence artificielle représente sa zone de vision immédiate, l'équivalent de la mémoire vive de nos ordinateurs. Lorsque vous entamez une discussion avec un modèle de langage, celui-ci ne dispose d'aucun souvenir persistant de vos sessions passées. Pour vous répondre, il analyse uniquement les informations présentes dans un cadre restreint appelé la fenêtre de contexte. Ce cadre englobe votre question actuelle, mais aussi l'intégralité des messages précédents de la conversation en cours.
+
+À chaque fois que vous envoyez un nouveau message, l'application renvoie tout l'historique accumulé au modèle. P**our l'IA, c'est une découverte totale à chaque interaction**. Si votre échange devient extrêmement long ou si vous y intégrez des documents volumineux, la fenêtre de contexte peut finir par saturer. Pour continuer à formuler des réponses, le système est alors contraint d'occulter les messages les plus anciens, ce qui explique pourquoi une IA peut donner l'impression d'oublier vos consignes de départ au fil d'une trop longue discussion.
+
+**[SCHÉMA ICI]** (voir description et légende ci-dessous).
+
+Les capacités techniques actuelles permettent de traiter des volumes de textes impressionnants, équivalents à des livres entiers. Cependant, une fenêtre de contexte très chargée demande plus de ressources de calcul, ralentit le temps de traitement et peut parfois diluer l'attention du modèle sur les détails situés au milieu des données. Pour travailler efficacement, **privilégiez des sessions ciblées et n'hésitez pas à ouvrir une nouvelle discussion dès que vous changez de sujet ou de projet**, offrant ainsi à l'IA une feuille blanche parfaitement dégagée.
+
+## Bloc annexe : LE PIÈGE
+Certains assistants affichent des préférences enregistrées ou des résumés qui semblent tenir d'une session à l'autre : c'est un mécanisme ajouté par l'outil, pas une extension de la fenêtre de contexte elle-même. Sans ce relais, chaque nouvelle discussion repart strictement de zéro.
+
+## Textes alternatifs et légende
+- **Image 1 (illustration-titre)**, texte alternatif : « Le contexte : la "mémoire vive" de l'IA (ce qu'elle voit à un instant T) »
+- **Image 2 (schéma)**, texte alternatif : « Schéma du fonctionnement de la fenêtre de contexte : les entrées utilisateur et documents alimentent la fenêtre de contexte active (zone d'attention), qui bascule les données les plus anciennes vers les données archivées, hors de vue de l'IA, une fois saturée. »
+- **Légende sous le schéma** : « Les entrées utilisateur et documents remplissent la fenêtre de contexte active, zone d'attention du modèle, avant de basculer dans les données archivées une fois hors de sa vue. »
+
+## Prompt image (à coller dans Gemini)
+
+```
+Prépares-toi à générer deux images séparées, dans deux fichiers distincts. Les deux partagent cette charte graphique : style propre, moderne et professionnel, fond blanc. Palette : orange vif et bleu corporate foncé en dominantes, blanc et gris pour les respirations, accents multiculturels discrets (rouge, vert, jaune, bleu) reprenant subtilement un motif de couleurs de logo. Superpositions graphiques épurées : motifs géométriques abstraits, quartiers de cercle, lignes claires. Composition aérée, jamais surchargée. Typographie sans serif, propre et corporate. Tout texte affiché dans les images est en français.
+
+Contexte pour comprendre le sujet, à NE PAS afficher dans les images : Le contexte d'une intelligence artificielle est sa zone de vision immédiate, l'équivalent d'une mémoire vive : le modèle ne garde aucun souvenir persistant d'une session à l'autre et n'analyse que ce que contient un cadre restreint, la fenêtre de contexte, qui englobe la question posée et l'intégralité des messages précédents de la conversation en cours. À chaque nouveau message, l'application renvoie tout l'historique accumulé au modèle, pour qui c'est une découverte totale à chaque interaction. Si l'échange devient très long ou intègre des documents volumineux, la fenêtre finit par saturer et le système est contraint d'occulter les messages les plus anciens, d'où l'impression que l'IA oublie ses consignes de départ. Les capacités actuelles permettent de traiter des volumes de texte impressionnants, mais une fenêtre très chargée demande plus de calcul, ralentit le traitement et peut diluer l'attention du modèle sur les détails situés au milieu des données ; mieux vaut donc privilégier des sessions ciblées et ouvrir une nouvelle discussion à chaque changement de sujet.
+
+Image 1, illustration-titre : composition épurée et moderne, focus graphique central iconique qui illustre le sujet (par exemple un cadre lumineux, en forme de fenêtre ou d'écran, qui encercle et met en valeur un petit ensemble de documents et de données, tandis que d'autres éléments similaires restent estompés en arrière-plan, hors du cadre). Ce n'est pas un schéma de processus. Seul texte à afficher : le titre, en en-tête, sans faute d'orthographe, police sans serif corporate, sans sous-titre ni texte secondaire. Le titre exact : "Le contexte : la "mémoire vive" de l'IA (ce qu'elle voit à un instant T)". Format 16:9.
+
+Image 2, schéma explicatif, distinct et cohérent avec l'image 1 : diagramme d'entreprise propre et net de type processus, en trois blocs empilés verticalement et reliés par des flèches descendantes. Bloc 1 (en haut, orange) : "Entrées utilisateur et documents". Bloc 2 (au centre, bleu foncé, mis en valeur, reprenant le cadre lumineux de l'image 1) : "Fenêtre de contexte active (zone d'attention)". Bloc 3 (en bas, grisé et estompé) : "Données archivées (hors de vue de l'IA)". Libellés exacts à afficher en français : Entrées utilisateur et documents, Fenêtre de contexte active (zone d'attention), Données archivées (hors de vue de l'IA). Très peu de fioritures, focus sur la clarté, n'inclus pas le titre de la pastille. Format 4:3, cinq blocs au maximum, libellés assez grands pour rester lisibles une fois l'image réduite à 560 pixels de large.
+
+Génère dans un premier temps seulement la première image (l'illustration-titre), et attends les instructions de l'utilisateur pour générer la 2e image.
+```
+
+## Sources
+- Anthropic, documentation officielle "Context windows" : https://docs.claude.com/en/docs/build-with-claude/context-windows (corrobore la définition de la fenêtre de contexte comme mémoire de travail limitée, distincte d'un souvenir persistant entre sessions, paragraphe 1).
+- OpenAI, documentation officielle "Conversation state" (API Responses/Chat) : https://developers.openai.com/api/docs/guides/conversation-state (corrobore le fait que l'historique complet est renvoyé au modèle à chaque nouveau message et qu'une gestion de troncature est nécessaire quand la fenêtre sature, paragraphe 2).
+- Nelson F. Liu et al., "Lost in the Middle: How Language Models Use Long Contexts", Transactions of the Association for Computational Linguistics, 2024 : https://arxiv.org/abs/2307.03172 (corrobore la dilution de l'attention du modèle sur les informations situées au milieu d'un contexte long, paragraphe 3).
+
+## Points de vigilance
+- Aucune erreur factuelle, chiffre douteux, tiret cadratin ou nom d'entreprise repéré dans le texte gelé : rien à signaler ici.
+- Le titre rendu dans l'image 1 correspond au caractère près au titre du sujet du courriel et au titre canonique de la liste des 45 : aucun écart à signaler.
+- La formule "Pour l'IA, c'est une découverte totale à chaque interaction" porte, dans le HTML source, une mise en gras qui démarre après le "P" initial (soit "P" suivi de "our l'IA..." en gras) : c'est un artefact de mise en forme de l'e-mail d'origine, reproduit tel quel dans le réexport puisque le corps est gelé. Correctif que je proposerais si le gel était levé : faire porter le gras sur le mot entier, "Pour".
+- Le bloc annexe "Le piège" est un ajout volontaire qui ne répète pas le corps (il distingue la fenêtre de contexte elle-même des fonctionnalités de mémoire ou de résumé ajoutées par certains outils) ; à surveiller pour ne pas empiéter sur le futur sujet de l'oubli d'une session à l'autre (pastille 5), mais l'angle retenu ici (mémoire d'outil vs fenêtre de contexte) reste distinct de celui de la pastille 5 (pourquoi l'IA oublie d'une session à l'autre).
